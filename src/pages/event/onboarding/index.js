@@ -1,1 +1,1 @@
-export { default as EventHome } from "./EventHome.jsx";
+export { default as OnboardingFlow } from "./OnboardingFlow.jsx";
