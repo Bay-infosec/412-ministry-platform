@@ -8,6 +8,9 @@ import { Profile } from "./pages/profile/index.js";
 import { BottomNav } from "./components/layout/index.js";
 import { Shell } from "./components/layout/index.js";
 import { SANS, TSEC, ORANGE } from "./lib/constants.js";
+import { EventHome } from "./pages/event/index.js";
+import { OnboardingFlow } from "./pages/event/onboarding/index.js";
+
 
 function useFonts() {
   useEffect(() => {
@@ -369,6 +372,19 @@ export default function App() {
             data={data}
             onNavigate={navigate}
             onOpenPage={setPage}
+          />
+        )}
+        {tab === "event" && !page && (
+          <EventHome
+            data={data}
+            onOpenPage={setPage}
+            onNavigate={navigate}
+          />
+        )}
+        {tab === "event" && page === "onboarding" && (
+          <OnboardingFlow
+            data={data}
+            onDone={() => { loadData(); setPage(null); }}
           />
         )}
         {tab === "updates" && (
