@@ -210,56 +210,52 @@ export default function Home({ data, onNavigate, onOpenPage }) {
       )}
 
       {/* Training Materials */}
-      {trainingMaterials && trainingMaterials.length > 0 && (
-        <div style={{ marginBottom: "1rem" }}>
-          <SectionLabel>Training</SectionLabel>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {trainingMaterials.map((m) => (
-              <Card key={m.id} style={{ padding: "1rem 1.25rem" }}>
-                <div
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    color: NAVY,
-                    marginBottom: 4,
-                  }}
-                >
-                  {m.title}
-                </div>
-                {m.body && (
-                  <div
-                    style={{
-                      fontSize: "13px",
-                      color: TSEC,
-                      lineHeight: 1.5,
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {m.body}
-                  </div>
-                )}
-                {m.external_url && (
-                  
-                    href={m.external_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      fontSize: "12px",
-                      color: ORANGE,
-                      fontWeight: 600,
-                      textDecoration: "none",
-                      marginTop: 6,
-                      display: "block",
-                    }}
-                  >
-                    Open →
-                  </a>
-                )}
-              </Card>
-            ))}
+        {(trainingMaterials || []).map((m) => (
+          <Card key={m.id} style={{ padding: "1rem 1.25rem" }}>
+            <div
+              style={{
+                fontSize: "14px",
+                fontWeight: 600,
+                color: NAVY,
+                marginBottom: 4,
+              }}
+            >
+              {m.title}
+            </div>
+            {m.body && (
+              <div
+                style={{
+                  fontSize: "13px",
+                  color: TSEC,
+                  lineHeight: 1.5,
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
+                {m.body}
+              </div>
+            )}
+            {m.external_url && (
+              
+                href={m.external_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontSize: "12px",
+                  color: ORANGE,
+                  fontWeight: 600,
+                  textDecoration: "none",
+                  marginTop: 6,
+                  display: "block",
+                }}
+              >
+                Open →
+              </a>
+            )}
+          </Card>
+        ))}
           </div>
         </div>
       )}
