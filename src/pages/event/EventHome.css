@@ -1,0 +1,253 @@
+/* EventHome.css */
+
+.eh-root {
+  min-height: 100vh;
+  background: #f5f4f0;
+  padding-bottom: 90px;
+}
+
+/* Loading */
+.eh-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #f5f4f0;
+}
+
+.eh-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2.5px solid #d6d3cc;
+  border-top-color: #1a1a1a;
+  border-radius: 50%;
+  animation: eh-spin 0.7s linear infinite;
+}
+
+@keyframes eh-spin {
+  to { transform: rotate(360deg); }
+}
+
+.eh-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #f5f4f0;
+  color: #888;
+  font-family: 'Georgia', serif;
+  font-size: 15px;
+}
+
+/* Header */
+.eh-header {
+  position: relative;
+  overflow: hidden;
+  padding: 60px 24px 36px;
+  background: #1a1a1a;
+}
+
+.eh-header-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 80% 0%, #2d2417 0%, #1a1a1a 60%);
+  opacity: 0.9;
+}
+
+.eh-header-content {
+  position: relative;
+  z-index: 1;
+}
+
+.eh-event-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #c8a96e;
+  background: rgba(200, 169, 110, 0.12);
+  border: 1px solid rgba(200, 169, 110, 0.25);
+  padding: 3px 10px;
+  border-radius: 2px;
+  margin-bottom: 14px;
+}
+
+.eh-event-name {
+  font-size: 28px;
+  font-family: 'Georgia', serif;
+  font-weight: normal;
+  color: #f0ece4;
+  margin: 0 0 10px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.eh-event-dates {
+  font-size: 13px;
+  color: #8a8070;
+  margin: 0 0 4px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.04em;
+}
+
+.eh-event-location {
+  font-size: 13px;
+  color: #8a8070;
+  margin: 0 0 16px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.04em;
+}
+
+.eh-event-verse {
+  font-size: 13px;
+  color: #c8a96e;
+  margin: 0;
+  font-style: italic;
+  font-family: 'Georgia', serif;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+/* Onboarding Banner */
+.eh-onboarding-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: #c8a96e;
+  border: none;
+  padding: 16px 20px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.eh-ob-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eh-ob-icon {
+  font-size: 16px;
+  color: #1a1a1a;
+  flex-shrink: 0;
+}
+
+.eh-ob-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 2px;
+  font-family: -apple-system, sans-serif;
+}
+
+.eh-ob-sub {
+  font-size: 12px;
+  color: rgba(26, 26, 26, 0.65);
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+}
+
+.eh-ob-arrow {
+  font-size: 22px;
+  color: #1a1a1a;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* Sections */
+.eh-sections {
+  padding: 28px 20px 0;
+}
+
+.eh-coord-section {
+  padding-top: 8px;
+}
+
+.eh-sections-label {
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9a9488;
+  margin: 0 0 10px 2px;
+}
+
+.eh-section-list {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e8e4dc;
+}
+
+.eh-section-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #f0ece4;
+  padding: 16px 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.eh-section-row:last-child {
+  border-bottom: none;
+}
+
+.eh-section-row:active {
+  background: #f8f6f2;
+}
+
+.eh-section-icon {
+  font-size: 16px;
+  color: #c8a96e;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.eh-section-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eh-section-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  font-family: -apple-system, sans-serif;
+}
+
+.eh-section-desc {
+  font-size: 12px;
+  color: #9a9488;
+  font-family: -apple-system, sans-serif;
+}
+
+.eh-section-badge {
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.05em;
+  padding: 3px 9px;
+  border-radius: 2px;
+}
+
+.eh-badge-action {
+  background: #c8a96e;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.eh-section-arrow {
+  font-size: 20px;
+  color: #c8c4bc;
+  font-weight: 300;
+  line-height: 1;
+}
