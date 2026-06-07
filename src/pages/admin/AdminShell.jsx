@@ -6,6 +6,7 @@ import PersonDetail from "./people/PersonDetail.jsx";
 import InviteFlow from "./people/InviteFlow.jsx";
 import EventList from "./events/EventList.jsx";
 import EventDetail from "./events/EventDetail.jsx";
+import EventEditor from "./events/EventEditor.jsx";
 import CoLeaderPairing from "./events/CoLeaderPairing.jsx";
 import { AnnouncementList, AnnouncementEditor } from "./announcements/index.js";
 import { ChurchList, TrainingMaterials } from "./settings/index.js";
@@ -34,6 +35,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
     "people.detail": selectedProfile?.full_name || "Person",
     "people.invite": "Invite New Leader",
     "events.list": "Events",
+    "events.new": "New Event",
     "events.detail": selectedEvent?.name || "Event",
     "events.pairing": "Co-leader Pairing",
     "announcements": editingAnn ? (editingAnn.id ? "Edit Announcement" : "New Announcement") : "Announcements",
@@ -48,6 +50,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
     "people.detail": "people.list",
     "people.invite": "people.list",
     "events.list": "home",
+    "events.new": "events.list",
     "events.detail": "events.list",
     "events.pairing": "events.detail",
     "announcements": editingAnn ? null : "home",
@@ -61,7 +64,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
     nav("home");
   };
 
-  const backTarget = backs[screen] ?? "home";
+  const backTarget = backs[screen];
 
   return (
     <div style={{
@@ -101,6 +104,18 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
             }}
           >
             + Invite
+          </button>
+        )}
+        {screen === "events.list" && isAdmin && (
+          <button
+            onClick={() => nav("events.new")}
+            style={{
+              background: ORANGE, color: "#fff", border: "none", borderRadius: 8,
+              padding: "7px 14px", fontSize: "13px", fontWeight: 600,
+              fontFamily: SANS, cursor: "pointer",
+            }}
+          >
+            + New
           </button>
         )}
         {screen === "events.detail" && selectedEvent && isAdmin && (
@@ -148,6 +163,12 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
             <EventList
               data={data}
               onSelect={(e) => nav("events.detail", { event: e })}
+            />
+          )}
+          {screen === "events.new" && (
+            <EventEditor
+              onSaved={() => { onRefresh(); nav("events.list"); }}
+              onToast={showToast}
             />
           )}
           {screen === "events.detail" && selectedEvent && (
