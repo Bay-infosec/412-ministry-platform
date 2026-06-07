@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NAVY, ORANGE, BORDER, TSEC, SANS, SERIF } from "../../lib/constants.js";
 import Button from "./Button.jsx";
 
@@ -13,9 +14,7 @@ export default function Modal({
   requireType,
   busy,
 }) {
-  const [typed, setTyped] = window.React
-    ? window.React.useState("")
-    : [null, null];
+  const [typed, setTyped] = useState("");
 
   const canConfirm = requireType ? typed === requireType : true;
 

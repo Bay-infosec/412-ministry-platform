@@ -10,6 +10,7 @@ import { Shell } from "./components/layout/index.js";
 import { SANS, TSEC, ORANGE } from "./lib/constants.js";
 import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide } from "./pages/event/index.js";
 import { OnboardingFlow } from "./pages/event/onboarding/index.js";
+import { AdminShell } from "./pages/admin/index.js";
 
 
 function useFonts() {
@@ -413,6 +414,13 @@ export default function App() {
           hasEvent={hasEvent}
           unreadCount={data.unreadCount}
         />
+        {page === "admin" && data.isAdmin && (
+          <AdminShell
+            data={data}
+            onClose={() => setPage(null)}
+            onRefresh={loadData}
+          />
+        )}
       </>
     );
   }

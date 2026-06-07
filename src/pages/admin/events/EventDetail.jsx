@@ -1,0 +1,269 @@
+import { useState, useEffect } from "react";
+import { supabase } from "../../../lib/supabase.js";
+import { NAVY, ORANGE, TSEC, BORDER, BG, SANS, SERIF } from "../../../lib/constants.js";
+import { Avatar, Badge, Modal, SectionLabel } from "../../../components/ui/index.js";
+
+export default function EventDetail({ event, data, onRefresh, onToast }) {
+  const { allProfiles } = data;
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [addQuery, setAddQuery] = useState("");
+  const [pendingRemove, setPendingRemove] = useState(null);
+
+  useEffect(() => {
+    fetchMembers();
+  }, [event.id]);
+
+  async function fetchMembers() {
+    setLoading(true);
+    const { data: rows } = await supabase
+      .from("event_members")
+      .select("*, profiles(id, full_name, photo_url, email, platform_role)")
+      .eq("event_id", event.id)
+      .order("team_number");
+    setMembers(rows || []);
+    setLoading(false);
+  }
+
+  const enrolledProfileIds = new Set(members.map((m) => m.profile_id));
+  const notEnrolled = (allProfiles || []).filter(
+    (p) => !enrolledProfileIds.has(p.id) &&
+      (addQuery === "" ||
+        p.full_name?.toLowerCase().includes(addQuery.toLowerCase()) ||
+        p.email?.toLowerCase().includes(addQuery.toLowerCase()))
+  );
+
+  async function addMember(profile) {
+    const { data: newEm, error } = await supabase
+      .from("event_members")
+      .insert({
+        event_id: event.id,
+        profile_id: profile.id,
+        event_role: "leader",
+        status: "accepted",
+        onboarding_completed: false,
+        onboarding_visited: false,
+      })
+      .select()
+      .single();
+
+    if (error) { onToast("Could not add member.", "error"); return; }
+    await supabase.from("event_checklist").insert({ event_member_id: newEm.id, items: {} });
+    onToast(`${profile.full_name} added to ${event.name}.`);
+    setModal(null);
+    setAddQuery("");
+    await fetchMembers();
+    onRefresh();
+  }
+
+  async function removeMember() {
+    if (!pendingRemove) return;
+    setBusy(true);
+    await supabase.from("event_checklist").delete().eq("event_member_id", pendingRemove.id);
+    await supabase.from("event_members").delete().eq("id", pendingRemove.id);
+    setBusy(false);
+    setPendingRemove(null);
+    onToast(`${pendingRemove.profiles?.full_name} removed.`, "info");
+    await fetchMembers();
+    onRefresh();
+  }
+
+  const grouped = groupByTeam(members);
+
+  return (
+    <div>
+      {/* Event info */}
+      <div style={{
+        background: NAVY, borderRadius: 16, padding: "1.25rem",
+        marginBottom: "1.25rem",
+      }}>
+        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: "#EFAB25", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+          {event.status}
+        </div>
+        <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: 8 }}>
+          {event.name}
+        </div>
+        {[event.dates, event.location].filter(Boolean).map((v, i) => (
+          <div key={i} style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS }}>{v}</div>
+        ))}
+        <div style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS, marginTop: 4 }}>
+          {members.length} enrolled · {event.team_count || "?"} teams
+        </div>
+      </div>
+
+      {/* Members header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: "#E8621A", textTransform: "uppercase", fontFamily: "sans-serif" }}>
+          Members
+        </div>
+        <button
+          onClick={() => setModal("add")}
+          style={{
+            background: ORANGE, color: "#fff", border: "none", borderRadius: 8,
+            padding: "6px 14px", fontSize: "13px", fontWeight: 600,
+            fontFamily: SANS, cursor: "pointer",
+          }}
+        >
+          + Add
+        </button>
+      </div>
+
+      {loading ? (
+        <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, padding: "2rem 0", textAlign: "center" }}>
+          Loading members…
+        </div>
+      ) : members.length === 0 ? (
+        <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, padding: "2rem 0", textAlign: "center" }}>
+          No members yet. Add some using the button above.
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1.5rem" }}>
+          {grouped.map(({ teamNumber, teamMembers }) => (
+            <div key={teamNumber}>
+              {teamNumber !== "unassigned" && (
+                <div style={{
+                  fontSize: "11px", fontWeight: 700, color: TSEC,
+                  letterSpacing: "0.1em", fontFamily: SANS, textTransform: "uppercase",
+                  marginBottom: "0.375rem", marginTop: "0.5rem",
+                }}>
+                  Team {teamNumber}
+                </div>
+              )}
+              {teamMembers.map((m) => (
+                <MemberRow
+                  key={m.id}
+                  member={m}
+                  onRemove={() => setPendingRemove(m)}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add member modal */}
+      {modal === "add" && (
+        <div style={overlay}>
+          <div style={{ ...sheet, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
+            <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: NAVY, marginBottom: "0.75rem" }}>
+              Add Member
+            </div>
+            <input
+              value={addQuery}
+              onChange={(e) => setAddQuery(e.target.value)}
+              placeholder="Search by name or email…"
+              style={{
+                width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10,
+                padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: NAVY,
+                outline: "none", boxSizing: "border-box", marginBottom: "0.75rem",
+              }}
+            />
+            <div style={{ flex: 1, overflowY: "auto", marginBottom: "0.75rem" }}>
+              {notEnrolled.length === 0 ? (
+                <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, textAlign: "center", padding: "1rem 0" }}>
+                  {addQuery ? "No matches." : "Everyone is already enrolled."}
+                </div>
+              ) : (
+                notEnrolled.slice(0, 20).map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => addMember(p)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 10, width: "100%",
+                      background: "none", border: "none", borderRadius: 10,
+                      padding: "0.625rem 0", cursor: "pointer", textAlign: "left",
+                      borderBottom: `1px solid ${BORDER}`,
+                    }}
+                  >
+                    <Avatar url={p.photo_url} name={p.full_name} size={36} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{p.full_name}</div>
+                      <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{p.email}</div>
+                    </div>
+                    <span style={{ fontSize: "12px", color: ORANGE, fontWeight: 600, fontFamily: SANS }}>Add</span>
+                  </button>
+                ))
+              )}
+            </div>
+            <button onClick={() => { setModal(null); setAddQuery(""); }} style={{
+              width: "100%", background: "none", border: `1px solid ${BORDER}`,
+              borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600,
+              color: TSEC, cursor: "pointer", fontFamily: SANS,
+            }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Remove confirmation */}
+      {pendingRemove && (
+        <Modal
+          title="Remove Member"
+          message={`Remove ${pendingRemove.profiles?.full_name} from ${event.name}? This deletes their checklist and team assignment.`}
+          confirmLabel="Remove"
+          variant="danger"
+          onCancel={() => setPendingRemove(null)}
+          onConfirm={removeMember}
+          busy={busy}
+        />
+      )}
+    </div>
+  );
+}
+
+function MemberRow({ member, onRemove }) {
+  const p = member.profiles || {};
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 10,
+      background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12,
+      padding: "0.75rem 1rem",
+    }}>
+      <Avatar url={p.photo_url} name={p.full_name} size={38} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {p.full_name}
+        </div>
+        <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>
+          {member.event_role}{member.ministry ? ` · ${member.ministry}` : ""}
+          {member.onboarding_completed ? " · ✓" : ""}
+        </div>
+      </div>
+      <button onClick={onRemove} style={{
+        background: "none", border: "none", cursor: "pointer",
+        color: "#DC2626", fontSize: "13px", fontFamily: SANS, padding: "4px 8px",
+      }}>
+        Remove
+      </button>
+    </div>
+  );
+}
+
+function groupByTeam(members) {
+  const teams = {};
+  for (const m of members) {
+    const key = m.team_number?.toString() || "unassigned";
+    if (!teams[key]) teams[key] = [];
+    teams[key].push(m);
+  }
+  const keys = Object.keys(teams).sort((a, b) => {
+    if (a === "unassigned") return 1;
+    if (b === "unassigned") return -1;
+    return parseInt(a) - parseInt(b);
+  });
+  return keys.map((k) => ({ teamNumber: k, teamMembers: teams[k] }));
+}
+
+const overlay = {
+  position: "fixed", inset: 0, background: "rgba(22,32,56,0.6)",
+  display: "flex", alignItems: "center", justifyContent: "center",
+  zIndex: 500, padding: "1.5rem",
+};
+
+const sheet = {
+  background: "#fff", borderRadius: 20, padding: "1.5rem",
+  maxWidth: 360, width: "100%",
+};
