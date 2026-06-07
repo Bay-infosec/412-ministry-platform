@@ -5,6 +5,21 @@ Read it fully before starting work. Update **Progress Log** and **Next Up** afte
 
 ---
 
+## Collaboration Protocol (Account 1 ↔ Account 2)
+
+Before handing the floor to the other account:
+
+1. **Commit and push everything** — Working tree must be clean and pushed. End the session with "floor is yours."
+2. **Finish or explicitly park in-progress files** — Never leave a half-built component. If parking, mark it in CLAUDE.md with a clear note of what's missing.
+3. **Test as a real user** — Use actual coordinator/member accounts. Only check off Known Bugs after manual verification, not just because the code looks right.
+4. **Rotate exposed credentials immediately** — Don't defer security issues to the next session.
+5. **Write one clean handoff entry in the Progress Log** — What's done, what's verified working, what's still open, whether the build is green. One consolidated entry, not six incremental ones.
+6. **Include screenshots for visual handoffs** — When the other account is about to do UI work, screenshots of the current state save them from having to run the app cold.
+
+**Core rule:** Leave the codebase in a state where the other account can start immediately with zero reconstruction effort. CLAUDE.md is the shared brain — keep it accurate, not aspirational.
+
+---
+
 ## Project Overview
 
 A mobile-first PWA for 412 Ministry — a Mongolian-American Christian youth/leadership ministry.

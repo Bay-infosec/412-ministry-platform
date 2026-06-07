@@ -1,27 +1,42 @@
-export const NAVY = "#162038";
-export const ORANGE = "#E8621A";
-export const GOLD = "#EFAB25";
-export const BORDER = "#E2DDD6";
-export const TSEC = "#8A8498";
-export const BG = "#F7F4EF";
-export const SANS = "'DM Sans', sans-serif";
-export const SERIF = "'Cormorant Garamond', serif";
+export const C = {
+  orange:      "#FF4D00",
+  dark:        "#111111",
+  dark2:       "#222222",
+  white:       "#FFFFFF",
+  bg:          "#FAFAFA",
+  border:      "#E5E5E5",
+  text:        "#111111",
+  muted:       "#999999",
+  faint:       "#CCCCCC",
+  verseBg:     "#FFF5F0",
+  verseBorder: "#FFD5C0",
+  success:     "#27AE60",
+  barBg:       "#F0F0F0",
+};
+
+// Legacy aliases — all files using these get new colors automatically
+export const NAVY   = C.dark;
+export const ORANGE = C.orange;
+export const GOLD   = C.orange;
+export const TSEC   = C.muted;
+export const BORDER = C.border;
+export const BG     = C.bg;
+export const SANS   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif";
+export const SERIF  = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif";
 
 // ── Profile tag definitions ────────────────────────────────────────────────
-// Custom tags stored in profiles.tags[] — editable by admin
 export const PROFILE_TAGS = {
-  board_member: { label: "412 Board",   bg: "#162038", color: "#EFAB25" },
-  pastor:       { label: "Pastor",      bg: "#D1FAE5", color: "#065F46" },
+  board_member: { label: "412 Board", bg: "#111111", color: "#FF4D00" },
+  pastor:       { label: "Pastor",    bg: "#D1FAE5", color: "#065F46" },
 };
 
 // Derived tags from platform_role / event_role — not stored in DB
 export const ROLE_TAGS = {
-  admin:       { label: "Admin",       bg: "#162038", color: "#EFAB25" },
+  admin:       { label: "Admin",       bg: "#111111", color: "#FF4D00" },
   moderator:   { label: "Moderator",   bg: "#EEF2FC", color: "#1A4FBF" },
-  member:      { label: "Member",      bg: "#F0EDE8", color: "#8A8498" },
-  // event roles
-  coordinator: { label: "Coordinator", bg: "#F3F4F6", color: "#374151" },
-  leader:      { label: "Team Leader", bg: "#FFF5EC", color: "#C2410C" },
+  member:      { label: "Member",      bg: "#F0F0F0", color: "#999999" },
+  coordinator: { label: "Coordinator", bg: "#F0F0F0", color: "#111111" },
+  leader:      { label: "Team Leader", bg: "#FFF5EC", color: "#FF4D00" },
   participant: { label: "Participant", bg: "#E0F2FE", color: "#0369A1" },
   volunteer:   { label: "Volunteer",   bg: "#F5F3FF", color: "#6D28D9" },
 };

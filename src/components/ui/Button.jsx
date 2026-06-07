@@ -1,4 +1,4 @@
-import { ORANGE, NAVY, BORDER, TSEC, SANS } from "../../lib/constants.js";
+import { SANS } from "../../lib/constants.js";
 
 export default function Button({
   label,
@@ -11,17 +11,17 @@ export default function Button({
 }) {
   const styles = {
     primary: {
-      background: disabled ? "#C9B7A8" : ORANGE,
+      background: disabled ? "#CCCCCC" : "#FF4D00",
       color: "#fff",
       border: "none",
     },
     secondary: {
       background: "transparent",
-      color: NAVY,
-      border: `1.5px solid ${BORDER}`,
+      color: "#111111",
+      border: "1.5px solid #E5E5E5",
     },
     navy: {
-      background: disabled ? "#C9B7A8" : NAVY,
+      background: disabled ? "#CCCCCC" : "#111111",
       color: "#fff",
       border: "none",
     },
@@ -32,7 +32,7 @@ export default function Button({
     },
     ghost: {
       background: "none",
-      color: TSEC,
+      color: "#999999",
       border: "none",
     },
   };
@@ -47,7 +47,7 @@ export default function Button({
         width: full ? "100%" : "auto",
         ...s,
         padding: small ? "9px 14px" : "13px 18px",
-        borderRadius: 10,
+        borderRadius: 12,
         cursor: disabled ? "default" : "pointer",
         fontWeight: 600,
         fontSize: small ? "13px" : "15px",

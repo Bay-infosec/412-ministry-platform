@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
+import { TSEC, BORDER, BG, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel } from "../../components/ui/index.js";
 import { EventsBrowser, TYPE_LABELS } from "../events/index.js";
@@ -36,7 +36,7 @@ function ViewSwitcher({ view, onChange }) {
             flex: 1, border: "none", borderRadius: 9, padding: "0.55rem 0",
             fontSize: "13px", fontWeight: 700, fontFamily: SANS, cursor: "pointer",
             background: view === t.key ? "#fff" : "transparent",
-            color: view === t.key ? NAVY : TSEC,
+            color: view === t.key ? "#111111" : "#999999",
             boxShadow: view === t.key ? "0 1px 5px rgba(0,0,0,0.08)" : "none",
             transition: "background 0.15s, color 0.15s",
           }}
@@ -54,7 +54,7 @@ function PastEvents({ history, activeEvent }) {
   if (past.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
-        <div style={{ fontFamily: SERIF, fontSize: "20px", color: NAVY, marginBottom: 8 }}>No past events yet</div>
+        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#111111", marginBottom: 8 }}>No past events yet</div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS }}>Archived events you've taken part in will appear here.</div>
       </div>
     );
@@ -65,14 +65,14 @@ function PastEvents({ history, activeEvent }) {
       {past.map((h) => (
         <div key={h.id} style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", opacity: 0.72 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "0.375rem" }}>
-            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", color: GOLD, textTransform: "uppercase" }}>
+            <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.12em", color: "#FF4D00", textTransform: "uppercase" }}>
               {TYPE_LABELS[h.events.type] || "Event"}
             </span>
             <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#F0EDE8", color: "#8A8498" }}>
               Past
             </span>
           </div>
-          <div style={{ fontFamily: SERIF, fontSize: "16px", fontWeight: 600, color: NAVY }}>{h.events.name}</div>
+          <div style={{ fontFamily: SANS, fontSize: "16px", fontWeight: 800, color: "#111111" }}>{h.events.name}</div>
           {h.events.dates && <div style={{ fontSize: "12px", color: TSEC, marginTop: 2 }}>{h.events.dates}</div>}
           {h.team_number && (
             <div style={{ fontSize: "12px", color: TSEC, marginTop: 2 }}>
@@ -127,59 +127,57 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
       {view === "mine" && activeEvent && (
         <>
       {/* Event header card */}
-      <div style={{ background: NAVY, borderRadius: 16, padding: "1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
+      <div style={{ background: "#111111", borderRadius: 18, padding: "1.25rem 1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
+        <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.5rem" }}>
+          Your Event · Active
+        </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", marginBottom: "0.25rem" }}>
-              Active Event
-            </div>
-            <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: "0.25rem" }}>
+            <div style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.03em", marginBottom: "0.25rem" }}>
               {activeEvent.name}
             </div>
-            {activeEvent.dates && <div style={{ fontSize: "13px", color: "#B8C0D0" }}>{activeEvent.dates}</div>}
-            {activeEvent.location && <div style={{ fontSize: "13px", color: "#B8C0D0" }}>{activeEvent.location}</div>}
+            {activeEvent.dates && <div style={{ fontSize: "11px", color: "#555555" }}>{activeEvent.dates}</div>}
+            {activeEvent.location && <div style={{ fontSize: "11px", color: "#555555" }}>{activeEvent.location}</div>}
           </div>
           {days !== null && days >= 0 && (
             <div style={{ textAlign: "center", flexShrink: 0, marginLeft: 16 }}>
               {days === 0 ? (
-                <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: ORANGE }}>It's here!</div>
+                <div style={{ fontSize: "18px", fontWeight: 900, color: "#FF4D00" }}>It's here!</div>
               ) : (
                 <>
-                  <div style={{ fontFamily: SERIF, fontSize: "42px", fontWeight: 600, color: "#fff", lineHeight: 1 }}>{days}</div>
-                  <div style={{ fontSize: "10px", color: "#B8C0D0", fontWeight: 600, letterSpacing: "0.06em" }}>{days === 1 ? "DAY" : "DAYS"}</div>
+                  <div style={{ fontSize: "42px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>{days}</div>
+                  <div style={{ fontSize: "10px", color: "#555555", fontWeight: 700, letterSpacing: "0.06em" }}>{days === 1 ? "DAY" : "DAYS"}</div>
                 </>
               )}
             </div>
           )}
         </div>
-        {activeEvent.fee && (
-          <div style={{ fontSize: "13px", color: "#B8C0D0", marginBottom: "0.75rem" }}>
-            Registration fee: <span style={{ color: GOLD, fontWeight: 600 }}>{activeEvent.fee}</span>
-          </div>
-        )}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10, marginBottom: activeEvent.verse_text ? 10 : 0 }}>
+          {activeEvent.fee && (
+            <span style={{ background: "#FF4D00", color: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: "10px", fontWeight: 800 }}>
+              Fee: {activeEvent.fee}
+            </span>
+          )}
+          {activeEvent.registration_url && (
+            <a
+              href={activeEvent.registration_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ background: "#222222", color: "#FF4D00", borderRadius: 8, padding: "4px 10px", fontSize: "10px", fontWeight: 800, textDecoration: "none" }}
+            >
+              Register →
+            </a>
+          )}
+        </div>
         {activeEvent.verse_text && (
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem" }}>
-            <div style={{ fontFamily: SERIF, fontSize: "14px", color: "#FFE066", lineHeight: 1.65, fontStyle: "italic", marginBottom: "0.25rem" }}>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "0.75rem" }}>
+            <div style={{ fontSize: "13px", color: "#FFF5F0", lineHeight: 1.65, fontStyle: "italic", marginBottom: "0.25rem" }}>
               "{activeEvent.verse_text}"
             </div>
-            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: GOLD, textTransform: "uppercase", fontFamily: SANS }}>
+            <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em", color: "#FF4D00", textTransform: "uppercase" }}>
               {activeEvent.verse}
             </div>
           </div>
-        )}
-        {activeEvent.registration_url && (
-          <a
-            href={activeEvent.registration_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "block", marginTop: "1rem", background: ORANGE, color: "#fff",
-              borderRadius: 10, padding: "11px 0", textAlign: "center",
-              fontSize: "14px", fontWeight: 700, fontFamily: SANS, textDecoration: "none",
-            }}
-          >
-            Register now →
-          </a>
         )}
       </div>
 
@@ -188,7 +186,7 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
         <button
           onClick={() => onOpenPage("onboarding")}
           style={{
-            width: "100%", textAlign: "left", background: ORANGE,
+            width: "100%", textAlign: "left", background: "#FF4D00",
             borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem",
             border: "none", cursor: "pointer", fontFamily: SANS,
             display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -227,10 +225,10 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
               }}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+                <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
                   Leader Zoom Training
                 </div>
-                <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: zoom.sub ? 2 : 0 }}>
+                <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS, fontWeight: 700, marginBottom: zoom.sub ? 2 : 0 }}>
                   {zoom.main}
                 </div>
                 {zoom.sub && (
@@ -259,17 +257,17 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
                     { title: "Open Q&A", body: "Anything on your mind — bring it. This is a space to ask, talk, and be heard before the conference begins." },
                   ].map(({ title, body }) => (
                     <div key={title} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: ORANGE, flexShrink: 0, marginTop: 6 }} />
+                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#FF4D00", flexShrink: 0, marginTop: 6 }} />
                       <div>
-                        <div style={{ fontSize: "13px", fontWeight: 700, color: NAVY, fontFamily: SANS }}>{title}</div>
+                        <div style={{ fontSize: "13px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>{title}</div>
                         <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>{body}</div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div style={{ background: NAVY, borderRadius: 10, padding: "0.75rem 1rem" }}>
-                  <div style={{ fontSize: "12px", fontWeight: 700, color: GOLD, fontFamily: SANS, marginBottom: 3 }}>
+                <div style={{ background: "#111111", borderRadius: 10, padding: "0.75rem 1rem" }}>
+                  <div style={{ fontSize: "12px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS, marginBottom: 3 }}>
                     Mandatory for all team leaders
                   </div>
                   <div style={{ fontSize: "12px", color: "#B8C0D0", fontFamily: SANS, lineHeight: 1.6 }}>
@@ -293,7 +291,7 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
             }}
           >
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY }}>{s.label}</div>
+              <div style={{ fontSize: "14px", fontWeight: 700, color: "#111111" }}>{s.label}</div>
               <div style={{ fontSize: "12px", color: TSEC, marginTop: 2 }}>{s.desc}</div>
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

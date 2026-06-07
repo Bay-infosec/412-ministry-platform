@@ -1,6 +1,6 @@
 import { supabase } from "../../lib/supabase.js";
 import { fmtDateStr } from "../../lib/utils.js";
-import { NAVY, ORANGE, TSEC, BORDER, SERIF, SANS } from "../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel } from "../../components/ui/index.js";
 
@@ -24,10 +24,11 @@ export default function Updates({ data, readIds, onMarkRead }) {
         <SectionLabel>412 Ministry</SectionLabel>
         <div
           style={{
-            fontFamily: SERIF,
+            fontFamily: SANS,
             fontSize: "26px",
-            fontWeight: 600,
-            color: NAVY,
+            fontWeight: 900,
+            color: "#111111",
+            letterSpacing: "-0.02em",
           }}
         >
           Updates
@@ -54,7 +55,8 @@ export default function Updates({ data, readIds, onMarkRead }) {
               key={a.id}
               style={{
                 marginBottom: "1rem",
-                border: `1px solid ${isUnread ? ORANGE : BORDER}`,
+                border: `1px solid ${isUnread ? "#FF4D00" : BORDER}`,
+                borderLeft: isUnread ? "3px solid #FF4D00" : undefined,
               }}
             >
               <div
@@ -71,7 +73,7 @@ export default function Updates({ data, readIds, onMarkRead }) {
                 {isUnread && (
                   <div
                     style={{
-                      background: ORANGE,
+                      background: "#FF4D00",
                       color: "#fff",
                       fontSize: "10px",
                       fontWeight: 700,
@@ -99,11 +101,12 @@ export default function Updates({ data, readIds, onMarkRead }) {
               )}
               <div
                 style={{
-                  fontFamily: SERIF,
-                  fontSize: "19px",
-                  fontWeight: 600,
-                  color: NAVY,
+                  fontFamily: SANS,
+                  fontSize: "15px",
+                  fontWeight: 900,
+                  color: "#111111",
                   marginBottom: 6,
+                  letterSpacing: "-0.01em",
                 }}
               >
                 {a.title}

@@ -1,4 +1,4 @@
-import { NAVY, GOLD, BORDER, SERIF } from "../../lib/constants.js";
+import { BORDER } from "../../lib/constants.js";
 
 export default function Avatar({ url, name, size = 44 }) {
   const initials = (name || "")
@@ -31,13 +31,12 @@ export default function Avatar({ url, name, size = 44 }) {
         width: size,
         height: size,
         borderRadius: "50%",
-        background: NAVY,
-        color: GOLD,
+        background: "#FF4D00",
+        color: "#fff",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontFamily: SERIF,
-        fontWeight: 600,
+        fontWeight: 900,
         fontSize: size * 0.36,
         flexShrink: 0,
       }}

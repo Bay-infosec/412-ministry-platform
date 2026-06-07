@@ -14,22 +14,10 @@ import { AdminShell } from "./pages/admin/index.js";
 import { Chat } from "./pages/chat/index.js";
 
 
-function useFonts() {
-  useEffect(() => {
-    if (document.getElementById("app-fonts")) return;
-    const link = document.createElement("link");
-    link.id = "app-fonts";
-    link.rel = "stylesheet";
-    link.href =
-      "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap";
-    document.head.appendChild(link);
-  }, []);
-}
-
 function LoadingScreen() {
   return (
     <div style={{
-      position: "fixed", inset: 0, background: "#F7F4EF",
+      position: "fixed", inset: 0, background: "#FAFAFA",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       gap: 20,
     }}>
@@ -39,7 +27,7 @@ function LoadingScreen() {
           position: "absolute",
           inset: -10,
           borderRadius: "50%",
-          border: "2.5px solid #E2DDD6",
+          border: "2.5px solid #E5E5E5",
           borderTopColor: ORANGE,
           animation: "spin412 1s linear infinite",
         }} />
@@ -79,7 +67,7 @@ function ErrorScreen({ message, onReset }) {
               color: "#fff",
               border: "none",
               padding: "11px 22px",
-              borderRadius: 8,
+              borderRadius: 12,
               cursor: "pointer",
               fontFamily: SANS,
               fontWeight: 600,
@@ -95,8 +83,6 @@ function ErrorScreen({ message, onReset }) {
 }
 
 export default function App() {
-  useFonts();
-
   const [phase, setPhase] = useState("loading");
   const [tab, setTab] = useState("home");
   const [page, setPage] = useState(null);
@@ -589,10 +575,11 @@ export default function App() {
           />
         )}
         <BottomNav
-          active={tab}
-          onNavigate={navigate}
+          active={page === "chat" ? "chat" : tab}
+          onNavigate={(t) => { if (t === "chat") { openChat(); } else { navigate(t); } }}
           hasEvent={hasEvent}
           unreadCount={data.unreadCount}
+          chatUnread={chatUnread}
           profilePhotoUrl={data.profile.photo_url}
         />
         {page === "admin" && data.isModerator && (

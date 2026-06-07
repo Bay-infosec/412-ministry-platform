@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
-import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
+import { TSEC, BORDER, BG, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { SectionLabel } from "../../components/ui/index.js";
 import { DailyVerse, ContactForm } from "../../components/shared/index.js";
@@ -71,7 +71,7 @@ function splitZoomDisplay(zoomStr) {
 
 function TileChevron() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginLeft: 12 }}>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CCCCCC" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginLeft: 12 }}>
       <path d="M9 6l6 6-6 6" />
     </svg>
   );
@@ -137,29 +137,26 @@ export default function Home({
   return (
     <Shell withNav>
       {/* ── Header ─────────────────────────────────────────────────── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem" }}>
         <div>
-          <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-            412 Ministry
+          <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#999999", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+            Good morning
           </div>
-          <div style={{ fontFamily: SERIF, fontSize: "26px", fontWeight: 600, color: NAVY, lineHeight: 1.2 }}>
-            Hi <span style={{ color: ORANGE }}>{displayName}</span>.
+          <div style={{ fontFamily: SANS, fontSize: "36px", fontWeight: 900, color: "#111111", lineHeight: 1.1, letterSpacing: "-0.04em" }}>
+            {displayName}
           </div>
         </div>
-        {/* Chat button */}
+        {/* Bell / updates button */}
         <button
-          onClick={onOpenChat}
-          style={{ background: NAVY, border: "none", borderRadius: 20, cursor: "pointer", padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}
+          onClick={onOpenUpdates}
+          style={{ position: "relative", width: 36, height: 36, borderRadius: "50%", background: "#fff", border: "1px solid #E5E5E5", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, marginTop: 4 }}
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", fontFamily: SANS }}>Chat</span>
-          {chatUnread ? (
-            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#E53E3E" }} />
-          ) : othersOnline.length > 0 ? (
-            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22C55E" }} />
-          ) : null}
+          {unreadCount > 0 && (
+            <div style={{ position: "absolute", top: 6, right: 6, width: 7, height: 7, borderRadius: "50%", background: "#E53E3E" }} />
+          )}
         </button>
       </div>
 
@@ -213,13 +210,13 @@ export default function Home({
       {/* ── Onboarding invitation (all leaders) ────────────────────── */}
       {eventMember && (
         <div style={{
-          background: NAVY, borderRadius: 16, padding: "1.25rem 1.5rem",
+          background: "#111111", borderRadius: 16, padding: "1.25rem 1.5rem",
           marginBottom: "1rem",
         }}>
-          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.18em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+          <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
             Onboarding Invitation
           </div>
-          <div style={{ fontFamily: SERIF, fontSize: "15px", fontStyle: "italic", color: "#B8C0D0", lineHeight: 1.5, marginBottom: 12 }}>
+          <div style={{ fontFamily: SANS, fontSize: "15px", color: "#999999", lineHeight: 1.5, marginBottom: 12 }}>
             Walk through your orientation steps and complete your pre-conference checklist before {activeEvent?.name || "the conference"}.
           </div>
 
@@ -236,7 +233,7 @@ export default function Home({
             <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.15)", overflow: "hidden" }}>
               <div style={{
                 height: "100%", borderRadius: 3,
-                background: ORANGE,
+                background: "#FF4D00",
                 width: onboardingComplete ? "100%" : `${Math.round((onboardingStep / TOTAL_STEPS) * 100)}%`,
                 transition: "width 0.4s ease",
               }} />
@@ -256,7 +253,7 @@ export default function Home({
             <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.15)", overflow: "hidden" }}>
               <div style={{
                 height: "100%", borderRadius: 3,
-                background: ORANGE,
+                background: "#FF4D00",
                 width: `${Math.round((checklistDone / CHECKLIST_ITEMS.length) * 100)}%`,
                 transition: "width 0.4s ease",
               }} />
@@ -278,7 +275,7 @@ export default function Home({
             <button
               onClick={onOpenOnboarding}
               style={{
-                flex: 1, background: ORANGE, color: "#fff", border: "none",
+                flex: 1, background: "#FF4D00", color: "#fff", border: "none",
                 borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 700,
                 fontFamily: SANS, cursor: "pointer",
               }}
@@ -291,62 +288,61 @@ export default function Home({
 
       {/* ── Active event card (same style as Event tab) ─────────────── */}
       {activeEvent && (
-        <div style={{ background: NAVY, borderRadius: 16, padding: "1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
+        <div style={{ background: "#111111", borderRadius: 18, padding: "1.25rem 1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
+          <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.5rem" }}>
+            Your Event · Active
+          </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", marginBottom: "0.25rem" }}>
-                Active Event
-              </div>
-              <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: "0.25rem" }}>
+              <div style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.03em", marginBottom: "0.25rem" }}>
                 {activeEvent.name}
               </div>
-              {activeEvent.dates && <div style={{ fontSize: "13px", color: "#B8C0D0" }}>{activeEvent.dates}</div>}
-              {activeEvent.location && <div style={{ fontSize: "13px", color: "#B8C0D0" }}>{activeEvent.location}</div>}
+              {activeEvent.dates && <div style={{ fontSize: "11px", color: "#555555" }}>{activeEvent.dates}</div>}
+              {activeEvent.location && <div style={{ fontSize: "11px", color: "#555555" }}>{activeEvent.location}</div>}
             </div>
             {(() => {
               const d = daysUntilEvent(activeEvent.dates);
               return d !== null && d >= 0 ? (
                 <div style={{ textAlign: "center", flexShrink: 0, marginLeft: 16 }}>
                   {d === 0 ? (
-                    <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: ORANGE }}>It's here!</div>
+                    <div style={{ fontSize: "18px", fontWeight: 900, color: "#FF4D00" }}>It's here!</div>
                   ) : (
                     <>
-                      <div style={{ fontFamily: SERIF, fontSize: "42px", fontWeight: 600, color: "#fff", lineHeight: 1 }}>{d}</div>
-                      <div style={{ fontSize: "10px", color: "#B8C0D0", fontWeight: 600, letterSpacing: "0.06em" }}>{d === 1 ? "DAY" : "DAYS"}</div>
+                      <div style={{ fontSize: "42px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>{d}</div>
+                      <div style={{ fontSize: "10px", color: "#555555", fontWeight: 700, letterSpacing: "0.06em" }}>{d === 1 ? "DAY" : "DAYS"}</div>
                     </>
                   )}
                 </div>
               ) : null;
             })()}
           </div>
-          {activeEvent.fee && (
-            <div style={{ fontSize: "13px", color: "#B8C0D0", marginBottom: "0.75rem" }}>
-              Registration fee: <span style={{ color: GOLD, fontWeight: 600 }}>{activeEvent.fee}</span>
-            </div>
-          )}
+          {/* Pills row */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10, marginBottom: activeEvent.verse_text ? 10 : 0 }}>
+            {activeEvent.fee && (
+              <span style={{ background: "#FF4D00", color: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: "10px", fontWeight: 800 }}>
+                Fee: {activeEvent.fee}
+              </span>
+            )}
+            {activeEvent.registration_url && (
+              <a
+                href={activeEvent.registration_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ background: "#222222", color: "#FF4D00", borderRadius: 8, padding: "4px 10px", fontSize: "10px", fontWeight: 800, textDecoration: "none" }}
+              >
+                Register →
+              </a>
+            )}
+          </div>
           {activeEvent.verse_text && (
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem" }}>
-              <div style={{ fontFamily: SERIF, fontSize: "14px", color: "#FFE066", lineHeight: 1.65, fontStyle: "italic", marginBottom: "0.25rem" }}>
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "0.75rem" }}>
+              <div style={{ fontSize: "13px", color: "#FFF5F0", lineHeight: 1.65, fontStyle: "italic", marginBottom: "0.25rem" }}>
                 "{activeEvent.verse_text}"
               </div>
-              <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: GOLD, textTransform: "uppercase", fontFamily: SANS }}>
+              <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em", color: "#FF4D00", textTransform: "uppercase" }}>
                 {activeEvent.verse}
               </div>
             </div>
-          )}
-          {activeEvent.registration_url && (
-            <a
-              href={activeEvent.registration_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "block", marginTop: "1rem", background: ORANGE, color: "#fff",
-                borderRadius: 10, padding: "11px 0", textAlign: "center",
-                fontSize: "14px", fontWeight: 700, fontFamily: SANS, textDecoration: "none",
-              }}
-            >
-              Register now →
-            </a>
           )}
         </div>
       )}
@@ -371,10 +367,10 @@ export default function Home({
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+                    <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: "#999999", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
                       Your Team Prayer Day
                     </div>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
+                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
                       {fmtDate(nextPrayer)}
                     </div>
                     <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
@@ -384,10 +380,10 @@ export default function Home({
                   <div style={{ display: "flex", alignItems: "center", flexShrink: 0, marginLeft: 16 }}>
                     <div style={{ textAlign: "right" }}>
                       {isToday ? (
-                        <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: ORANGE }}>Today!</div>
+                        <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 900, color: "#FF4D00" }}>Today!</div>
                       ) : (
                         <>
-                          <div style={{ fontFamily: SERIF, fontSize: "32px", fontWeight: 600, color: NAVY, lineHeight: 1 }}>{days}</div>
+                          <div style={{ fontFamily: SANS, fontSize: "32px", fontWeight: 900, color: "#111111", lineHeight: 1 }}>{days}</div>
                           <div style={{ fontSize: "10px", color: TSEC, fontWeight: 600, letterSpacing: "0.08em", fontFamily: SANS }}>{days === 1 ? "DAY" : "DAYS"}</div>
                         </>
                       )}
@@ -414,7 +410,7 @@ export default function Home({
                     <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
                       Leader Zoom Training
                     </div>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: 2 }}>
+                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS, marginBottom: 2 }}>
                       {main}
                     </div>
                     {sub && <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 2 }}>{sub}</div>}
@@ -447,7 +443,7 @@ export default function Home({
                     <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
                       {nextMeeting.type === "zoom_meeting" ? "Zoom Meeting" : "Meeting"}
                     </div>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: 2 }}>
+                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS, marginBottom: 2 }}>
                       {nextMeeting.name}
                     </div>
                     {(nextMeeting.dates || nextMeeting.location) && (
@@ -456,7 +452,7 @@ export default function Home({
                       </div>
                     )}
                     {nextMeeting.zoom_url && (
-                      <div style={{ fontSize: "12px", color: ORANGE, fontFamily: SANS, fontWeight: 600, marginTop: 4 }}>
+                      <div style={{ fontSize: "12px", color: "#FF4D00", fontFamily: SANS, fontWeight: 600, marginTop: 4 }}>
                         Join Zoom →
                       </div>
                     )}
@@ -490,18 +486,18 @@ export default function Home({
                   {/* Avatar */}
                   <div style={{
                     width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-                    background: BG, overflow: "hidden",
+                    background: "#FAFAFA", overflow: "hidden",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     border: `1px solid ${BORDER}`,
                   }}>
                     {m.profiles?.photo_url
                       ? <img src={m.profiles.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : <span style={{ fontFamily: SERIF, fontSize: 14, color: TSEC }}>{m.profiles?.full_name?.charAt(0)}</span>}
+                      : <span style={{ fontFamily: SANS, fontSize: 14, color: "#999999" }}>{m.profiles?.full_name?.charAt(0)}</span>}
                   </div>
 
                   {/* Name + team number */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "13px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
+                    <div style={{ fontSize: "13px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
                       {m.profiles?.full_name}
                     </div>
                     <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>
@@ -515,7 +511,7 @@ export default function Home({
                       <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>Not started</div>
                     ) : (
                       <>
-                        <div style={{ fontSize: "11px", color: checkedCount === CHECKLIST_ITEMS.length ? ORANGE : TSEC, fontFamily: SANS, fontWeight: checkedCount === CHECKLIST_ITEMS.length ? 600 : 400 }}>
+                        <div style={{ fontSize: "11px", color: checkedCount === CHECKLIST_ITEMS.length ? "#FF4D00" : "#999999", fontFamily: SANS, fontWeight: checkedCount === CHECKLIST_ITEMS.length ? 600 : 400 }}>
                           {checkedCount === CHECKLIST_ITEMS.length ? "Complete ✓" : `${checkedCount} / ${CHECKLIST_ITEMS.length} done`}
                         </div>
                         <div style={{ display: "flex", gap: 5 }}>
@@ -524,7 +520,7 @@ export default function Home({
                             return (
                               <div key={item.id} style={{
                                 width: 10, height: 10, borderRadius: "50%",
-                                background: checked ? ORANGE : "#F5C97A", flexShrink: 0,
+                                background: checked ? "#FF4D00" : "#E5E5E5", flexShrink: 0,
                               }} />
                             );
                           })}
@@ -559,14 +555,14 @@ export default function Home({
               >
                 <div style={{
                   width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-                  background: BG, display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "#FAFAFA", display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={NAVY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
                   </svg>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{mat.title}</div>
+                  <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{mat.title}</div>
                   {mat.body && (
                     <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
                       {mat.body}
@@ -594,13 +590,13 @@ export default function Home({
           marginBottom: "0.5rem",
         }}
       >
-        <div style={{ width: 38, height: 38, borderRadius: 10, background: BG, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={NAVY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div style={{ width: 38, height: 38, borderRadius: 10, background: "#FAFAFA", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
         </div>
         <div style={{ flex: 1, textAlign: "left" }}>
-          <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY }}>Contact Us</div>
+          <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111" }}>Contact Us</div>
           <div style={{ fontSize: "12px", color: TSEC, marginTop: 1 }}>Send a message to the 412 team</div>
         </div>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

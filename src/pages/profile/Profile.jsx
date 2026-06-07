@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
 import { formatPhoneInput, validatePassword } from "../../lib/utils.js";
-import { NAVY, ORANGE, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, Field, Button, Avatar, SectionLabel, Badge, ProfileTags } from "../../components/ui/index.js";
 
@@ -110,7 +110,7 @@ function PhotoCropModal({ file, onConfirm, onCancel }) {
           type="range" min={minScale} max={minScale * 3} step="0.01"
           value={scale}
           onChange={(e) => setScale(Number(e.target.value))}
-          style={{ width: 130, accentColor: ORANGE }}
+          style={{ width: 130, accentColor: "#FF4D00" }}
         />
         <button
           onClick={() => setScale((s) => Math.min(minScale * 3, +(s + 0.1).toFixed(2)))}
@@ -128,7 +128,7 @@ function PhotoCropModal({ file, onConfirm, onCancel }) {
         </button>
         <button
           onClick={handleConfirm}
-          style={{ padding: "12px 28px", borderRadius: 10, background: ORANGE, color: "#fff", border: "none", fontFamily: SANS, fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+          style={{ padding: "12px 28px", borderRadius: 10, background: "#FF4D00", color: "#fff", border: "none", fontFamily: SANS, fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
         >
           Use this photo
         </button>
@@ -247,7 +247,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           }}
         >
           <div
-            style={{ fontFamily: SERIF, fontSize: "26px", fontWeight: 600, color: NAVY }}
+            style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#111111", letterSpacing: "-0.02em" }}
           >
             My Profile
           </div>
@@ -277,10 +277,10 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           <Avatar url={profile.photo_url} name={profile.full_name} size={96} />
           <div
             style={{
-              fontFamily: SERIF,
+              fontFamily: SANS,
               fontSize: "24px",
-              fontWeight: 600,
-              color: NAVY,
+              fontWeight: 900,
+              color: "#111111",
               marginTop: "0.75rem",
             }}
           >
@@ -322,7 +322,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               >
                 {label}
               </div>
-              <div style={{ fontSize: "15px", color: val ? NAVY : TSEC }}>
+              <div style={{ fontSize: "15px", color: val ? "#111111" : "#999999" }}>
                 {val || "Not set"}
               </div>
             </div>
@@ -334,8 +334,8 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           style={{
             width: "100%",
             background: "#fff",
-            border: `1px solid ${ORANGE}`,
-            color: ORANGE,
+            border: "1px solid #E5E5E5",
+            color: "#FF4D00",
             padding: "12px",
             borderRadius: 10,
             cursor: "pointer",
@@ -353,7 +353,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
             onClick={onOpenAdmin}
             style={{
               width: "100%",
-              background: NAVY,
+              background: "#111111",
               border: "none",
               color: "#fff",
               padding: "14px",
@@ -374,7 +374,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               height="18"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#EFAB25"
+              stroke="#FF4D00"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -399,10 +399,10 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               >
                 <div
                   style={{
-                    fontFamily: SERIF,
+                    fontFamily: SANS,
                     fontSize: "18px",
                     fontWeight: 600,
-                    color: NAVY,
+                    color: "#111111",
                   }}
                 >
                   {h.events?.name || "Event"}
@@ -448,7 +448,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           ← Back
         </button>
         <div
-          style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: NAVY }}
+          style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, color: "#111111", letterSpacing: "-0.02em" }}
         >
           Edit Profile
         </div>
@@ -469,7 +469,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
             marginTop: "0.75rem",
             fontSize: "13px",
             fontWeight: 600,
-            color: ORANGE,
+            color: "#FF4D00",
             cursor: "pointer",
             fontFamily: SANS,
           }}
@@ -566,7 +566,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               border: `1px solid ${BORDER}`,
               fontSize: "15px",
               fontFamily: SANS,
-              color: NAVY,
+              color: "#111111",
               background: "#fff",
               outline: "none",
             }}
@@ -593,7 +593,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
                   border: `1px solid ${BORDER}`,
                   fontSize: "15px",
                   fontFamily: SANS,
-                  color: NAVY,
+                  color: "#111111",
                   background: "#fff",
                   outline: "none",
                   boxSizing: "border-box",
@@ -632,7 +632,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
             style={{
               background: "none",
               border: "none",
-              color: NAVY,
+              color: "#111111",
               fontSize: "14px",
               fontWeight: 600,
               cursor: "pointer",
@@ -648,7 +648,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               style={{
                 fontSize: "14px",
                 fontWeight: 600,
-                color: NAVY,
+                color: "#111111",
                 marginBottom: "1rem",
                 fontFamily: SANS,
               }}

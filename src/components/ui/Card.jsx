@@ -1,13 +1,11 @@
-import { BORDER } from "../../lib/constants.js";
-
 export default function Card({ children, style }) {
   return (
     <div
       style={{
         background: "#fff",
-        borderRadius: 16,
+        borderRadius: 14,
         padding: "1.25rem 1.5rem",
-        border: `1px solid ${BORDER}`,
+        border: "1px solid #E5E5E5",
         ...style,
       }}
     >

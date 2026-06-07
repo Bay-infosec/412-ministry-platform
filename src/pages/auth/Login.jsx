@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, SERIF, SANS } from "../../lib/constants.js";
+import { TSEC, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, Field, Button } from "../../components/ui/index.js";
 
@@ -50,11 +50,12 @@ export default function Login({ onLoggedIn }) {
         />
         <div
           style={{
-            fontFamily: SERIF,
+            fontFamily: SANS,
             fontSize: "36px",
-            fontWeight: 600,
-            color: NAVY,
+            fontWeight: 900,
+            color: "#111111",
             lineHeight: 1.1,
+            letterSpacing: "-0.03em",
           }}
         >
           Welcome back.

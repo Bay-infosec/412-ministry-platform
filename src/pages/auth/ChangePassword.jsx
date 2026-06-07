@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
 import { validatePassword } from "../../lib/utils.js";
-import { NAVY, ORANGE, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, Field, Button, Avatar } from "../../components/ui/index.js";
 
@@ -79,7 +79,7 @@ function PhotoCropModal({ file, onConfirm, onCancel }) {
         <button onClick={onCancel} style={{ background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 10, padding: "12px 28px", color: "#fff", fontFamily: SANS, fontSize: "14px", cursor: "pointer" }}>
           Cancel
         </button>
-        <button onClick={handleConfirm} style={{ background: ORANGE, border: "none", borderRadius: 10, padding: "12px 28px", color: "#fff", fontFamily: SANS, fontSize: "14px", fontWeight: 700, cursor: "pointer" }}>
+        <button onClick={handleConfirm} style={{ background: "#FF4D00", border: "none", borderRadius: 12, padding: "12px 28px", color: "#fff", fontFamily: SANS, fontSize: "14px", fontWeight: 700, cursor: "pointer" }}>
           Use this photo
         </button>
       </div>
@@ -117,10 +117,10 @@ function PasswordStep({ onPasswordSaved }) {
   return (
     <Shell>
       <div style={{ marginTop: "3rem", marginBottom: "2rem", textAlign: "center" }}>
-        <div style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.16em", color: ORANGE, textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: SANS }}>
+        <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: SANS }}>
           Step 1 of 2
         </div>
-        <div style={{ fontFamily: SERIF, fontSize: "28px", fontWeight: 600, color: NAVY, lineHeight: 1.2 }}>
+        <div style={{ fontFamily: SANS, fontSize: "28px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
           Set your own password
         </div>
         <div style={{ fontSize: "14px", color: TSEC, marginTop: "0.75rem", lineHeight: 1.6, fontFamily: SANS }}>
@@ -204,10 +204,10 @@ function ProfileSetupStep({ userId, onDone }) {
       )}
 
       <div style={{ marginTop: "2.5rem", marginBottom: "1.5rem", textAlign: "center" }}>
-        <div style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.16em", color: ORANGE, textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: SANS }}>
+        <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: SANS }}>
           Step 2 of 2
         </div>
-        <div style={{ fontFamily: SERIF, fontSize: "28px", fontWeight: 600, color: NAVY, lineHeight: 1.2 }}>
+        <div style={{ fontFamily: SANS, fontSize: "28px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
           Your profile
         </div>
         <div style={{ fontSize: "14px", color: TSEC, marginTop: "0.5rem", fontFamily: SANS }}>
@@ -222,7 +222,7 @@ function ProfileSetupStep({ userId, onDone }) {
         <button
           onClick={() => fileRef.current.click()}
           disabled={uploading}
-          style={{ background: "none", border: `1.5px solid ${BORDER}`, borderRadius: 8, padding: "8px 20px", fontFamily: SANS, fontSize: "13px", fontWeight: 600, color: NAVY, cursor: "pointer" }}
+          style={{ background: "none", border: `1.5px solid ${BORDER}`, borderRadius: 10, padding: "8px 20px", fontFamily: SANS, fontSize: "13px", fontWeight: 600, color: "#111111", cursor: "pointer" }}
         >
           {uploading ? "Uploading…" : photoUrl ? "Change photo" : "Add a photo"}
         </button>
@@ -233,14 +233,14 @@ function ProfileSetupStep({ userId, onDone }) {
         {/* Name (read-only) */}
         <div style={{ marginBottom: "1rem" }}>
           <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 6 }}>Name</div>
-          <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{profile.full_name}</div>
+          <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{profile.full_name}</div>
         </div>
 
         {/* Church (read-only) */}
         {churchName && (
           <div style={{ marginBottom: "1rem" }}>
             <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 6 }}>Church</div>
-            <div style={{ fontSize: "15px", color: NAVY, fontFamily: SANS }}>{churchName}</div>
+            <div style={{ fontSize: "15px", color: "#111111", fontFamily: SANS }}>{churchName}</div>
           </div>
         )}
 
