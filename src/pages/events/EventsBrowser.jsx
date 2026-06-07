@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { supabase } from "../../lib/supabase.js";
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
-import { Shell } from "../../components/layout/index.js";
-import { Card, SectionLabel } from "../../components/ui/index.js";
 
-const TYPE_LABELS = {
+export const TYPE_LABELS = {
   conference: "Conference",
   youth_conference: "Youth Conference",
   annual_conference: "Annual Conference",
@@ -60,7 +58,7 @@ export default function EventsBrowser({ data, onRefresh }) {
   const myEventIds = new Set([activeEvent?.id].filter(Boolean));
 
   return (
-    <Shell withNav>
+    <>
       {/* Toast */}
       {toast && (
         <div style={{
@@ -219,6 +217,6 @@ export default function EventsBrowser({ data, onRefresh }) {
       )}
 
       <div style={{ height: "1.5rem" }} />
-    </Shell>
+    </>
   );
 }

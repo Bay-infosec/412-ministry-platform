@@ -25,8 +25,3 @@ export const ROLE_TAGS = {
   participant: { label: "Participant", bg: "#E0F2FE", color: "#0369A1" },
   volunteer:   { label: "Volunteer",   bg: "#F5F3FF", color: "#6D28D9" },
 };
-
-export const EMAILJS_SERVICE = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-export const EMAILJS_INVITE_TPL = import.meta.env.VITE_EMAILJS_INVITE_TEMPLATE_ID;
-export const EMAILJS_ANN_TPL = import.meta.env.VITE_EMAILJS_ANNOUNCEMENT_TEMPLATE_ID;
-export const EMAILJS_PUBLIC = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
 import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 import { Card, Field, Button } from "../../../components/ui/index.js";
-import { sendAnnouncementEmails } from "../../../lib/emailjs.js";
+import { sendEmail, sendAnnouncementEmails } from "../../../lib/email.js";
 import { matchesAudience } from "../../../lib/utils.js";
 
 const AUDIENCE_TYPES = [
@@ -84,31 +84,17 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
         })
       );
 
-      // Send emails non-blocking
+      // Send emails non-blocking, via the send-email edge function (Resend)
       (async () => {
         let count = 0;
         for (const p of matched) {
           if (p.email) {
-            try {
-              await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  service_id: "service_7njy4no",
-                  template_id: "template_ecf57nm",
-                  user_id: "FP0ZiFckHYBqYpN6s",
-                  template_params: {
-                    to_email: p.email,
-                    to_name: p.full_name || "",
-                    subject: payload.title,
-                    message: payload.body,
-                  },
-                }),
-              });
-              count++;
-            } catch {
-              // non-blocking — continue on failure
-            }
+            const ok = await sendEmail(
+              p.email,
+              payload.title,
+              `<p>Hi ${p.full_name || "there"},</p><p><strong>${payload.title}</strong></p><p>${payload.body}</p>`
+            );
+            if (ok) count++;
           }
         }
         onToast(`Announcement published · email sent to ${count} ${count === 1 ? "person" : "people"}`);

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NAVY, TSEC, SERIF, SANS, ORANGE, BORDER } from "../../lib/constants.js";
+import { sendEmail } from "../../lib/email.js";
 import Button from "../ui/Button.jsx";
 import Field from "../ui/Field.jsx";
 
@@ -18,27 +19,12 @@ export default function ContactForm({ profile, onClose }) {
     }
     setBusy(true);
     try {
-      const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          service_id: import.meta.env.VITE_EMAILJS_SERVICE_ID,
-          template_id: import.meta.env.VITE_EMAILJS_INVITE_TEMPLATE_ID,
-          user_id: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-          template_params: {
-            from_name: profile.full_name || "",
-            from_email: profile.email || "",
-            subject: subject.trim(),
-            message: message.trim(),
-            to_email: "tsekvv.tb@gmail.com",
-            to_name: "Tsenguun",
-            temp_password: "",
-            platform_url: window.location.origin,
-          },
-        }),
-      });
+      const html = `<p>From: ${profile.full_name || "Someone"} (${profile.email || "no email"})</p>
+        <p><strong>${subject.trim()}</strong></p>
+        <p>${message.trim()}</p>`;
+      const ok = await sendEmail("tsekvv.tb@gmail.com", `Contact form: ${subject.trim()}`, html);
       setBusy(false);
-      if (res.ok) setSent(true);
+      if (ok) setSent(true);
       else setErr("Could not send. Please try again.");
     } catch {
       setBusy(false);

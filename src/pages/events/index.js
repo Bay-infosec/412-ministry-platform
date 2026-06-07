@@ -1,1 +1,1 @@
-export { default as EventsBrowser } from "./EventsBrowser.jsx";
+export { default as EventsBrowser, TYPE_LABELS } from "./EventsBrowser.jsx";

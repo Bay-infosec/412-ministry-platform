@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
 import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 import { Card, SectionLabel } from "../../../components/ui/index.js";
-import { sendAnnouncementEmails } from "../../../lib/emailjs.js";
+import { sendAnnouncementEmails } from "../../../lib/email.js";
 
 const STATUS_COLORS = {
   published:        { bg: "#D1FAE5", color: "#065F46" },

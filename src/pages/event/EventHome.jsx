@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel } from "../../components/ui/index.js";
+import { EventsBrowser, TYPE_LABELS } from "../events/index.js";
 
 function splitZoomDisplay(zoomStr) {
   if (!zoomStr) return { main: zoomStr, sub: null };
@@ -19,18 +20,74 @@ function daysUntil(dateStr) {
   return Math.ceil((parsed - new Date()) / 86400000);
 }
 
-export default function EventHome({ data, onOpenPage, onNavigate, onOpenChat }) {
-  const { activeEvent, eventMember, profile, isAdmin } = data;
+function ViewSwitcher({ view, onChange }) {
+  const tabs = [
+    { key: "mine", label: "My Event" },
+    { key: "browse", label: "Browse" },
+    { key: "past", label: "Past" },
+  ];
+  return (
+    <div style={{ display: "flex", gap: 4, background: BG, padding: 4, borderRadius: 12, marginBottom: "1.25rem" }}>
+      {tabs.map((t) => (
+        <button
+          key={t.key}
+          onClick={() => onChange(t.key)}
+          style={{
+            flex: 1, border: "none", borderRadius: 9, padding: "0.55rem 0",
+            fontSize: "13px", fontWeight: 700, fontFamily: SANS, cursor: "pointer",
+            background: view === t.key ? "#fff" : "transparent",
+            color: view === t.key ? NAVY : TSEC,
+            boxShadow: view === t.key ? "0 1px 5px rgba(0,0,0,0.08)" : "none",
+            transition: "background 0.15s, color 0.15s",
+          }}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
-  if (!activeEvent) {
+function PastEvents({ history, activeEvent }) {
+  const past = (history || []).filter((h) => h.events && h.event_id !== activeEvent?.id);
+
+  if (past.length === 0) {
     return (
-      <Shell withNav>
-        <div style={{ fontFamily: SANS, fontSize: "14px", color: TSEC, textAlign: "center", marginTop: "4rem" }}>
-          No active event right now.
-        </div>
-      </Shell>
+      <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
+        <div style={{ fontFamily: SERIF, fontSize: "20px", color: NAVY, marginBottom: 8 }}>No past events yet</div>
+        <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS }}>Archived events you've taken part in will appear here.</div>
+      </div>
     );
   }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+      {past.map((h) => (
+        <div key={h.id} style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", opacity: 0.72 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "0.375rem" }}>
+            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", color: GOLD, textTransform: "uppercase" }}>
+              {TYPE_LABELS[h.events.type] || "Event"}
+            </span>
+            <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#F0EDE8", color: "#8A8498" }}>
+              Past
+            </span>
+          </div>
+          <div style={{ fontFamily: SERIF, fontSize: "16px", fontWeight: 600, color: NAVY }}>{h.events.name}</div>
+          {h.events.dates && <div style={{ fontSize: "12px", color: TSEC, marginTop: 2 }}>{h.events.dates}</div>}
+          {h.team_number && (
+            <div style={{ fontSize: "12px", color: TSEC, marginTop: 2 }}>
+              Team {h.team_number}{h.event_role ? ` · ${h.event_role}` : ""}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function EventHome({ data, onOpenPage, onNavigate }) {
+  const { activeEvent, eventMember, profile, isAdmin, history } = data;
+  const [view, setView] = useState("mine");
 
   const isCoordinator = eventMember?.event_role === "coordinator" || isAdmin;
   const days = daysUntil(activeEvent?.dates);
@@ -48,11 +105,27 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenChat }) 
     sections.push({ id: "attendance", label: "Attendance", desc: "Check in team members each day" });
   }
 
-  const zoom = activeEvent.zoom_training_dates ? splitZoomDisplay(activeEvent.zoom_training_dates) : null;
+  const zoom = activeEvent?.zoom_training_dates ? splitZoomDisplay(activeEvent.zoom_training_dates) : null;
   const [zoomOpen, setZoomOpen] = useState(false);
 
   return (
     <Shell withNav>
+      <ViewSwitcher view={view} onChange={setView} />
+
+      {view === "browse" && (
+        <EventsBrowser data={data} onRefresh={onNavigate ? () => onNavigate("event") : undefined} />
+      )}
+
+      {view === "past" && <PastEvents history={history} activeEvent={activeEvent} />}
+
+      {view === "mine" && !activeEvent && (
+        <div style={{ fontFamily: SANS, fontSize: "14px", color: TSEC, textAlign: "center", marginTop: "4rem" }}>
+          No active event right now. Check the Browse tab to find an upcoming one to join.
+        </div>
+      )}
+
+      {view === "mine" && activeEvent && (
+        <>
       {/* Event header card */}
       <div style={{ background: NAVY, borderRadius: 16, padding: "1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
@@ -208,27 +281,6 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenChat }) 
           </div>
         )}
 
-        {/* Team Chat row */}
-        {onOpenChat && (
-          <button
-            onClick={onOpenChat}
-            style={{
-              width: "100%", textAlign: "left", background: "none",
-              border: "none", borderBottom: sections.length > 0 ? `1px solid ${BORDER}` : "none",
-              padding: "1rem 1.25rem", cursor: "pointer", fontFamily: SANS,
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-            }}
-          >
-            <div>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY }}>Team Chat</div>
-              <div style={{ fontSize: "12px", color: TSEC, marginTop: 2 }}>Message your team and leaders</div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-            </svg>
-          </button>
-        )}
-
         {sections.map((s, i) => (
           <button
             key={s.id}
@@ -250,6 +302,8 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenChat }) 
           </button>
         ))}
       </Card>
+        </>
+      )}
     </Shell>
   );
 }

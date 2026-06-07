@@ -56,40 +56,6 @@ export function matchesAudience(audience, ctx) {
   });
 }
 
-export async function sendInviteEmail({ to_email, to_name, temp_password, platform_url }) {
-  const { EMAILJS_SERVICE, EMAILJS_INVITE_TPL, EMAILJS_PUBLIC } = await import("./constants.js");
-  try {
-    const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        service_id: EMAILJS_SERVICE,
-        template_id: EMAILJS_INVITE_TPL,
-        user_id: EMAILJS_PUBLIC,
-        template_params: { to_email, to_name, temp_password, platform_url: window.location.origin }
-      })
-    });
-    return res.ok;
-  } catch { return false; }
-}
-
-export async function sendAnnouncementEmail({ to_email, to_name, announcement_title, announcement_body, event_name, event_dates, event_location }) {
-  const { EMAILJS_SERVICE, EMAILJS_ANN_TPL, EMAILJS_PUBLIC } = await import("./constants.js");
-  try {
-    const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        service_id: EMAILJS_SERVICE,
-        template_id: EMAILJS_ANN_TPL,
-        user_id: EMAILJS_PUBLIC,
-        template_params: { to_email, to_name, announcement_title, announcement_body, event_name: event_name || "412 Ministry", event_dates: event_dates || "", event_location: event_location || "" }
-      })
-    });
-    return res.ok;
-  } catch { return false; }
-}
-
 export function generateTempPassword() {
   const words = ["Grace", "Faith", "Hope", "Light", "Peace", "Joy", "Love", "Truth"];
   const word = words[Math.floor(Math.random() * words.length)];

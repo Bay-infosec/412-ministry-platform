@@ -64,7 +64,7 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
             padding: "1rem", marginTop: "0.5rem",
             fontSize: "14px", color: "#92400E", fontFamily: SANS, lineHeight: 1.65,
           }}>
-            Account created but the invite email failed to send. You will need to share the login credentials manually. Check the EmailJS configuration.
+            Account created but the invite email failed to send. You will need to share the login credentials manually. Check the Resend configuration (RESEND_API_KEY / RESEND_FROM_EMAIL secrets).
           </div>
         )}
       </div>

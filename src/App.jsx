@@ -10,7 +10,6 @@ import { Shell } from "./components/layout/index.js";
 import { SANS, TSEC, ORANGE } from "./lib/constants.js";
 import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide, CoordinatorView, MyChecklist, Attendance } from "./pages/event/index.js";
 import { OnboardingFlow } from "./pages/event/onboarding/index.js";
-import { EventsBrowser } from "./pages/events/index.js";
 import { AdminShell } from "./pages/admin/index.js";
 import { Chat } from "./pages/chat/index.js";
 
@@ -555,7 +554,6 @@ export default function App() {
             data={data}
             onOpenPage={setPage}
             onNavigate={navigate}
-            onOpenChat={openChat}
           />
         )}
         {tab === "event" && page === "onboarding" && (
@@ -573,9 +571,6 @@ export default function App() {
         {tab === "event" && page === "checklist" && <MyChecklist data={data} onBack={() => setPage(null)} />}
         {tab === "event" && page === "attendance" && <Attendance data={data} onBack={() => setPage(null)} />}
 
-        {tab === "events" && (
-          <EventsBrowser data={data} onRefresh={loadData} onNavigate={navigate} />
-        )}
         {tab === "updates" && (
           <Updates
             data={data}
@@ -596,7 +591,6 @@ export default function App() {
           active={tab}
           onNavigate={navigate}
           hasEvent={hasEvent}
-          hasPublicEvents={(data.publicEvents || []).length > 0}
           unreadCount={data.unreadCount}
           profilePhotoUrl={data.profile.photo_url}
         />
