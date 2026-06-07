@@ -324,12 +324,12 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
       )}
 
       {/* Profile Tags */}
-      <SectionLabel>Profile Tags</SectionLabel>
-      <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
-        <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: "0.875rem", lineHeight: 1.5 }}>
-          Tags appear on this person's profile and in team views. Role tags (Admin, Moderator, Team Leader) are automatic.
+      <SectionLabel>Tags</SectionLabel>
+      <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1.1rem 1.25rem", marginBottom: "1rem" }}>
+        <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: "1rem", lineHeight: 1.5 }}>
+          Tap a tag to add or remove it — a person can hold any combination at once (e.g. Moderator <em>and</em> 412 Board). These appear as badges on their profile. Platform role and event role are managed separately below.
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {Object.entries(PROFILE_TAGS).map(([key, cfg]) => {
             const active = tags.includes(key);
             const isSaving = savingTag === key;
@@ -339,26 +339,17 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
                 onClick={() => toggleTag(key)}
                 disabled={isSaving}
                 style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "0.75rem 1rem", borderRadius: 12, cursor: isSaving ? "default" : "pointer",
-                  border: `1.5px solid ${active ? cfg.bg : BORDER}`,
-                  background: active ? cfg.bg + "18" : "#fff",
-                  opacity: isSaving ? 0.6 : 1,
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "8px 14px", borderRadius: 99, cursor: isSaving ? "default" : "pointer",
+                  border: active ? "none" : `1.5px dashed ${BORDER}`,
+                  background: active ? cfg.bg : "#fff",
+                  color: active ? cfg.color : TSEC,
+                  fontSize: "13px", fontWeight: 700, fontFamily: SANS, letterSpacing: "0.02em",
+                  opacity: isSaving ? 0.5 : 1, transition: "opacity 0.15s ease",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: active ? cfg.bg : BORDER, flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{cfg.label}</div>
-                  </div>
-                </div>
-                <span style={{
-                  fontSize: "10px", fontWeight: 700, padding: "3px 10px", borderRadius: 99,
-                  background: active ? cfg.bg : "#F0EDE8", color: active ? cfg.color : TSEC,
-                  fontFamily: SANS, letterSpacing: "0.06em",
-                }}>
-                  {isSaving ? "…" : active ? "ON" : "OFF"}
-                </span>
+                {isSaving ? "…" : active ? "✓" : "+"}
+                {cfg.label}
               </button>
             );
           })}

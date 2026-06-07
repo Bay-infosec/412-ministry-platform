@@ -14,6 +14,15 @@ const SYSTEM_GROUPS = [
       allProfiles.filter((p) => (p.tags || []).includes("board_member")),
   },
   {
+    key: "pastors",
+    name: "Pastors",
+    desc: "Members with the Pastor tag",
+    color: "#065F46",
+    textColor: "#D1FAE5",
+    getMembers: (allProfiles) =>
+      allProfiles.filter((p) => (p.tags || []).includes("pastor")),
+  },
+  {
     key: "public",
     name: "Public Chat",
     desc: "Everyone on the platform",
