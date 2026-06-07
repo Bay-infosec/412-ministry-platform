@@ -544,7 +544,7 @@ function PrayerTopicsPage({ onNext }) {
   );
 }
 
-function ChecklistPage({ onFinish }) {
+function ChecklistPage({ onFinish, activeEvent }) {
   const [checked, setChecked] = useState({});
   const [saving, setSaving] = useState(false);
   const allChecked = CHECKLIST_ITEMS.every((item) => checked[item.id]);
@@ -560,6 +560,25 @@ function ChecklistPage({ onFinish }) {
       <StepBody>
         Complete these four items before the conference. You can return to this list anytime from the Event tab.
       </StepBody>
+
+      {/* Zoom training info */}
+      {activeEvent?.zoom_training_dates && (
+        <div style={{
+          background: NAVY, borderRadius: 14, padding: "1rem 1.25rem",
+          marginBottom: "1rem",
+        }}>
+          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+            Leader Zoom Training
+          </div>
+          <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", fontFamily: SANS, marginBottom: 2 }}>
+            {activeEvent.zoom_training_dates}
+          </div>
+          <div style={{ fontSize: "12px", color: "#B8C0D0", fontFamily: SANS }}>
+            Mandatory — mark the last item below once you have attended.
+          </div>
+        </div>
+      )}
+
       <Card style={{ padding: 0, overflow: "hidden", marginBottom: "0.75rem" }}>
         {CHECKLIST_ITEMS.map((item, i) => (
           <button
@@ -673,7 +692,7 @@ export default function OnboardingFlow({ data, onDone, onExit }) {
     <RequirementsPage key="req" onNext={next} />,
     <TeamRevealPage key="team" eventMember={eventMember} coLeader={coLeader} onNext={next} />,
     <PrayerTopicsPage key="prayer" onNext={next} />,
-    <ChecklistPage key="checklist" onFinish={handleFinish} />,
+    <ChecklistPage key="checklist" onFinish={handleFinish} activeEvent={activeEvent} />,
   ];
 
   return (
