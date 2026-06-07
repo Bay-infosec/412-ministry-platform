@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, BORDER, SERIF, SANS } from "../../lib/constants.js";
+import { NAVY, ORANGE, TSEC, BORDER, SERIF, SANS, GOLD } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel, Avatar } from "../../components/ui/index.js";
 
@@ -12,7 +12,7 @@ export default function CoordinatorView({ data, onBack }) {
     if (!activeEvent?.id || !profile?.id) return;
     supabase
       .from("event_members")
-      .select("id, team_number, ministry, event_role, profiles!event_members_profile_id_fkey(full_name, photo_url)")
+      .select("id, team_number, ministry, event_role, onboarding_visited, onboarding_completed, profiles!event_members_profile_id_fkey(full_name, photo_url)")
       .eq("event_id", activeEvent.id)
       .eq("coordinator_id", profile.id)
       .neq("event_role", "coordinator")
@@ -83,6 +83,12 @@ export default function CoordinatorView({ data, onBack }) {
                   const name = m.profiles?.full_name || "";
                   const photoUrl = m.profiles?.photo_url || null;
                   const roleLabel = m.event_role === "coordinator" ? "Coordinator" : "Team Leader";
+                  const obStatus = m.onboarding_completed ? "complete" : m.onboarding_visited ? "in_progress" : "not_started";
+                  const obStyle = {
+                    complete:    { label: "Complete",     bg: "#D1FAE5", color: "#065F46" },
+                    in_progress: { label: "In progress",  bg: "#FEF3C7", color: "#92400E" },
+                    not_started: { label: "Not started",  bg: "#FEE2E2", color: "#991B1B" },
+                  }[obStatus];
                   return (
                     <div key={m.id} style={{
                       display: "flex", alignItems: "center", gap: 12,
@@ -90,9 +96,12 @@ export default function CoordinatorView({ data, onBack }) {
                       borderBottom: i < members.length - 1 ? `1px solid ${BORDER}` : "none",
                     }}>
                       <Avatar url={photoUrl} name={name} size={40} />
-                      <div>
+                      <div style={{ flex: 1 }}>
                         <div style={{ fontSize: "14px", fontWeight: 500, color: NAVY, fontFamily: SANS }}>{name}</div>
                         <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>{roleLabel}</div>
+                      </div>
+                      <div style={{ background: obStyle.bg, borderRadius: 20, padding: "3px 10px", fontSize: "11px", fontWeight: 600, color: obStyle.color, fontFamily: SANS, flexShrink: 0 }}>
+                        {obStyle.label}
                       </div>
                     </div>
                   );

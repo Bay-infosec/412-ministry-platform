@@ -176,10 +176,10 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
   }
 
   const onlineIds = new Set(onlineUsers.map((u) => u.user_id));
-  // Self always appears first; others follow (excluding self duplicate)
+  // Self always appears first; normalize full_name → name for presence objects
   const activeRow = [
     { user_id: myId, name: profile.full_name, photo_url: profile.photo_url, isSelf: true },
-    ...onlineUsers.filter((u) => u.user_id !== myId),
+    ...onlineUsers.filter((u) => u.user_id !== myId).map((u) => ({ ...u, name: u.full_name || u.name })),
   ];
 
   const filtered = search.trim()
@@ -247,7 +247,7 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
                     <Avatar url={u.photo_url} name={u.name} size={54} />
                     <div style={{ position: "absolute", bottom: 1, right: 1, width: 14, height: 14, borderRadius: "50%", background: "#22C55E", border: "2.5px solid #fff" }} />
                   </div>
-                  <span style={{ fontSize: "11px", fontWeight: 600, color: u.isSelf ? ORANGE : NAVY, fontFamily: SANS, maxWidth: 58, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 600, color: u.isSelf ? ORANGE : NAVY, fontFamily: SANS, maxWidth: 62, textAlign: "center", lineHeight: 1.3, wordBreak: "break-word" }}>
                     {u.isSelf ? "You" : (u.name || "").split(" ")[0]}
                   </span>
                 </button>
