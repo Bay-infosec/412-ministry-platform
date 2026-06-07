@@ -27,8 +27,17 @@ function fmtDate(d) {
 
 function daysUntil(d) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const diff = Math.ceil((d - today) / 86400000);
-  return diff;
+  return Math.ceil((d - today) / 86400000);
+}
+
+// Parse event.dates string (e.g. "August 5–9, 2026") → days until start
+function daysUntilEvent(dateStr) {
+  if (!dateStr) return null;
+  const m1 = dateStr.match(/([A-Za-z]+ \d+)[–\-]\d+,?\s*(\d{4})/);
+  const m2 = dateStr.match(/([A-Za-z]+ \d+,\s*\d{4})/);
+  const parsed = m1 ? new Date(`${m1[1]}, ${m1[2]}`) : m2 ? new Date(m2[1]) : null;
+  if (!parsed || isNaN(parsed)) return null;
+  return Math.ceil((parsed - new Date()) / 86400000);
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -64,7 +73,7 @@ export default function Home({
     if (!isCoordinator || !activeEvent || !profile?.id) return;
     supabase
       .from("event_members")
-      .select("id, team_number, onboarding_completed, event_role, profiles!event_members_profile_id_fkey(full_name, photo_url)")
+      .select("id, team_number, onboarding_completed, onboarding_visited, onboarding_step, event_role, profiles!event_members_profile_id_fkey(full_name, photo_url)")
       .eq("event_id", activeEvent.id)
       .eq("coordinator_id", profile.id)
       .neq("event_role", "coordinator")
@@ -171,7 +180,7 @@ export default function Home({
           marginBottom: "1rem",
         }}>
           <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.18em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 6 }}>
-            {onboardingComplete ? "Pre-Conference" : "Onboarding Invitation"}
+            Onboarding Invitation
           </div>
 
           {/* Onboarding step progress */}
@@ -181,13 +190,13 @@ export default function Home({
                 Onboarding
               </span>
               <span style={{ fontSize: "11px", color: "#B8C0D0", fontFamily: SANS }}>
-                {onboardingComplete ? "Complete" : `Step ${Math.min(onboardingStep + 1, TOTAL_STEPS)} of ${TOTAL_STEPS}`}
+                {onboardingComplete ? "Complete ✓" : `Step ${Math.min(onboardingStep + 1, TOTAL_STEPS)} of ${TOTAL_STEPS}`}
               </span>
             </div>
             <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.15)", overflow: "hidden" }}>
               <div style={{
                 height: "100%", borderRadius: 3,
-                background: onboardingComplete ? "#22C55E" : ORANGE,
+                background: ORANGE,
                 width: onboardingComplete ? "100%" : `${Math.round((onboardingStep / TOTAL_STEPS) * 100)}%`,
                 transition: "width 0.4s ease",
               }} />
@@ -207,7 +216,7 @@ export default function Home({
             <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.15)", overflow: "hidden" }}>
               <div style={{
                 height: "100%", borderRadius: 3,
-                background: checklistDone === CHECKLIST_ITEMS.length ? "#22C55E" : GOLD,
+                background: ORANGE,
                 width: `${Math.round((checklistDone / CHECKLIST_ITEMS.length) * 100)}%`,
                 transition: "width 0.4s ease",
               }} />
@@ -216,18 +225,16 @@ export default function Home({
 
           {/* Action buttons */}
           <div style={{ display: "flex", gap: 8 }}>
-            {!onboardingComplete && (
-              <button
-                onClick={onOpenOnboarding}
-                style={{
-                  flex: 1, background: ORANGE, color: "#fff", border: "none",
-                  borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 700,
-                  fontFamily: SANS, cursor: "pointer",
-                }}
-              >
-                {onboardingStep === 0 ? "Start Onboarding →" : "Continue →"}
-              </button>
-            )}
+            <button
+              onClick={onOpenOnboarding}
+              style={{
+                flex: 1, background: ORANGE, color: "#fff", border: "none",
+                borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 700,
+                fontFamily: SANS, cursor: "pointer",
+              }}
+            >
+              {onboardingComplete ? "Review →" : onboardingStep === 0 ? "Start →" : "Continue →"}
+            </button>
             <button
               onClick={onOpenMyTeam}
               style={{
@@ -242,30 +249,73 @@ export default function Home({
         </div>
       )}
 
-      {/* ── Event & upcoming info ───────────────────────────────────── */}
-      {(activeEvent || nextPrayer || nextMeeting) && (
+      {/* ── Active event card (same style as Event tab) ─────────────── */}
+      {activeEvent && (
+        <div style={{ background: NAVY, borderRadius: 16, padding: "1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", marginBottom: "0.25rem" }}>
+                Active Event
+              </div>
+              <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: "0.25rem" }}>
+                {activeEvent.name}
+              </div>
+              {activeEvent.dates && <div style={{ fontSize: "13px", color: "#B8C0D0" }}>{activeEvent.dates}</div>}
+              {activeEvent.location && <div style={{ fontSize: "13px", color: "#B8C0D0" }}>{activeEvent.location}</div>}
+            </div>
+            {(() => {
+              const d = daysUntilEvent(activeEvent.dates);
+              return d !== null && d >= 0 ? (
+                <div style={{ textAlign: "center", flexShrink: 0, marginLeft: 16 }}>
+                  {d === 0 ? (
+                    <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: ORANGE }}>It's here!</div>
+                  ) : (
+                    <>
+                      <div style={{ fontFamily: SERIF, fontSize: "42px", fontWeight: 600, color: "#fff", lineHeight: 1 }}>{d}</div>
+                      <div style={{ fontSize: "10px", color: "#B8C0D0", fontWeight: 600, letterSpacing: "0.06em" }}>{d === 1 ? "DAY" : "DAYS"}</div>
+                    </>
+                  )}
+                </div>
+              ) : null;
+            })()}
+          </div>
+          {activeEvent.fee && (
+            <div style={{ fontSize: "13px", color: "#B8C0D0", marginBottom: "0.75rem" }}>
+              Registration fee: <span style={{ color: GOLD, fontWeight: 600 }}>{activeEvent.fee}</span>
+            </div>
+          )}
+          {activeEvent.verse_text && (
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem" }}>
+              <div style={{ fontFamily: SERIF, fontSize: "14px", color: "#FFE066", lineHeight: 1.65, fontStyle: "italic", marginBottom: "0.25rem" }}>
+                "{activeEvent.verse_text}"
+              </div>
+              <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: GOLD, textTransform: "uppercase", fontFamily: SANS }}>
+                {activeEvent.verse}
+              </div>
+            </div>
+          )}
+          {activeEvent.registration_url && (
+            <a
+              href={activeEvent.registration_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "block", marginTop: "1rem", background: ORANGE, color: "#fff",
+                borderRadius: 10, padding: "11px 0", textAlign: "center",
+                fontSize: "14px", fontWeight: 700, fontFamily: SANS, textDecoration: "none",
+              }}
+            >
+              Register now →
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* ── Upcoming info rows ──────────────────────────────────────── */}
+      {(nextPrayer || nextMeeting) && (
         <div style={{ marginBottom: "1rem" }}>
           <SectionLabel>Upcoming</SectionLabel>
           <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden" }}>
-
-            {/* Active event */}
-            {activeEvent && (
-              <InfoRow
-                icon="📅"
-                label={activeEvent.name}
-                value={activeEvent.dates || "Dates TBD"}
-                accent={ORANGE}
-              />
-            )}
-
-            {/* Registration fee */}
-            {activeEvent?.fee && (
-              <InfoRow
-                icon="💰"
-                label="Registration Fee"
-                value={activeEvent.fee}
-              />
-            )}
 
             {/* Next prayer date */}
             {nextPrayer && (
@@ -289,32 +339,22 @@ export default function Home({
               />
             )}
           </div>
-
-          {/* Register button if event has registration URL */}
-          {activeEvent?.registration_url && (
-            <a
-              href={activeEvent.registration_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "block", marginTop: "0.625rem", background: ORANGE, color: "#fff",
-                borderRadius: 10, padding: "11px 0", textAlign: "center",
-                fontSize: "14px", fontWeight: 700, fontFamily: SANS, textDecoration: "none",
-              }}
-            >
-              Register now →
-            </a>
-          )}
         </div>
       )}
 
-      {/* ── Coordinator: team leaders' progress ────────────────────── */}
+      {/* ── Coordinator Dashboard ───────────────────────────────────── */}
       {isCoordinator && teamProgress.length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
-          <SectionLabel>Your Leaders' Progress</SectionLabel>
+          <SectionLabel>Coordinator Dashboard</SectionLabel>
           <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden" }}>
             {teamProgress.map((m, i) => {
+              // dot color: orange = done, light yellow = opened/in-progress, gray = not started
               const done = m.onboarding_completed;
+              const opened = !done && (m.onboarding_visited || (m.onboarding_step ?? 0) > 0);
+              const dotColor = done ? ORANGE : opened ? "#FEF08A" : "#D1D5DB";
+              const dotBorder = done ? ORANGE : opened ? "#EAB308" : "#9CA3AF";
+              const statusLabel = done ? "Complete" : opened ? "In progress" : "Not started";
+              const statusColor = done ? ORANGE : opened ? "#92400E" : TSEC;
               return (
                 <div
                   key={m.id}
@@ -324,31 +364,38 @@ export default function Home({
                     borderBottom: i < teamProgress.length - 1 ? `1px solid ${BORDER}` : "none",
                   }}
                 >
+                  {/* Status dot */}
+                  <div style={{
+                    width: 12, height: 12, borderRadius: "50%", flexShrink: 0,
+                    background: dotColor, border: `2px solid ${dotBorder}`,
+                  }} />
+
+                  {/* Avatar */}
                   <div style={{
                     width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-                    background: m.profiles?.photo_url ? "transparent" : BG,
-                    overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+                    background: BG, overflow: "hidden",
+                    display: "flex", alignItems: "center", justifyContent: "center",
                     border: `1px solid ${BORDER}`,
                   }}>
                     {m.profiles?.photo_url
                       ? <img src={m.profiles.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       : <span style={{ fontFamily: SERIF, fontSize: 14, color: TSEC }}>{m.profiles?.full_name?.charAt(0)}</span>}
                   </div>
+
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "13px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
+                    <div style={{ fontSize: "13px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: 1 }}>
                       {m.profiles?.full_name}
                     </div>
                     <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>
                       Team {m.team_number}
                     </div>
                   </div>
+
                   <span style={{
-                    fontSize: "11px", fontWeight: 700, fontFamily: SANS,
-                    color: done ? "#059669" : ORANGE,
-                    background: done ? "#DCFCE7" : "#FFF7ED",
-                    borderRadius: 20, padding: "3px 10px", flexShrink: 0,
+                    fontSize: "11px", fontWeight: 600, fontFamily: SANS,
+                    color: statusColor, flexShrink: 0,
                   }}>
-                    {done ? "Done ✓" : "In progress"}
+                    {statusLabel}
                   </span>
                 </div>
               );
