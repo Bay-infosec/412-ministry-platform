@@ -186,7 +186,7 @@ export default function App() {
           if (eventMember.co_leader_id) {
             const { data: cl2 } = await supabase
               .from("profiles")
-              .select("full_name, phone, photo_url, churches(name)")
+              .select("full_name, phone, email, photo_url, ministry_role, churches(name)")
               .eq("id", eventMember.co_leader_id)
               .single();
             coLeader = cl2 || null;

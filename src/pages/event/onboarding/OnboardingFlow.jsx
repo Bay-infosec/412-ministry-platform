@@ -26,16 +26,6 @@ function PrimaryBtn({ children, onClick, disabled, gold }) {
   );
 }
 
-function StepTag({ current, total }) {
-  return (
-    <div style={{
-      fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em",
-      color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.5rem",
-    }}>
-      Step {current} of {total}
-    </div>
-  );
-}
 
 function StepTitle({ children }) {
   return (
@@ -62,59 +52,51 @@ function StepBody({ children }) {
 // ── Steps ─────────────────────────────────────────────────────────────────────
 
 function WelcomePage({ profile, activeEvent, onNext }) {
-  const firstName = profile?.full_name?.split(" ")[0] || "Friend";
+  const fullName = profile?.full_name || "Friend";
   return (
     <>
-      {/* Logo */}
-      <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
-        <img src="/logo.png" alt="412 Ministry" style={{ height: 96, width: "auto" }} />
-      </div>
-
       {/* Hero card */}
       <div style={{
-        background: NAVY, borderRadius: 24, padding: "2rem 1.75rem 1.75rem",
-        marginBottom: "1.5rem", textAlign: "center",
+        background: NAVY, borderRadius: 24, padding: "1.5rem 1.75rem 1.75rem",
+        marginBottom: "1.5rem",
       }}>
-        <div style={{
-          fontSize: "10px", fontWeight: 700, letterSpacing: "0.22em",
-          color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.25rem",
-        }}>
-          {activeEvent?.name || "Set Apart 2026"}
+        {/* Top row: event name left, logo right */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+          <div style={{
+            fontSize: "10px", fontWeight: 700, letterSpacing: "0.22em",
+            color: GOLD, textTransform: "uppercase", fontFamily: SANS,
+          }}>
+            {activeEvent?.name || "Set Apart 2026"}
+          </div>
+          <img src="/logo.png" alt="412 Ministry" style={{ height: 34, width: "auto" }} />
         </div>
-        <div style={{
-          fontFamily: SERIF, fontSize: "52px", fontWeight: 600,
-          color: "#fff", lineHeight: 1.05, marginBottom: "0.25rem",
-        }}>
-          {firstName}.
-        </div>
-        <div style={{
-          fontFamily: SERIF, fontSize: "22px", fontWeight: 400,
-          color: GOLD, fontStyle: "italic", marginBottom: "1.5rem",
-        }}>
-          Welcome.
-        </div>
-        {activeEvent?.verse ? (
+
+        <div style={{ textAlign: "center" }}>
+          <div style={{
+            fontFamily: SERIF, fontSize: "46px", fontWeight: 600,
+            color: "#fff", lineHeight: 1.05, marginBottom: "0.25rem",
+          }}>
+            {fullName}.
+          </div>
+          <div style={{
+            fontFamily: SERIF, fontSize: "22px", fontWeight: 400,
+            color: GOLD, fontStyle: "italic", marginBottom: "1.5rem",
+          }}>
+            Welcome.
+          </div>
           <div style={{
             borderTop: "1px solid rgba(255,255,255,0.12)",
             paddingTop: "1.25rem",
             fontFamily: SERIF, fontSize: "14px", fontStyle: "italic",
             color: "#B8C0D0", lineHeight: 1.75,
           }}>
-            "{activeEvent.verse}"
+            {activeEvent?.verse
+              ? `"${activeEvent.verse}"`
+              : '"You did not choose me, but I chose you."'}
           </div>
-        ) : (
-          <div style={{
-            borderTop: "1px solid rgba(255,255,255,0.12)",
-            paddingTop: "1.25rem",
-            fontFamily: SERIF, fontSize: "14px", fontStyle: "italic",
-            color: "#B8C0D0", lineHeight: 1.75,
-          }}>
-            "You did not choose me, but I chose you."
-          </div>
-        )}
+        </div>
       </div>
 
-      <StepTag current={1} total={6} />
       <StepBody>
         We are so glad you are here. This onboarding walks you through everything
         you need to know before{" "}
@@ -134,7 +116,6 @@ function PersonalMessagePage({ eventMember, onNext }) {
   const message = eventMember?.personal_message;
   return (
     <>
-      <StepTag current={2} total={6} />
       <StepTitle>A word for you.</StepTitle>
       {message ? (
         <div style={{
@@ -207,7 +188,6 @@ function EventInfoPage({ activeEvent, eventMember, onNext }) {
 
   return (
     <>
-      <StepTag current={3} total={6} />
       <StepTitle>Event overview.</StepTitle>
       <StepBody>Here is everything you need to know about Set Apart 2026.</StepBody>
       <Card style={{ padding: 0, overflow: "hidden", marginBottom: "1rem" }}>
@@ -256,7 +236,6 @@ function RequirementsPage({ onNext }) {
 
   return (
     <>
-      <StepTag current={4} total={6} />
       <StepTitle>Requirements.</StepTitle>
       <StepBody>Please read and acknowledge the following before continuing.</StepBody>
       <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1rem" }}>
@@ -354,7 +333,6 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
         .pulse-orb   { animation: pulse-orb 2s ease-in-out infinite; }
       `}</style>
 
-      <StepTag current={5} total={6} />
       <StepTitle>Your team.</StepTitle>
       <StepBody>You have been assigned to lead one of the twelve teams at Set Apart 2026.</StepBody>
 
@@ -463,10 +441,45 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
             {coLeader.full_name}
           </div>
           {coLeader.ministry_role && (
-            <div style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS, marginBottom: "1.5rem" }}>
+            <div style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS, marginBottom: "1.25rem" }}>
               {coLeader.ministry_role}
             </div>
           )}
+
+          {/* Contact info rows */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: "1.25rem" }}>
+            {coLeader.phone && (
+              <a href={`tel:${coLeader.phone}`} style={{ textDecoration: "none" }}>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px",
+                }}>
+                  <span style={{ fontSize: "16px" }}>📞</span>
+                  <span style={{ fontSize: "13px", color: "#fff", fontFamily: SANS }}>{coLeader.phone}</span>
+                </div>
+              </a>
+            )}
+            {coLeader.email && (
+              <a href={`mailto:${coLeader.email}`} style={{ textDecoration: "none" }}>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px",
+                }}>
+                  <span style={{ fontSize: "16px" }}>✉️</span>
+                  <span style={{ fontSize: "13px", color: "#fff", fontFamily: SANS }}>{coLeader.email}</span>
+                </div>
+              </a>
+            )}
+            {coLeader.churches?.name && (
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10,
+                background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px",
+              }}>
+                <span style={{ fontSize: "16px" }}>⛪</span>
+                <span style={{ fontSize: "13px", color: "#fff", fontFamily: SANS }}>{coLeader.churches.name}</span>
+              </div>
+            )}
+          </div>
 
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: "1.25rem" }}>
             <div style={{ fontFamily: SERIF, fontSize: "16px", color: GOLD, fontStyle: "italic", lineHeight: 1.65 }}>
@@ -501,7 +514,6 @@ function ChecklistPage({ onFinish }) {
 
   return (
     <>
-      <StepTag current={6} total={6} />
       <StepTitle>Before you go.</StepTitle>
       <StepBody>
         Complete these four items before the conference. You can return to this list anytime from the Event tab.
@@ -551,18 +563,24 @@ function ChecklistPage({ onFinish }) {
   );
 }
 
-// ── Progress bar ──────────────────────────────────────────────────────────────
+// ── Progress dots ─────────────────────────────────────────────────────────────
 
-function ProgressBar({ step, total }) {
+function ProgressDots({ step, total }) {
   return (
-    <div style={{ display: "flex", gap: 6, marginBottom: "1.5rem" }}>
-      {Array.from({ length: total }).map((_, i) => (
-        <div key={i} style={{
-          flex: 1, height: 3, borderRadius: 2,
-          background: i <= step ? NAVY : BORDER,
-          transition: "background 0.3s",
-        }} />
-      ))}
+    <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: "1.5rem" }}>
+      {Array.from({ length: total }).map((_, i) => {
+        const isCurrent = i === step;
+        const isPast = i < step;
+        return (
+          <div key={i} style={{
+            height: 8,
+            width: isCurrent ? 24 : 8,
+            borderRadius: 4,
+            background: isCurrent ? ORANGE : isPast ? NAVY : BORDER,
+            transition: "all 0.3s ease",
+          }} />
+        );
+      })}
     </div>
   );
 }
@@ -634,7 +652,7 @@ export default function OnboardingFlow({ data, onDone, onExit }) {
           Save & exit
         </button>
       </div>
-      <ProgressBar step={step} total={6} />
+      <ProgressDots step={step} total={6} />
       <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: "70vh" }}>
         {steps[step]}
       </div>
