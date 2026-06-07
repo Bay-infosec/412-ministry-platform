@@ -249,12 +249,60 @@ src/
 | 2026-06-07 | Account 1 | Built Chat (Supabase Realtime, grouped messages, emoji, presence strip with names + green dots). Admin EventDetail: personal message editor (per-person speech bubble, textarea + preview, saves to event_members.personal_message), coordinator assignment UI (coordinatorMap, team headers show coord name, Change modal updates all leaders in team). Fixed PostgREST ambiguous FK join bug across EventDetail/CoLeaderPairing/CoordinatorView (profiles!event_members_profile_id_fkey). Fixed RLS blocking admin from inserting event_checklist for new members (checklist_admin_all policy). Fixed co-leader showing raw UUID (added churches join). Fixed call button overflow in MyTeam. Added MyChecklist standalone page. Added Save & exit to OnboardingFlow (saves step to DB). Moved checklist items to shared lib/checklist.js. Added dismissible onboarding banner X button. |
 | 2026-06-07 | Account 1 | App-wide presence: moved presence channel from Chat.jsx to App.jsx — users show online anywhere in platform. Chat unread badge: localStorage-based read tracking + realtime new-message subscription sets chatUnread flag. Home chat button redesigned as navy pill with "Chat" label + red dot (unread) / green dot (others online). Chat.jsx now accepts onlineUsers as prop, removed duplicate presence channel. Deployed to Vercel via git push. |
 | 2026-06-07 | Account 1 | "Not started" logic for co-leader progress in MyTeam and CoordinatorView (uses onboarding_visited, not onboarding_step which defaults to 1). Profile tagging system: PROFILE_TAGS (board_member, pastor stored in DB tags[]) + ROLE_TAGS (derived from platform_role/event_role) + ProfileTags component. Profile setup step after first password change (photo upload, nickname). Login: Enter key submits form. Chat→Profile back button. PrayerChain full redesign (collapsible schedule, team dates highlighted, prayer topics). Admin SystemGroups: provision 4 system group chats (412 Board, Public, Event Group, Admin+Mods) with sync. EventHome: Team Chat shortcut row. Custom dm_messages table (fixed DMs not sending — internal messages table has NOT NULL constraints). Messenger: nicknames in active strip, conversation list, thread header. CoordinatorView: "Not started" badge. FieldGuide: offline download button. App: visibilitychange auto-refresh (30s debounce). Chat HomeView: Realtime subscription refreshes conversation list on new DMs. Deployed. |
+| 2026-06-07 | Account 1 | Platform architecture v2 — full security + multi-event foundation. DB: added moderator_assignments (event-scoped moderators), audit_log, event_attendance, events.allow_join_requests. Fixed critical profiles_admin RLS bug (admin couldn't update other profiles). Replaced blanket open-read policies on events/event_members/conversation_participants with proper membership-scoped policies. Scoped moderator data access to assigned events only. Added 15 DB indexes. App: moderator loadData now fetches only assigned events/members/announcements; realtime announcements subscription; Events Browser page (public events + join requests); BottomNav Events tab. PWA: manifest.json + full iOS/Android meta tags. New admin screens: Moderator Assignments (assign mods to events, writes audit log), Audit Log (action history grouped by date). AnnouncementEditor: EmailJS email-toggle on publish. |
+
+---
+
+## Architecture Notes (updated)
+
+### Moderator scoping (NEW)
+- Moderators are assigned to specific events via `moderator_assignments` table
+- In loadData: if moderator (not admin), fetches assigned event IDs first, then scopes all subsequent queries to those IDs
+- Admin: sees all events, all members, all announcements (unchanged)
+- RLS enforces this at DB level too — moderators cannot query data outside their assignments
+
+### Event lifecycle
+- `events.status`: upcoming → active → archived (also: inactive)
+- `events.visible_to_public`: true = appears in Events Browser for all users
+- `events.allow_join_requests`: true = users can submit join requests from Events Browser
+- Delete: not implemented intentionally — archive instead (preserves history)
+
+### Folder structure
+```
+src/pages/
+├── event/       # Current event participation (singular — what you're in)
+├── events/      # Event discovery (plural — what you can join)
+│   └── EventsBrowser.jsx
+└── admin/
+    ├── moderators/  # ModeratorAssignments.jsx
+    └── audit/       # AuditLog.jsx
+```
+
+### Key tables
+| Table | Purpose |
+|-------|---------|
+| moderator_assignments | moderator_id + event_id — scopes mod access |
+| audit_log | actor, action, target, details, created_at |
+| event_attendance | event_id + profile_id + date — daily check-in |
+| dm_messages | All DMs (NOT the internal messages table — that has broken NOT NULL constraints) |
+
+### RLS summary (post-v2)
+- profiles: own row + admin-all (fixed — admins can now update others)
+- events: public OR event_member OR admin OR assigned_moderator
+- event_members: same-event members + admin + assigned_moderator
+- announcements: published + event_member OR admin/moderator-for-event
+- dm_messages: sender + receiver + group participants
+- conversation_participants: own rows + co-participants (no longer fully open)
 
 ---
 
 ## Next Up
 
-1. **Admin: Settings** — ChurchList (view/add/edit churches + approve pending church_name_custom submissions), TrainingMaterials (add/edit/reorder/publish)
+1. **Design refresh** — platform is too dark; planned for future session
+2. **Loading screen animation** — logo with animated ring + "Loading..." text
+3. **Attendance UI** — check-in screen for coordinators/admins per event day
+4. **Rotate Supabase API keys** — service_role key was in a shared Claude.pdf doc (security)
+5. **Push notifications** — Web Push API + service worker for messages/announcements when app is closed
 
 ---
 
