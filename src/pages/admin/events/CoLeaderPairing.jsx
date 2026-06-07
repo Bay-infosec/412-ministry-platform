@@ -21,7 +21,7 @@ export default function CoLeaderPairing({ event, data, onRefresh, onToast }) {
     setLoading(true);
     const { data: rows } = await supabase
       .from("event_members")
-      .select("*, profiles(id, full_name, photo_url, ministry_role)")
+      .select("*, profiles!event_members_profile_id_fkey(id, full_name, photo_url, ministry_role)")
       .eq("event_id", event.id)
       .eq("event_role", "leader")
       .order("team_number");

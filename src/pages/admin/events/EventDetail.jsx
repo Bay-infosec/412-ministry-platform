@@ -24,7 +24,7 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
     setLoading(true);
     const { data: rows } = await supabase
       .from("event_members")
-      .select("*, profiles(id, full_name, photo_url, email, platform_role)")
+      .select("*, profiles!event_members_profile_id_fkey(id, full_name, photo_url, email, platform_role)")
       .eq("event_id", event.id)
       .order("team_number");
     setMembers(rows || []);

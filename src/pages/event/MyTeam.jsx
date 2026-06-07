@@ -3,7 +3,7 @@ import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel, Avatar } from "../../components/ui/index.js";
 
 export default function MyTeam({ data, onBack }) {
-  const { eventMember, coLeader, coordinator, eventChecklist, profile } = data;
+  const { eventMember, coLeader, coordinator, profile } = data;
 
   if (!eventMember) {
     return (
@@ -15,15 +15,6 @@ export default function MyTeam({ data, onBack }) {
       </Shell>
     );
   }
-
-  const checklist = [
-    { id: "field_guide", label: "Read the Field Guide" },
-    { id: "prayer_chain", label: "Review the Prayer Chain" },
-    { id: "contact_coleader", label: "Connect with your co-leader" },
-    { id: "confirm_attendance", label: "Confirm your attendance" },
-  ];
-
-  const completedCount = checklist.filter(i => eventChecklist?.[i.id]).length;
 
   return (
     <Shell withNav>
@@ -79,61 +70,28 @@ export default function MyTeam({ data, onBack }) {
       )}
 
       {/* Coordinator */}
-      <SectionLabel>Your Coordinator</SectionLabel>
-      {coordinator ? (
-        <Card style={{ padding: "1rem 1.25rem", marginBottom: "1rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.75rem" }}>
-            <Avatar url={coordinator.photo_url} name={coordinator.full_name} size={48} />
-            <div>
-              <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{coordinator.full_name}</div>
-              <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>Team Coordinator</div>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {coordinator.phone && (
-              <a href={`tel:${coordinator.phone}`} style={contactBtnStyle(NAVY)}>Call</a>
-            )}
-            {coordinator.email && (
-              <a href={`mailto:${coordinator.email}`} style={contactBtnStyle("transparent", NAVY, BORDER)}>Email</a>
-            )}
-          </div>
-        </Card>
-      ) : (
-        <Card style={{ padding: "1rem 1.25rem", marginBottom: "1rem", textAlign: "center" }}>
-          <span style={{ fontSize: "13px", color: TSEC, fontFamily: SANS }}>Coordinator info coming soon.</span>
-        </Card>
-      )}
-
-      {/* Checklist */}
-      <SectionLabel>Pre-Conference Checklist ({completedCount}/{checklist.length})</SectionLabel>
-      <Card style={{ padding: 0, overflow: "hidden", marginBottom: "1rem" }}>
-        {checklist.map((item, i) => {
-          const done = !!eventChecklist?.[item.id];
-          return (
-            <div key={item.id} style={{
-              display: "flex", alignItems: "center", gap: 14,
-              padding: "1rem 1.25rem",
-              borderBottom: i < checklist.length - 1 ? `1px solid ${BORDER}` : "none",
-            }}>
-              <div style={{
-                width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
-                border: `2px solid ${done ? ORANGE : BORDER}`,
-                background: done ? ORANGE : "transparent",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                {done && <span style={{ color: "#fff", fontSize: 11 }}>✓</span>}
+      {coordinator && (
+        <>
+          <SectionLabel>Your Coordinator</SectionLabel>
+          <Card style={{ padding: "1rem 1.25rem", marginBottom: "1rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.75rem" }}>
+              <Avatar url={coordinator.photo_url} name={coordinator.full_name} size={48} />
+              <div>
+                <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{coordinator.full_name}</div>
+                <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>Team Coordinator</div>
               </div>
-              <span style={{
-                fontSize: "14px", fontFamily: SANS,
-                color: done ? TSEC : NAVY,
-                textDecoration: done ? "line-through" : "none",
-              }}>
-                {item.label}
-              </span>
             </div>
-          );
-        })}
-      </Card>
+            <div style={{ display: "flex", gap: 8 }}>
+              {coordinator.phone && (
+                <a href={`tel:${coordinator.phone}`} style={contactBtnStyle(NAVY)}>Call</a>
+              )}
+              {coordinator.email && (
+                <a href={`mailto:${coordinator.email}`} style={contactBtnStyle("transparent", NAVY, BORDER)}>Email</a>
+              )}
+            </div>
+          </Card>
+        </>
+      )}
     </Shell>
   );
 }
