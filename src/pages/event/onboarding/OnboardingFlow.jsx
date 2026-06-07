@@ -66,7 +66,7 @@ function WelcomePage({ profile, activeEvent, onNext }) {
     <>
       {/* Logo */}
       <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
-        <img src="/logo.png" alt="412 Ministry" style={{ height: 60, width: "auto" }} />
+        <img src="/logo.png" alt="412 Ministry" style={{ height: 96, width: "auto" }} />
       </div>
 
       {/* Hero card */}

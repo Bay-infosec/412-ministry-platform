@@ -14,7 +14,7 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat }) {
     <Shell withNav>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"1.5rem" }}>
         <div>
-          <img src="/logo.png" alt="412 Ministry" style={{ height:28, width:"auto", display:"block", marginBottom:6 }} />
+          <img src="/logo.png" alt="412 Ministry" style={{ height:48, width:"auto", display:"block", marginBottom:6 }} />
           <div style={{ fontFamily:SERIF, fontSize:"26px", fontWeight:600, color:NAVY, lineHeight:1.2 }}>Hi {displayName}.</div>
         </div>
         <button
