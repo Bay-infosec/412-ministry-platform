@@ -248,6 +248,8 @@ function EventForm({ type, onBack, onSaved, onToast }) {
     registration_url: "", zoom_url: "", description: "",
     audience: "all",
     has_teams: type.key === "youth_conference",
+    visible_to_public: false,
+    allow_join_requests: false,
   });
   const [busy, setBusy] = useState(false);
 
@@ -289,6 +291,8 @@ function EventForm({ type, onBack, onSaved, onToast }) {
       zoom_url: fields.zoom_url.trim() || null,
       description: fields.description.trim() || null,
       audience: fields.audience || "all",
+      visible_to_public: fields.visible_to_public,
+      allow_join_requests: fields.allow_join_requests,
     };
     const { error } = await supabase.from("events").insert(payload);
     setBusy(false);
@@ -408,6 +412,22 @@ function EventForm({ type, onBack, onSaved, onToast }) {
 
         {/* Audience — applies to all event types */}
         <AudienceSelect value={fields.audience} onChange={set("audience")} />
+
+        {/* Visibility */}
+        <ToggleRow
+          label="Visible to public"
+          sub="Show in the public Events browser"
+          value={fields.visible_to_public}
+          onChange={set("visible_to_public")}
+        />
+        {fields.visible_to_public && (
+          <ToggleRow
+            label="Allow join requests"
+            sub="Members can request to join this event"
+            value={fields.allow_join_requests}
+            onChange={set("allow_join_requests")}
+          />
+        )}
 
       </Card>
 

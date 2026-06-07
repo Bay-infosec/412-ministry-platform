@@ -98,10 +98,19 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
 
   useEffect(() => {
     const ch = supabase
-      .channel("home-dm-refresh")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "dm_messages" }, () => {
-        loadConversations();
-      })
+      .channel(`home-convos-${myId}`)
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "dm_messages",
+        filter: `receiver_id=eq.${myId}`,
+      }, loadConversations)
+      .on("postgres_changes", {
+        event: "UPDATE", schema: "public", table: "conversations",
+        filter: `participant_a=eq.${myId}`,
+      }, loadConversations)
+      .on("postgres_changes", {
+        event: "UPDATE", schema: "public", table: "conversations",
+        filter: `participant_b=eq.${myId}`,
+      }, loadConversations)
       .subscribe();
     return () => supabase.removeChannel(ch);
   }, []);
