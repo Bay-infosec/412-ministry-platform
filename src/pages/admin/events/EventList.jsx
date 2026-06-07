@@ -1,8 +1,8 @@
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 
 const STATUS_COLORS = {
-  active: { bg: "#E6F4EF", color: "#166534", label: "Active" },
-  upcoming: { bg: "#EEF2FC", color: "#1A4FBF", label: "Upcoming" },
+  active:   { bg: "#E6F4EF", color: "#166534", label: "Active" },
+  inactive: { bg: "#FEF3C7", color: "#92400E", label: "Inactive" },
   archived: { bg: "#F3F4F6", color: "#6B7280", label: "Archived" },
 };
 
@@ -18,7 +18,7 @@ export default function EventList({ data, onSelect }) {
   }
 
   const sorted = [...allEvents].sort((a, b) => {
-    const order = { active: 0, upcoming: 1, archived: 2 };
+    const order = { active: 0, inactive: 1, archived: 2 };
     return (order[a.status] ?? 3) - (order[b.status] ?? 3);
   });
 

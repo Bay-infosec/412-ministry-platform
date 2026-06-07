@@ -156,6 +156,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
               data={data}
               onRefresh={onRefresh}
               onToast={showToast}
+              onBack={() => nav("events.list")}
             />
           )}
           {screen === "events.pairing" && selectedEvent && (

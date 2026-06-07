@@ -3,7 +3,7 @@ import { supabase } from "../../../lib/supabase.js";
 import { NAVY, ORANGE, TSEC, BORDER, BG, SANS, SERIF } from "../../../lib/constants.js";
 import { Avatar, Badge, Modal, SectionLabel } from "../../../components/ui/index.js";
 
-export default function EventDetail({ event, data, onRefresh, onToast }) {
+export default function EventDetail({ event, data, onRefresh, onToast, onBack }) {
   const { allProfiles } = data;
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,6 +18,11 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
   const [addRole, setAddRole] = useState("leader");
   const [archiveModal, setArchiveModal] = useState(false);
   const [archiving, setArchiving] = useState(false);
+  const [publishModal, setPublishModal] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -97,6 +102,44 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
     onRefresh();
   }
 
+  async function publishEvent() {
+    setPublishing(true);
+    // Archive any currently active event first
+    await supabase.from("events").update({ status: "archived" }).eq("status", "active");
+    await supabase.from("events").update({ status: "active" }).eq("id", event.id);
+    setPublishing(false);
+    setPublishModal(false);
+    onToast(`${event.name} is now the active event.`);
+    onRefresh();
+    onBack?.();
+  }
+
+  async function duplicateEvent() {
+    setDuplicating(true);
+    const { id, created_at, status, ...fields } = event;
+    await supabase.from("events").insert({ ...fields, status: "inactive" });
+    setDuplicating(false);
+    onToast(`Duplicated "${event.name}" as inactive.`);
+    onRefresh();
+  }
+
+  async function deleteEvent() {
+    setDeleting(true);
+    const { data: memberRows } = await supabase
+      .from("event_members").select("id").eq("event_id", event.id);
+    if (memberRows?.length) {
+      await supabase.from("event_checklist")
+        .delete().in("event_member_id", memberRows.map((m) => m.id));
+    }
+    await supabase.from("event_members").delete().eq("event_id", event.id);
+    await supabase.from("events").delete().eq("id", event.id);
+    setDeleting(false);
+    setDeleteModal(false);
+    onToast(`"${event.name}" deleted.`, "info");
+    onRefresh();
+    onBack?.();
+  }
+
   async function assignCoordinator(teamNumber, coordinatorProfileId) {
     setAssigningCoord(true);
     await supabase
@@ -127,20 +170,26 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
         {[event.dates, event.location].filter(Boolean).map((v, i) => (
           <div key={i} style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS }}>{v}</div>
         ))}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
-          <div style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS }}>
-            {members.length} enrolled · {event.team_count || "?"} teams
-          </div>
+        <div style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS, marginTop: 4 }}>
+          {members.length} enrolled · {event.team_count || "?"} teams
+        </div>
+        <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
+          {event.status === "inactive" && (
+            <button onClick={() => setPublishModal(true)} style={eventActionBtn("#22C55E")}>
+              Publish
+            </button>
+          )}
+          <button onClick={duplicateEvent} disabled={duplicating} style={eventActionBtn()}>
+            {duplicating ? "…" : "Duplicate"}
+          </button>
           {event.status === "active" && (
-            <button
-              onClick={() => setArchiveModal(true)}
-              style={{
-                background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8,
-                padding: "5px 12px", fontSize: "12px", fontWeight: 600,
-                color: "rgba(255,255,255,0.7)", cursor: "pointer", fontFamily: SANS,
-              }}
-            >
+            <button onClick={() => setArchiveModal(true)} style={eventActionBtn()}>
               Archive
+            </button>
+          )}
+          {event.status === "inactive" && (
+            <button onClick={() => setDeleteModal(true)} style={eventActionBtn("#F87171")}>
+              Delete
             </button>
           )}
         </div>
@@ -494,8 +543,41 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
           busy={archiving}
         />
       )}
+
+      {/* Publish confirmation */}
+      {publishModal && (
+        <Modal
+          title="Publish Event"
+          message={`Make "${event.name}" the active event? Any currently active event will be automatically archived.`}
+          confirmLabel="Publish"
+          onCancel={() => setPublishModal(false)}
+          onConfirm={publishEvent}
+          busy={publishing}
+        />
+      )}
+
+      {/* Delete confirmation */}
+      {deleteModal && (
+        <Modal
+          title="Delete Event"
+          message={`Permanently delete "${event.name}"? This cannot be undone. All member assignments and checklists for this event will be removed.`}
+          confirmLabel="Delete"
+          variant="danger"
+          onCancel={() => setDeleteModal(false)}
+          onConfirm={deleteEvent}
+          busy={deleting}
+        />
+      )}
     </div>
   );
+}
+
+function eventActionBtn(color = "rgba(255,255,255,0.55)") {
+  return {
+    background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8,
+    padding: "5px 12px", fontSize: "12px", fontWeight: 600,
+    color, cursor: "pointer", fontFamily: SANS,
+  };
 }
 
 const ONBOARDING_STATUS = {
