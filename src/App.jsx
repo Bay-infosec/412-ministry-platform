@@ -388,6 +388,11 @@ export default function App() {
             onDone={() => { loadData(); setPage(null); }}
           />
         )}
+        {tab === "event" && page === "myteam" && <MyTeam data={data} onBack={() => setPage(null)} />}
+        {tab === "event" && page === "prayer_chain" && <PrayerChain data={data} onBack={() => setPage(null)} />}
+        {tab === "event" && page === "the_four" && <TheFour data={data} onBack={() => setPage(null)} />}
+        {tab === "event" && page === "field_guide" && <FieldGuide data={data} onBack={() => setPage(null)} />}
+
         {tab === "updates" && (
           <Updates
             data={data}
