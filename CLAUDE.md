@@ -180,7 +180,7 @@ src/
 │   │   ├── PrayerChain ✅ (pulls from DB, 12-team schedule Jul10–Aug2, Aug3 all pray, 7 prayer topics)
 │   │   ├── TheFour ✅
 │   │   ├── FieldGuide ✅ (real Google Drive URL)
-│   │   └── Chat ❌ (not built)
+│   │   └── Chat ✅ (Supabase Realtime, per-event room, emoji, presence strip with names)
 │   ├── updates/               — Updates ✅
 │   ├── profile/               — Profile ✅ (phone formatting, password validation, church Other option, history shows "Team leader")
 │   └── admin/                 ✅ BUILT
@@ -220,7 +220,7 @@ src/
 | Dismissible announcements on Home | 🟡 MEDIUM |
 | Zoom training link on Home | 🟡 MEDIUM |
 | Team name feature | 🟢 LOW |
-| Chat | 🟢 LOW (table ready) |
+| Chat | ✅ DONE |
 | Bible verse (api.bible) | 🟢 LOW |
 | Email notifications for announcements | 🟢 LOW |
 
@@ -246,14 +246,15 @@ src/
 | 2026-06-06 | Account 1 | Set up Claude Code. Cloned repo. Created .env. Connected Supabase + Vercel MCP. Fixed double EventHome import. Created CLAUDE.md. Read full v2 (LeaderOnboarding) codebase. Read Claude.pdf — captured complete architecture decisions. Updated CLAUDE.md. Added EmailJS vars to .env. Fixed FieldGuide URL. Fixed OnboardingFlow checklist table bug. |
 | 2026-06-07 | Account 1 | Built complete admin panel: AdminShell, PeopleList, PersonDetail, InviteFlow, EventList, EventDetail, CoLeaderPairing. Fixed Modal.jsx useState bug. Wired AdminShell into App.jsx. Deployed `reset-password` edge function. Build passes clean (118 modules). |
 | 2026-06-07 | Account 1 | Phone formatting (formatPhoneInput), password validation (validatePassword), church Other option in Profile. Home redesign: dismissible onboarding banner, rich conference card with countdown/fee/verse/register button. EventHome: same card. PrayerChain: full rewrite from DB, 12-team schedule, 7 prayer topics. Profile history: "Team leader". Admin Announcements: AnnouncementList + AnnouncementEditor with draft/pending/published flow wired into AdminShell. Fixed HTTP 500 recursive RLS policies on events/announcements/event_members. Removed Khaliunaa's stale event_members record. Verified all 12 teams fully paired with co-leaders and coordinators (co_leader_id stores profile_id). |
+| 2026-06-07 | Account 1 | Built Chat (Supabase Realtime, grouped messages, emoji, presence strip with names + green dots). Admin EventDetail: personal message editor (per-person speech bubble, textarea + preview, saves to event_members.personal_message), coordinator assignment UI (coordinatorMap, team headers show coord name, Change modal updates all leaders in team). Fixed PostgREST ambiguous FK join bug across EventDetail/CoLeaderPairing/CoordinatorView (profiles!event_members_profile_id_fkey). Fixed RLS blocking admin from inserting event_checklist for new members (checklist_admin_all policy). Fixed co-leader showing raw UUID (added churches join). Fixed call button overflow in MyTeam. Added MyChecklist standalone page. Added Save & exit to OnboardingFlow (saves step to DB). Moved checklist items to shared lib/checklist.js. Added dismissible onboarding banner X button. |
+| 2026-06-07 | Account 1 | App-wide presence: moved presence channel from Chat.jsx to App.jsx — users show online anywhere in platform. Chat unread badge: localStorage-based read tracking + realtime new-message subscription sets chatUnread flag. Home chat button redesigned as navy pill with "Chat" label + red dot (unread) / green dot (others online). Chat.jsx now accepts onlineUsers as prop, removed duplicate presence channel. Deployed to Vercel via git push. |
 
 ---
 
 ## Next Up
 
-1. **Admin: Settings** — ChurchList (view/add/edit churches + approve pending church_name_custom submissions), TrainingMaterials (add/edit/reorder/publish) — **IN PROGRESS**
-2. **Onboarding personal messages** — admin writes per-person welcome message stored in event_members
-3. **Chat** — Supabase Realtime, per-event room
+1. **Admin: Settings** — ChurchList (view/add/edit churches + approve pending church_name_custom submissions), TrainingMaterials (add/edit/reorder/publish)
+2. **Coordinator sees themselves in their own CoordinatorView** — exclude self (profile_id === coordinator_id) from member list
 
 ---
 
