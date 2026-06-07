@@ -72,6 +72,7 @@ export default function Login({ onLoggedIn }) {
       </div>
 
       <Card>
+        <div onKeyDown={(e) => { if (e.key === "Enter") submit(); }}>
         <Field
           label="EMAIL"
           type="email"
@@ -86,6 +87,7 @@ export default function Login({ onLoggedIn }) {
           onChange={setPassword}
           placeholder="Your password"
         />
+        </div>
         {err && (
           <div
             style={{

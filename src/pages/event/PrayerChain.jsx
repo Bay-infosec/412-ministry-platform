@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
-import { Card, SectionLabel, Avatar } from "../../components/ui/index.js";
+import { SectionLabel, Avatar } from "../../components/ui/index.js";
 
 const PRAYER_TOPICS = [
   "Pray for the young people you have not met yet. Ask God to prepare their hearts before you even arrive.",
@@ -25,8 +25,23 @@ function getPrayerDates(teamNumber) {
   return [d1, d2];
 }
 
+function getFullSchedule() {
+  const days = [];
+  for (let i = 0; i < NUM_TEAMS * 2; i++) {
+    const date = new Date(CHAIN_START);
+    date.setDate(date.getDate() + i);
+    days.push({ date, teamNum: (i % NUM_TEAMS) + 1 });
+  }
+  days.push({ date: CHAIN_ALL, teamNum: "all" });
+  return days;
+}
+
 function fmtShort(date) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function fmtWeekday(date) {
+  return date.toLocaleDateString("en-US", { weekday: "short" });
 }
 
 function fmtFull(date) {
@@ -47,16 +62,13 @@ function getNextPrayerDate(teamNumber) {
   return null;
 }
 
-function todayPrayerFocus(grouped) {
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const allDay = new Date(CHAIN_ALL); allDay.setHours(0, 0, 0, 0);
-  if (today.getTime() === allDay.getTime()) return "all";
-  for (const t of Object.keys(grouped).map(Number).filter(n => n > 0)) {
-    const [d1, d2] = getPrayerDates(t);
-    d1.setHours(0, 0, 0, 0); d2.setHours(0, 0, 0, 0);
-    if (today.getTime() === d1.getTime() || today.getTime() === d2.getTime()) return t;
-  }
-  return null;
+function ChevronIcon({ open, color = TSEC }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+      style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
 }
 
 export default function PrayerChain({ data, onBack }) {
@@ -64,7 +76,7 @@ export default function PrayerChain({ data, onBack }) {
   const myTeam = eventMember?.team_number;
 
   const [members, setMembers] = useState(null);
-  const [openTeams, setOpenTeams] = useState(new Set(myTeam ? [myTeam] : []));
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [topicsOpen, setTopicsOpen] = useState(false);
 
   useEffect(() => {
@@ -77,32 +89,16 @@ export default function PrayerChain({ data, onBack }) {
       .then(({ data: rows }) => setMembers(rows || []));
   }, [activeEvent?.id]);
 
-  const grouped = {};
-  (members || []).forEach((m) => {
-    const t = m.team_number ?? 0;
-    if (!grouped[t]) grouped[t] = [];
-    grouped[t].push(m);
-  });
-  const teams = Object.keys(grouped).map(Number).filter(n => n > 0).sort((a, b) => a - b);
-  const focus = members ? todayPrayerFocus(grouped) : null;
+  const myDates = myTeam ? getPrayerDates(myTeam) : null;
+  const schedule = getFullSchedule();
 
-  const toggleTeam = (t) => setOpenTeams((prev) => {
-    const next = new Set(prev);
-    next.has(t) ? next.delete(t) : next.add(t);
-    return next;
-  });
-
-  // My next prayer date countdown
-  const nextPrayer = getNextPrayerDate(myTeam);
-  const daysLeft = nextPrayer ? daysUntil(nextPrayer) : null;
+  // Today's team(s)
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const todayEntry = schedule.find((s) => { const d = new Date(s.date); d.setHours(0,0,0,0); return d.getTime() === today.getTime(); });
 
   return (
     <Shell withNav>
-      <button onClick={onBack} style={{
-        background: "none", border: "none", color: TSEC,
-        fontSize: "14px", cursor: "pointer", padding: "0 0 1rem 0",
-        fontFamily: SANS, display: "block",
-      }}>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: TSEC, fontSize: "14px", cursor: "pointer", padding: "0 0 1rem 0", fontFamily: SANS, display: "block" }}>
         ‹ Back
       </button>
 
@@ -129,95 +125,126 @@ export default function PrayerChain({ data, onBack }) {
         </div>
       </div>
 
-      {/* How it works */}
+      {/* ── MY PRAYER DAYS ─────────────────────────────────────────────────── */}
+      {myTeam && myDates && (
+        <div style={{ marginBottom: "1.25rem" }}>
+          <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.625rem" }}>
+            Team {myTeam} — Your Prayer Days
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            {myDates.map((date, idx) => {
+              const du = daysUntil(date);
+              const isPast = du < 0;
+              const isToday = du === 0;
+              return (
+                <div key={idx} style={{
+                  flex: 1, background: isToday ? ORANGE : NAVY, borderRadius: 14,
+                  padding: "1rem", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                }}>
+                  <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: isToday ? "#fff" : GOLD, textTransform: "uppercase", fontFamily: SANS }}>
+                    {fmtWeekday(date)}
+                  </div>
+                  <div style={{ fontFamily: SERIF, fontSize: "28px", fontWeight: 600, color: "#fff", lineHeight: 1 }}>
+                    {fmtShort(date).split(" ")[1]}
+                  </div>
+                  <div style={{ fontSize: "12px", color: isToday ? "#fff" : "#B8C0D0", fontFamily: SANS }}>
+                    {fmtShort(date).split(" ")[0]}
+                  </div>
+                  <div style={{ fontSize: "11px", fontWeight: 700, color: isToday ? "#fff" : GOLD, fontFamily: SANS, marginTop: 4 }}>
+                    {isToday ? "Today!" : isPast ? "Done" : `${du} day${du === 1 ? "" : "s"} away`}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── AUG 3 — ALL TOGETHER ───────────────────────────────────────────── */}
       <div style={{ marginBottom: "1.25rem" }}>
         <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.625rem" }}>
-          How it works
+          All Teams Together
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          {[
-            { n: "1", title: "Your two prayer days", body: "Each team is assigned two dates between July 10–21. On those days, the entire network is specifically praying with your team in mind." },
-            { n: "2", title: "Pray for others too", body: "When another team's day comes up, take a few minutes to pray for them. The schedule shows who is focused on which day — join in even when it isn't your turn." },
-            { n: "3", title: "August 3 — all together", body: "The chain closes with every team praying together on the same day, one week before the conference begins." },
-          ].map(({ n, title, body }) => (
-            <div key={n} style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "0.875rem 1.25rem", display: "flex", alignItems: "flex-start", gap: 14 }}>
-              <div style={{
-                width: 26, height: 26, borderRadius: "50%", background: NAVY, flexShrink: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "12px", fontWeight: 700, color: GOLD, fontFamily: SANS,
-              }}>{n}</div>
-              <div>
-                <div style={{ fontSize: "13px", fontWeight: 700, color: NAVY, fontFamily: SANS, marginBottom: 3 }}>{title}</div>
-                <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>{body}</div>
-              </div>
+        <div style={{
+          background: todayEntry?.teamNum === "all" ? "#EEF2FC" : "#fff",
+          border: `1.5px solid ${todayEntry?.teamNum === "all" ? "#1A4FBF" : BORDER}`,
+          borderRadius: 14, padding: "1rem 1.25rem",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <div>
+            <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: todayEntry?.teamNum === "all" ? "#1A4FBF" : NAVY }}>
+              August 3
+              {todayEntry?.teamNum === "all" && <span style={{ marginLeft: 8, fontSize: "10px", background: "#1A4FBF", color: "#fff", borderRadius: 10, padding: "2px 8px", fontFamily: SANS, fontWeight: 700 }}>TODAY</span>}
             </div>
-          ))}
+            <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 3 }}>
+              Every team prays together — one week before the conference
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: NAVY }}>
+              {daysUntil(CHAIN_ALL) > 0 ? daysUntil(CHAIN_ALL) : "—"}
+            </div>
+            {daysUntil(CHAIN_ALL) > 0 && <div style={{ fontSize: "10px", color: TSEC, fontFamily: SANS }}>days</div>}
+          </div>
         </div>
       </div>
 
-      {/* Everyone-can-pray note */}
-      <div style={{
-        background: "#FFF5EC", border: `1.5px solid ${ORANGE}44`, borderRadius: 12,
-        padding: "0.875rem 1.25rem", marginBottom: "1.25rem",
-      }}>
-        <div style={{ fontSize: "12px", fontWeight: 700, color: ORANGE, fontFamily: SANS, marginBottom: 4 }}>
-          A reminder
-        </div>
-        <div style={{ fontSize: "13px", color: NAVY, fontFamily: SANS, lineHeight: 1.6 }}>
-          Assigned days are focused days, not limits. Pray for every team, every day. The chain only works when everyone stays in it.
-        </div>
+      {/* ── FULL SCHEDULE — collapsible ────────────────────────────────────── */}
+      <div style={{ marginBottom: "1.25rem" }}>
+        <button
+          onClick={() => setScheduleOpen(o => !o)}
+          style={{
+            width: "100%", background: "#fff", border: `1px solid ${BORDER}`,
+            borderRadius: scheduleOpen ? "14px 14px 0 0" : 14,
+            padding: "0.875rem 1.25rem", cursor: "pointer", fontFamily: SANS,
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+          }}
+        >
+          <span style={{ fontSize: "13px", fontWeight: 700, color: NAVY }}>Full Prayer Schedule</span>
+          <ChevronIcon open={scheduleOpen} />
+        </button>
+        {scheduleOpen && (
+          <div style={{ border: `1px solid ${BORDER}`, borderTop: "none", borderRadius: "0 0 14px 14px", overflow: "hidden" }}>
+            {schedule.map((entry, i) => {
+              const isMyDay = myTeam && entry.teamNum === myTeam;
+              const isAll = entry.teamNum === "all";
+              const d = new Date(entry.date); d.setHours(0,0,0,0);
+              const isToday = d.getTime() === today.getTime();
+              return (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "0.75rem 1.25rem",
+                  borderBottom: i < schedule.length - 1 ? `1px solid ${BORDER}` : "none",
+                  background: isMyDay ? "#FFF5EC" : isAll ? "#F0F4FF" : "#fff",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 38, textAlign: "center" }}>
+                      <div style={{ fontSize: "10px", fontWeight: 600, color: TSEC, fontFamily: SANS, textTransform: "uppercase" }}>{fmtWeekday(entry.date)}</div>
+                      <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: isMyDay ? ORANGE : isAll ? "#1A4FBF" : NAVY, lineHeight: 1 }}>
+                        {fmtShort(entry.date).split(" ")[1]}
+                      </div>
+                      <div style={{ fontSize: "10px", color: TSEC, fontFamily: SANS }}>{fmtShort(entry.date).split(" ")[0]}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: "13px", fontWeight: isMyDay || isAll ? 700 : 500, color: isMyDay ? ORANGE : isAll ? "#1A4FBF" : NAVY, fontFamily: SANS }}>
+                        {isAll ? "All Teams" : `Team ${entry.teamNum}`}
+                      </div>
+                      {isMyDay && <div style={{ fontSize: "11px", color: ORANGE, fontFamily: SANS }}>Your prayer day</div>}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    {isToday && <span style={{ fontSize: "10px", background: ORANGE, color: "#fff", borderRadius: 10, padding: "2px 8px", fontWeight: 700, fontFamily: SANS }}>TODAY</span>}
+                    {isMyDay && !isToday && <div style={{ width: 8, height: 8, borderRadius: "50%", background: ORANGE }} />}
+                    {isAll && !isToday && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#1A4FBF" }} />}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* My prayer countdown (if in a team) */}
-      {myTeam && nextPrayer && (
-        <div style={{ background: NAVY, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1.25rem", display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ textAlign: "center", flexShrink: 0 }}>
-            {daysLeft === 0 ? (
-              <div style={{ fontFamily: SERIF, fontSize: "18px", color: ORANGE, fontWeight: 600 }}>Today!</div>
-            ) : (
-              <>
-                <div style={{ fontFamily: SERIF, fontSize: "40px", color: "#fff", fontWeight: 600, lineHeight: 1 }}>{daysLeft}</div>
-                <div style={{ fontSize: "10px", color: "#B8C0D0", fontWeight: 700, letterSpacing: "0.06em" }}>{daysLeft === 1 ? "DAY" : "DAYS"}</div>
-              </>
-            )}
-          </div>
-          <div>
-            <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 2 }}>
-              Team {myTeam} — Your Prayer Day
-            </div>
-            <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", fontFamily: SANS }}>
-              {fmtFull(nextPrayer)}
-            </div>
-            {(() => {
-              const [d1, d2] = getPrayerDates(myTeam);
-              const both = `${fmtShort(d1)} and ${fmtShort(d2)}`;
-              return <div style={{ fontSize: "11px", color: "#B8C0D0", fontFamily: SANS, marginTop: 2 }}>Both dates: {both}</div>;
-            })()}
-          </div>
-        </div>
-      )}
-
-      {/* Today's focus banner */}
-      {focus === "all" && (
-        <div style={{ background: "#EEF2FC", border: `1.5px solid #1A4FBF`, borderRadius: 12, padding: "0.75rem 1.25rem", marginBottom: "1.25rem", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: "20px" }}>🙏</span>
-          <div>
-            <div style={{ fontSize: "11px", fontWeight: 700, color: "#1A4FBF", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: SANS }}>Today — All Teams</div>
-            <div style={{ fontSize: "13px", color: NAVY, fontFamily: SANS, fontWeight: 600 }}>Everyone prays together today!</div>
-          </div>
-        </div>
-      )}
-      {typeof focus === "number" && focus !== myTeam && (
-        <div style={{ background: "#FFF5EC", border: `1.5px solid ${ORANGE}`, borderRadius: 12, padding: "0.75rem 1.25rem", marginBottom: "1.25rem", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: "20px" }}>🙏</span>
-          <div>
-            <div style={{ fontSize: "11px", fontWeight: 700, color: ORANGE, letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: SANS }}>Today's focus</div>
-            <div style={{ fontSize: "13px", color: NAVY, fontFamily: SANS, fontWeight: 600 }}>Pray for Team {focus}</div>
-          </div>
-        </div>
-      )}
-
-      {/* Prayer topics — collapsible */}
+      {/* ── WHAT TO PRAY FOR — collapsible ────────────────────────────────── */}
       <div style={{ marginBottom: "1.25rem" }}>
         <button
           onClick={() => setTopicsOpen(o => !o)}
@@ -229,10 +256,7 @@ export default function PrayerChain({ data, onBack }) {
           }}
         >
           <span style={{ fontSize: "13px", fontWeight: 700, color: NAVY }}>What to pray for</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-            style={{ transform: topicsOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
-            <path d="M6 9l6 6 6-6" />
-          </svg>
+          <ChevronIcon open={topicsOpen} />
         </button>
         {topicsOpen && (
           <div style={{ border: `1px solid ${BORDER}`, borderTop: "none", borderRadius: "0 0 14px 14px", overflow: "hidden" }}>
@@ -260,94 +284,11 @@ export default function PrayerChain({ data, onBack }) {
         )}
       </div>
 
-      {/* Team list — collapsible accordion */}
-      <SectionLabel>Prayer Schedule</SectionLabel>
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" }}>
-        {teams.map((teamNum) => {
-          const group = grouped[teamNum];
-          const isToday = focus === teamNum;
-          const isMyTeam = teamNum === myTeam;
-          const isOpen = openTeams.has(teamNum);
-          const [d1, d2] = getPrayerDates(teamNum);
-          const nextDate = getNextPrayerDate(teamNum);
-          const days = nextDate ? daysUntil(nextDate) : null;
-
-          return (
-            <div key={teamNum}>
-              <button
-                onClick={() => toggleTeam(teamNum)}
-                style={{
-                  width: "100%", textAlign: "left", background: isMyTeam ? NAVY : "#fff",
-                  border: `1px solid ${isToday ? ORANGE : isMyTeam ? NAVY : BORDER}`,
-                  borderRadius: isOpen ? "14px 14px 0 0" : 14,
-                  padding: "0.875rem 1.25rem", cursor: "pointer", fontFamily: SANS,
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ fontSize: "14px", fontWeight: 700, color: isMyTeam ? GOLD : isToday ? ORANGE : NAVY, fontFamily: SANS }}>
-                    Team {teamNum}
-                    {isMyTeam && <span style={{ marginLeft: 6, fontSize: "10px", background: GOLD, color: NAVY, borderRadius: 10, padding: "1px 7px", fontWeight: 700 }}>YOU</span>}
-                    {isToday && <span style={{ marginLeft: 6, fontSize: "10px", background: ORANGE, color: "#fff", borderRadius: 10, padding: "1px 7px", fontWeight: 700 }}>TODAY</span>}
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: "12px", color: isMyTeam ? "#B8C0D0" : TSEC, fontFamily: SANS }}>
-                      {fmtShort(d1)} · {fmtShort(d2)}
-                    </div>
-                    {days !== null && days >= 0 && (
-                      <div style={{ fontSize: "11px", color: isMyTeam ? GOLD : ORANGE, fontFamily: SANS, fontWeight: 600 }}>
-                        {days === 0 ? "Today" : `in ${days} day${days === 1 ? "" : "s"}`}
-                      </div>
-                    )}
-                  </div>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                    stroke={isMyTeam ? "#B8C0D0" : TSEC} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                    style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
-              </button>
-
-              {isOpen && (
-                <div style={{ border: `1px solid ${isMyTeam ? NAVY : BORDER}`, borderTop: "none", borderRadius: "0 0 14px 14px", overflow: "hidden" }}>
-                  {group.map((m, i) => {
-                    const name = m.profiles?.full_name || "";
-                    const photoUrl = m.profiles?.photo_url || null;
-                    const roleLabel = m.event_role === "coordinator" ? "Coordinator" : m.ministry || null;
-                    return (
-                      <div key={m.id} style={{
-                        display: "flex", alignItems: "center", gap: 12,
-                        padding: "0.875rem 1.25rem", background: "#fff",
-                        borderBottom: i < group.length - 1 ? `1px solid ${BORDER}` : "none",
-                      }}>
-                        <Avatar url={photoUrl} name={name} size={36} />
-                        <div>
-                          <div style={{ fontSize: "14px", fontWeight: 500, color: NAVY, fontFamily: SANS }}>{name}</div>
-                          {roleLabel && <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>{roleLabel}</div>}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {/* All Teams — Aug 3 */}
-        <div style={{
-          background: focus === "all" ? "#EEF2FC" : "#fff",
-          border: `1px solid ${focus === "all" ? "#1A4FBF" : BORDER}`,
-          borderRadius: 14, padding: "0.875rem 1.25rem",
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-        }}>
-          <div style={{ fontSize: "14px", fontWeight: 700, color: focus === "all" ? "#1A4FBF" : NAVY, fontFamily: SANS }}>
-            All Teams
-            {focus === "all" && <span style={{ marginLeft: 6, fontSize: "10px", background: "#1A4FBF", color: "#fff", borderRadius: 10, padding: "1px 7px" }}>TODAY</span>}
-          </div>
-          <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>Aug 3</div>
+      {/* Reminder */}
+      <div style={{ background: "#FFF5EC", border: `1.5px solid ${ORANGE}44`, borderRadius: 12, padding: "0.875rem 1.25rem", marginBottom: "1.5rem" }}>
+        <div style={{ fontSize: "12px", fontWeight: 700, color: ORANGE, fontFamily: SANS, marginBottom: 4 }}>A reminder</div>
+        <div style={{ fontSize: "13px", color: NAVY, fontFamily: SANS, lineHeight: 1.6 }}>
+          Assigned days are focused days, not limits. Pray for every team, every day. The chain only works when everyone stays in it.
         </div>
       </div>
 

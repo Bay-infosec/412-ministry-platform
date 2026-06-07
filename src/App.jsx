@@ -105,6 +105,7 @@ export default function App() {
   const [readIds, setReadIds] = useState([]);
   const [chatUnread, setChatUnread] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [profileReturnTo, setProfileReturnTo] = useState(null);
 
   const hardReset = async () => {
     try { await supabase.auth.signOut(); } catch {}
@@ -408,6 +409,7 @@ export default function App() {
 
   const openChat = () => {
     setChatUnread(false);
+    setProfileReturnTo(null);
     setPage("chat");
   };
 
@@ -488,6 +490,7 @@ export default function App() {
             onSaved={loadData}
             onSignOut={hardReset}
             onOpenAdmin={() => setPage("admin")}
+            onBack={profileReturnTo === "chat" ? () => { setProfileReturnTo(null); openChat(); } : null}
           />
         )}
         <BottomNav
@@ -510,7 +513,7 @@ export default function App() {
             data={data}
             onClose={() => setPage(null)}
             onlineUsers={onlineUsers}
-            onOpenProfile={() => { setPage(null); setTab("profile"); }}
+            onOpenProfile={() => { setProfileReturnTo("chat"); setPage(null); setTab("profile"); }}
           />
         )}
       </>

@@ -137,7 +137,7 @@ function PhotoCropModal({ file, onConfirm, onCancel }) {
   );
 }
 
-export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
+export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack }) {
   const { profile, history, churches } = data;
   const [editing, setEditing] = useState(false);
   const [nickname, setNickname] = useState(profile.nickname || "");
@@ -233,6 +233,11 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
   if (!editing) {
     return (
       <Shell withNav>
+        {onBack && (
+          <button onClick={onBack} style={{ background: "none", border: "none", color: TSEC, fontSize: "14px", cursor: "pointer", padding: "0 0 1rem 0", fontFamily: SANS, display: "block" }}>
+            ‹ Back to Messages
+          </button>
+        )}
         <div
           style={{
             display: "flex",
