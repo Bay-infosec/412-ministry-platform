@@ -69,10 +69,18 @@ function splitZoomDisplay(zoomStr) {
   return { main: parts[0], sub: parts.slice(1).join(" · ") };
 }
 
+function TileChevron() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginLeft: 12 }}>
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function Home({
-  data, onNavigate, onOpenChat, onOpenOnboarding, onOpenMyTeam, onOpenUpdates, chatUnread, onlineUsers,
+  data, onNavigate, onOpenChat, onOpenOnboarding, onOpenMyTeam, onOpenUpdates, onOpenEventPage, chatUnread, onlineUsers,
 }) {
   const { profile, eventMember, eventChecklist, announcements, unreadCount, activeEvent, trainingMaterials } = data;
 
@@ -88,7 +96,7 @@ export default function Home({
   useEffect(() => {
     supabase
       .from("events")
-      .select("id, name, type, dates, start_date, start_time, location, audience")
+      .select("id, name, type, dates, start_date, start_time, location, audience, zoom_url")
       .in("type", ["zoom_meeting", "board_meeting"])
       .neq("status", "archived")
       .order("start_date", { ascending: true, nullsFirst: false })
@@ -354,10 +362,14 @@ export default function Home({
               const days = daysUntil(nextPrayer);
               const isToday = days === 0;
               return (
-                <div style={{
-                  background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
-                  padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between",
-                }}>
+                <button
+                  onClick={() => onOpenEventPage?.("prayer_chain")}
+                  style={{
+                    width: "100%", textAlign: "left", cursor: "pointer", fontFamily: SANS,
+                    background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
+                    padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between",
+                  }}
+                >
                   <div>
                     <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
                       Your Team Prayer Day
@@ -369,17 +381,20 @@ export default function Home({
                       Team {eventMember?.team_number}
                     </div>
                   </div>
-                  <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 16 }}>
-                    {isToday ? (
-                      <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: ORANGE }}>Today!</div>
-                    ) : (
-                      <>
-                        <div style={{ fontFamily: SERIF, fontSize: "32px", fontWeight: 600, color: NAVY, lineHeight: 1 }}>{days}</div>
-                        <div style={{ fontSize: "10px", color: TSEC, fontWeight: 600, letterSpacing: "0.08em", fontFamily: SANS }}>{days === 1 ? "DAY" : "DAYS"}</div>
-                      </>
-                    )}
+                  <div style={{ display: "flex", alignItems: "center", flexShrink: 0, marginLeft: 16 }}>
+                    <div style={{ textAlign: "right" }}>
+                      {isToday ? (
+                        <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: ORANGE }}>Today!</div>
+                      ) : (
+                        <>
+                          <div style={{ fontFamily: SERIF, fontSize: "32px", fontWeight: 600, color: NAVY, lineHeight: 1 }}>{days}</div>
+                          <div style={{ fontSize: "10px", color: TSEC, fontWeight: 600, letterSpacing: "0.08em", fontFamily: SANS }}>{days === 1 ? "DAY" : "DAYS"}</div>
+                        </>
+                      )}
+                    </div>
+                    <TileChevron />
                   </div>
-                </div>
+                </button>
               );
             })()}
 
@@ -387,43 +402,69 @@ export default function Home({
             {activeEvent?.zoom_training_dates && (() => {
               const { main, sub } = splitZoomDisplay(activeEvent.zoom_training_dates);
               return (
-                <div style={{
-                  background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
-                  padding: "1rem 1.25rem",
-                }}>
-                  <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-                    Leader Zoom Training
+                <button
+                  onClick={() => onOpenEventPage?.(null)}
+                  style={{
+                    width: "100%", textAlign: "left", cursor: "pointer", fontFamily: SANS,
+                    background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
+                    padding: "1rem 1.25rem", display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+                      Leader Zoom Training
+                    </div>
+                    <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: 2 }}>
+                      {main}
+                    </div>
+                    {sub && <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 2 }}>{sub}</div>}
+                    <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
+                      Mandatory for all team leaders
+                    </div>
                   </div>
-                  <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: 2 }}>
-                    {main}
-                  </div>
-                  {sub && <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 2 }}>{sub}</div>}
-                  <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
-                    Mandatory for all team leaders
-                  </div>
-                </div>
+                  <TileChevron />
+                </button>
               );
             })()}
 
             {/* Standalone meeting */}
-            {nextMeeting && (
-              <div style={{
-                background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
-                padding: "1rem 1.25rem",
-              }}>
-                <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-                  {nextMeeting.type === "zoom_meeting" ? "Zoom Meeting" : "Meeting"}
-                </div>
-                <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: 2 }}>
-                  {nextMeeting.name}
-                </div>
-                {(nextMeeting.dates || nextMeeting.location) && (
-                  <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
-                    {[nextMeeting.dates, nextMeeting.location].filter(Boolean).join(" · ")}
+            {nextMeeting && (() => {
+              const Tag = nextMeeting.zoom_url ? "a" : "button";
+              const tagProps = nextMeeting.zoom_url
+                ? { href: nextMeeting.zoom_url, target: "_blank", rel: "noopener noreferrer" }
+                : { onClick: () => onNavigate?.("event") };
+              return (
+                <Tag
+                  {...tagProps}
+                  style={{
+                    width: "100%", textAlign: "left", cursor: "pointer", fontFamily: SANS, textDecoration: "none",
+                    background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
+                    padding: "1rem 1.25rem", display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+                      {nextMeeting.type === "zoom_meeting" ? "Zoom Meeting" : "Meeting"}
+                    </div>
+                    <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: 2 }}>
+                      {nextMeeting.name}
+                    </div>
+                    {(nextMeeting.dates || nextMeeting.location) && (
+                      <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
+                        {[nextMeeting.dates, nextMeeting.location].filter(Boolean).join(" · ")}
+                      </div>
+                    )}
+                    {nextMeeting.zoom_url && (
+                      <div style={{ fontSize: "12px", color: ORANGE, fontFamily: SANS, fontWeight: 600, marginTop: 4 }}>
+                        Join Zoom →
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            )}
+                  <TileChevron />
+                </Tag>
+              );
+            })()}
           </div>
         </div>
       )}

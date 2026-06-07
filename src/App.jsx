@@ -545,6 +545,7 @@ export default function App() {
             onOpenOnboarding={() => { setTab("event"); setPage("onboarding"); }}
             onOpenMyTeam={() => { setTab("event"); setPage("myteam"); }}
             onOpenUpdates={() => navigate("updates")}
+            onOpenEventPage={(p) => { setTab("event"); setPage(p); }}
             chatUnread={chatUnread}
             onlineUsers={onlineUsers}
           />

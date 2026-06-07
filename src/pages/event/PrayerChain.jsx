@@ -44,10 +44,6 @@ function fmtWeekday(date) {
   return date.toLocaleDateString("en-US", { weekday: "short" });
 }
 
-function fmtFull(date) {
-  return date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-}
-
 function daysUntil(date) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   return Math.ceil((date - today) / 86400000);
@@ -193,42 +189,50 @@ export default function PrayerChain({ data, onBack }) {
           <ChevronIcon open={scheduleOpen} />
         </button>
         {scheduleOpen && (
-          <div style={{ border: `1px solid ${BORDER}`, borderTop: "none", borderRadius: "0 0 14px 14px", overflow: "hidden" }}>
-            {schedule.map((entry, i) => {
-              const isMyDay = myTeam && entry.teamNum === myTeam;
-              const isAll = entry.teamNum === "all";
-              const d = new Date(entry.date); d.setHours(0,0,0,0);
-              const isToday = d.getTime() === today.getTime();
+          <div style={{
+            border: `1px solid ${BORDER}`, borderTop: "none", borderRadius: "0 0 14px 14px",
+            padding: "0.875rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem",
+          }}>
+            {Array.from({ length: NUM_TEAMS }, (_, i) => i + 1).map((teamNum) => {
+              const [d1, d2] = getPrayerDates(teamNum);
+              const isMine = myTeam === teamNum;
+              const isTodayTeam = [d1, d2].some((d) => {
+                const dd = new Date(d); dd.setHours(0, 0, 0, 0);
+                return dd.getTime() === today.getTime();
+              });
               return (
-                <div key={i} style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "0.75rem 1.25rem",
-                  borderBottom: i < schedule.length - 1 ? `1px solid ${BORDER}` : "none",
-                  background: isMyDay ? "#FFF5EC" : isAll ? "#F0F4FF" : "#fff",
+                <div key={teamNum} style={{
+                  background: isMine ? "#FFF5EC" : "#fff",
+                  border: `1.5px solid ${isMine ? ORANGE : BORDER}`,
+                  borderRadius: 12, padding: "0.625rem 0.75rem",
                 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 38, textAlign: "center" }}>
-                      <div style={{ fontSize: "10px", fontWeight: 600, color: TSEC, fontFamily: SANS, textTransform: "uppercase" }}>{fmtWeekday(entry.date)}</div>
-                      <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: isMyDay ? ORANGE : isAll ? "#1A4FBF" : NAVY, lineHeight: 1 }}>
-                        {fmtShort(entry.date).split(" ")[1]}
-                      </div>
-                      <div style={{ fontSize: "10px", color: TSEC, fontFamily: SANS }}>{fmtShort(entry.date).split(" ")[0]}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                    <div style={{ fontSize: "12px", fontWeight: 700, color: isMine ? ORANGE : NAVY, fontFamily: SANS }}>
+                      Team {teamNum}
                     </div>
-                    <div>
-                      <div style={{ fontSize: "13px", fontWeight: isMyDay || isAll ? 700 : 500, color: isMyDay ? ORANGE : isAll ? "#1A4FBF" : NAVY, fontFamily: SANS }}>
-                        {isAll ? "All Teams" : `Team ${entry.teamNum}`}
-                      </div>
-                      {isMyDay && <div style={{ fontSize: "11px", color: ORANGE, fontFamily: SANS }}>Your prayer day</div>}
-                    </div>
+                    {isTodayTeam && (
+                      <span style={{ fontSize: "9px", background: ORANGE, color: "#fff", borderRadius: 8, padding: "1px 6px", fontWeight: 700, fontFamily: SANS }}>
+                        TODAY
+                      </span>
+                    )}
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    {isToday && <span style={{ fontSize: "10px", background: ORANGE, color: "#fff", borderRadius: 10, padding: "2px 8px", fontWeight: 700, fontFamily: SANS }}>TODAY</span>}
-                    {isMyDay && !isToday && <div style={{ width: 8, height: 8, borderRadius: "50%", background: ORANGE }} />}
-                    {isAll && !isToday && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#1A4FBF" }} />}
+                  <div style={{ fontSize: "11px", color: isMine ? NAVY : TSEC, fontFamily: SANS, lineHeight: 1.5 }}>
+                    {fmtShort(d1)} · {fmtShort(d2)}
                   </div>
                 </div>
               );
             })}
+            <div style={{
+              gridColumn: "1 / -1", background: todayEntry?.teamNum === "all" ? "#F0F4FF" : "#fff",
+              border: `1.5px solid ${todayEntry?.teamNum === "all" ? "#1A4FBF" : BORDER}`,
+              borderRadius: 12, padding: "0.625rem 0.75rem",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: todayEntry?.teamNum === "all" ? "#1A4FBF" : NAVY, fontFamily: SANS }}>
+                All Teams Together
+              </div>
+              <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>{fmtShort(CHAIN_ALL)}</div>
+            </div>
           </div>
         )}
       </div>
