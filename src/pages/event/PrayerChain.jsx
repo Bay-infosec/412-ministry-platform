@@ -111,8 +111,11 @@ export default function PrayerChain({ data, onBack }) {
         <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
           Prayer Chain
         </div>
-        <div style={{ fontFamily: SERIF, fontSize: "24px", fontWeight: 600, color: NAVY, lineHeight: 1.2 }}>
+        <div style={{ fontFamily: SERIF, fontSize: "24px", fontWeight: 600, color: NAVY, lineHeight: 1.2, marginBottom: "0.5rem" }}>
           Pray for one another.
+        </div>
+        <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>
+          Starting July 10, teams take turns covering the whole group in prayer — two days each — until we all come together on August 3.
         </div>
       </div>
 
@@ -126,15 +129,42 @@ export default function PrayerChain({ data, onBack }) {
         </div>
       </div>
 
+      {/* How it works */}
+      <div style={{ marginBottom: "1.25rem" }}>
+        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.625rem" }}>
+          How it works
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          {[
+            { n: "1", title: "Your two prayer days", body: "Each team is assigned two dates between July 10–21. On those days, the entire network is specifically praying with your team in mind." },
+            { n: "2", title: "Pray for others too", body: "When another team's day comes up, take a few minutes to pray for them. The schedule shows who is focused on which day — join in even when it isn't your turn." },
+            { n: "3", title: "August 3 — all together", body: "The chain closes with every team praying together on the same day, one week before the conference begins." },
+          ].map(({ n, title, body }) => (
+            <div key={n} style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "0.875rem 1.25rem", display: "flex", alignItems: "flex-start", gap: 14 }}>
+              <div style={{
+                width: 26, height: 26, borderRadius: "50%", background: NAVY, flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "12px", fontWeight: 700, color: GOLD, fontFamily: SANS,
+              }}>{n}</div>
+              <div>
+                <div style={{ fontSize: "13px", fontWeight: 700, color: NAVY, fontFamily: SANS, marginBottom: 3 }}>{title}</div>
+                <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>{body}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Everyone-can-pray note */}
       <div style={{
-        background: "#FFF5EC", border: `1px solid ${ORANGE}22`, borderRadius: 12,
+        background: "#FFF5EC", border: `1.5px solid ${ORANGE}44`, borderRadius: 12,
         padding: "0.875rem 1.25rem", marginBottom: "1.25rem",
-        display: "flex", alignItems: "flex-start", gap: 10,
       }}>
-        <span style={{ fontSize: "16px", flexShrink: 0 }}>🙏</span>
+        <div style={{ fontSize: "12px", fontWeight: 700, color: ORANGE, fontFamily: SANS, marginBottom: 4 }}>
+          A reminder
+        </div>
         <div style={{ fontSize: "13px", color: NAVY, fontFamily: SANS, lineHeight: 1.6 }}>
-          <strong>Everyone is encouraged to pray every day.</strong> The schedule below assigns each team a specific day to pray — but these are focused days, not limits. Pray for every team, every day.
+          Assigned days are focused days, not limits. Pray for every team, every day. The chain only works when everyone stays in it.
         </div>
       </div>
 

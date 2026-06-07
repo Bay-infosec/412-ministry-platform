@@ -1,4 +1,6 @@
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
+import { Shell } from "../../components/layout/index.js";
+import { Card, SectionLabel } from "../../components/ui/index.js";
 
 function splitZoomDisplay(zoomStr) {
   if (!zoomStr) return { main: zoomStr, sub: null };
@@ -6,8 +8,6 @@ function splitZoomDisplay(zoomStr) {
   if (parts.length <= 1) return { main: zoomStr, sub: null };
   return { main: parts[0], sub: parts.slice(1).join(" · ") };
 }
-import { Shell } from "../../components/layout/index.js";
-import { Card, SectionLabel } from "../../components/ui/index.js";
 
 function daysUntil(dateStr) {
   if (!dateStr) return null;
@@ -45,6 +45,8 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
   if (isCoordinator) {
     sections.push({ id: "coordinator", label: "My Teams", desc: "Overview of teams you oversee" });
   }
+
+  const zoom = activeEvent.zoom_training_dates ? splitZoomDisplay(activeEvent.zoom_training_dates) : null;
 
   return (
     <Shell withNav>
@@ -105,19 +107,6 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
         )}
       </div>
 
-      {/* Zoom training row */}
-      {activeEvent.zoom_training_dates && (() => {
-        const { main, sub } = splitZoomDisplay(activeEvent.zoom_training_dates);
-        return (
-          <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "0.875rem 1.25rem", marginBottom: "1rem" }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>Leader Zoom Training</div>
-            <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: sub ? 2 : 3 }}>{main}</div>
-            {sub && <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 3 }}>{sub}</div>}
-            <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>Mandatory for all team leaders</div>
-          </div>
-        );
-      })()}
-
       {/* Onboarding banner */}
       {eventMember && !eventMember.onboarding_completed && (
         <button
@@ -149,6 +138,29 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
       {/* Sections */}
       <SectionLabel>Sections</SectionLabel>
       <Card style={{ padding: 0, overflow: "hidden", marginBottom: "1rem" }}>
+
+        {/* Zoom training — info row at top of sections card */}
+        {zoom && (
+          <div style={{
+            padding: "1rem 1.25rem",
+            borderBottom: `1px solid ${BORDER}`,
+            background: BG,
+          }}>
+            <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+              Leader Zoom Training
+            </div>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: zoom.sub ? 2 : 3 }}>
+              {zoom.main}
+            </div>
+            {zoom.sub && (
+              <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 3 }}>{zoom.sub}</div>
+            )}
+            <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
+              Mandatory pre-conference training for all team leaders
+            </div>
+          </div>
+        )}
+
         {sections.map((s, i) => (
           <button
             key={s.id}
