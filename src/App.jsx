@@ -165,6 +165,7 @@ export default function App() {
       let coLeader = null;
       let coordinator = null;
       let coLeaderChecklist = null;
+      let coLeaderVisited = false;
 
       if (activeEvent) {
         const { data: em } = await supabase
@@ -202,15 +203,16 @@ export default function App() {
             coordinator = coord || null;
           }
 
-          // Co-leader's checklist (for MyTeam progress view)
+          // Co-leader's checklist + onboarding status (for MyTeam progress view)
           if (eventMember.co_leader_id) {
             const { data: clEm } = await supabase
               .from("event_members")
-              .select("id")
+              .select("id, onboarding_visited, onboarding_completed")
               .eq("profile_id", eventMember.co_leader_id)
               .eq("event_id", activeEvent.id)
               .maybeSingle();
             if (clEm) {
+              coLeaderVisited = clEm.onboarding_visited === true || clEm.onboarding_completed === true;
               const { data: clCl } = await supabase
                 .from("event_checklist")
                 .select("items")
@@ -329,6 +331,7 @@ export default function App() {
         eventChecklist,
         coLeader,
         coLeaderChecklist,
+        coLeaderVisited,
         coordinator,
         announcements,
         unreadCount,

@@ -6,7 +6,7 @@ import { Card, SectionLabel, Avatar } from "../../components/ui/index.js";
 import { CHECKLIST_ITEMS } from "../../lib/checklist.js";
 
 export default function MyTeam({ data, onBack }) {
-  const { eventMember, eventChecklist, coLeader, coLeaderChecklist, coordinator } = data;
+  const { eventMember, eventChecklist, coLeader, coLeaderChecklist, coLeaderVisited, coordinator } = data;
 
   const [items, setItems] = useState(eventChecklist?.items || {});
   const [saving, setSaving] = useState(null);
@@ -142,42 +142,43 @@ export default function MyTeam({ data, onBack }) {
 
           {/* Co-leader checklist progress */}
           <div style={{ marginBottom: "0.875rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", color: TSEC, textTransform: "uppercase", fontFamily: SANS }}>
-                Checklist
-              </span>
-              <span style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>
-                {coLeaderDone} / {CHECKLIST_ITEMS.length}
-              </span>
+            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 8 }}>
+              Checklist
             </div>
-            <div style={{ height: 5, borderRadius: 3, background: BORDER, overflow: "hidden", marginBottom: 10 }}>
-              <div style={{
-                height: "100%", borderRadius: 3, background: ORANGE,
-                width: `${(coLeaderDone / CHECKLIST_ITEMS.length) * 100}%`,
-                transition: "width 0.3s ease",
-              }} />
-            </div>
-            {/* Item dots */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {CHECKLIST_ITEMS.map((item) => {
-                const done = !!coLeaderItems[item.id];
-                return (
-                  <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{
-                      width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
-                      border: `2px solid ${done ? ORANGE : BORDER}`,
-                      background: done ? ORANGE : "transparent",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      {done && <span style={{ color: "#fff", fontSize: 8, lineHeight: 1 }}>✓</span>}
-                    </div>
-                    <span style={{ fontSize: "12px", fontFamily: SANS, color: done ? ORANGE : TSEC, textDecoration: done ? "line-through" : "none" }}>
-                      {item.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+            {!coLeaderVisited ? (
+              <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, fontStyle: "italic" }}>
+                Not started yet
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <span style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>{coLeaderDone} / {CHECKLIST_ITEMS.length} done</span>
+                </div>
+                <div style={{ height: 5, borderRadius: 3, background: BORDER, overflow: "hidden", marginBottom: 10 }}>
+                  <div style={{ height: "100%", borderRadius: 3, background: ORANGE, width: `${(coLeaderDone / CHECKLIST_ITEMS.length) * 100}%`, transition: "width 0.3s ease" }} />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {CHECKLIST_ITEMS.map((item) => {
+                    const done = !!coLeaderItems[item.id];
+                    return (
+                      <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{
+                          width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
+                          border: `2px solid ${done ? ORANGE : BORDER}`,
+                          background: done ? ORANGE : "transparent",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          {done && <span style={{ color: "#fff", fontSize: 8, lineHeight: 1 }}>✓</span>}
+                        </div>
+                        <span style={{ fontSize: "12px", fontFamily: SANS, color: done ? ORANGE : TSEC, textDecoration: done ? "line-through" : "none" }}>
+                          {item.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Contact buttons */}

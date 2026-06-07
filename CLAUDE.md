@@ -254,7 +254,6 @@ src/
 ## Next Up
 
 1. **Admin: Settings** — ChurchList (view/add/edit churches + approve pending church_name_custom submissions), TrainingMaterials (add/edit/reorder/publish)
-2. **Coordinator sees themselves in their own CoordinatorView** — exclude self (profile_id === coordinator_id) from member list
 
 ---
 
