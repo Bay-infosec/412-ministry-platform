@@ -201,7 +201,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
         ["Ministry Role", profile.ministry_role],
       ]} />
 
-      {/* Event membership */}
+      {/* Event-scoped data — grouped under the event name so it's clear none of this is permanent profile info */}
       {activeEvent && (
         <>
           <SectionLabel>{activeEvent.name}</SectionLabel>
@@ -210,13 +210,88 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
               Loading…
             </div>
           ) : em ? (
-            <InfoRows rows={[
-              ["Event Role", em.event_role],
-              ["Team", em.team_number ? `Team ${em.team_number}` : "Unassigned"],
-              ["Ministry", em.ministry],
-              ["Onboarding", em.onboarding_completed ? "Complete ✓" : "In progress"],
-              ["Status", em.status],
-            ]} />
+            <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden", marginBottom: "1rem" }}>
+              <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.6, padding: "0.875rem 1.25rem", borderBottom: `1px solid ${BORDER}`, background: BG }}>
+                Specific to {activeEvent.name} — separate from {(profile.full_name || "").split(" ")[0]}'s permanent profile, and resets for each event they join.
+              </div>
+
+              <InfoRow label="Event Role" value={em.event_role} />
+              <InfoRow label="Onboarding" value={em.onboarding_completed ? "Complete ✓" : "In progress"} />
+              <InfoRow label="Status" value={em.status} last={!editTeam} />
+
+              {/* Team & Ministry */}
+              <div style={{ padding: "1rem 1.25rem", borderBottom: `1px solid ${BORDER}` }}>
+                <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.625rem" }}>
+                  Team & Ministry
+                </div>
+                {!editTeam ? (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
+                      Team {em.team_number || "—"} · {em.ministry || "No ministry"}
+                    </div>
+                    <button onClick={() => { setTeamNum(em?.team_number?.toString() || ""); setMinistry(em?.ministry || ""); setEditTeam(true); }} style={{ background: "none", border: "none", color: ORANGE, fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: SANS }}>
+                      Edit
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <FieldLabel>TEAM NUMBER</FieldLabel>
+                    <input type="number" value={teamNum} onChange={(e) => setTeamNum(e.target.value)} min="1" max="99" placeholder="e.g. 7" style={{ ...inputStyle, marginBottom: "0.75rem" }} />
+                    <FieldLabel>MINISTRY</FieldLabel>
+                    <select value={ministry} onChange={(e) => setMinistry(e.target.value)} style={{ ...selectStyle, marginBottom: "0.875rem" }}>
+                      <option value="">Select ministry</option>
+                      <option value="EM">English Ministry (EM)</option>
+                      <option value="MM">Mongolian Ministry (MM)</option>
+                    </select>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button onClick={() => setEditTeam(false)} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px", fontSize: "14px", color: TSEC, cursor: "pointer", fontFamily: SANS }}>Cancel</button>
+                      <button onClick={saveTeam} disabled={savingTeam} style={{ flex: 1, background: NAVY, border: "none", borderRadius: 10, padding: "10px", fontSize: "14px", fontWeight: 600, color: "#fff", cursor: savingTeam ? "default" : "pointer", fontFamily: SANS, opacity: savingTeam ? 0.7 : 1 }}>
+                        {savingTeam ? "Saving…" : "Save"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Personal Message */}
+              <div style={{ padding: "1rem 1.25rem" }}>
+                <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.625rem" }}>
+                  Personal Message
+                </div>
+                {!editMsg ? (
+                  <>
+                    {em.personal_message ? (
+                      <div style={{ fontSize: "14px", color: NAVY, fontFamily: SANS, lineHeight: 1.65, marginBottom: "0.75rem", whiteSpace: "pre-wrap" }}>
+                        {em.personal_message}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, marginBottom: "0.75rem" }}>
+                        No message written yet.
+                      </div>
+                    )}
+                    <button onClick={() => { setMsg(em.personal_message || ""); setEditMsg(true); }} style={{ background: "none", border: "none", color: ORANGE, fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: SANS, padding: 0 }}>
+                      {em.personal_message ? "Edit →" : "Write a message →"}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <textarea
+                      value={msg}
+                      onChange={(e) => setMsg(e.target.value)}
+                      rows={5}
+                      placeholder="Write a personal message for this leader…"
+                      style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: NAVY, resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: "0.75rem" }}
+                    />
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button onClick={() => setEditMsg(false)} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px", fontSize: "14px", color: TSEC, cursor: "pointer", fontFamily: SANS }}>Cancel</button>
+                      <button onClick={saveMessage} disabled={savingMsg} style={{ flex: 1, background: NAVY, border: "none", borderRadius: 10, padding: "10px", fontSize: "14px", fontWeight: 600, color: "#fff", cursor: savingMsg ? "default" : "pointer", fontFamily: SANS, opacity: savingMsg ? 0.7 : 1 }}>
+                        {savingMsg ? "Saving…" : "Save"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           ) : (
             <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem", fontSize: "14px", color: TSEC, fontFamily: SANS }}>
               Not enrolled in this event.
@@ -241,86 +316,6 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
             Dismiss
           </button>
         </div>
-      )}
-
-      {/* Personal message */}
-      {em && (
-        <>
-          <SectionLabel>Personal Message</SectionLabel>
-          <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
-            {!editMsg ? (
-              <>
-                {em.personal_message ? (
-                  <div style={{ fontSize: "14px", color: NAVY, fontFamily: SANS, lineHeight: 1.65, marginBottom: "0.75rem", whiteSpace: "pre-wrap" }}>
-                    {em.personal_message}
-                  </div>
-                ) : (
-                  <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, marginBottom: "0.75rem" }}>
-                    No message written yet.
-                  </div>
-                )}
-                <button onClick={() => { setMsg(em.personal_message || ""); setEditMsg(true); }} style={{ background: "none", border: "none", color: ORANGE, fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: SANS, padding: 0 }}>
-                  {em.personal_message ? "Edit →" : "Write a message →"}
-                </button>
-              </>
-            ) : (
-              <>
-                <textarea
-                  value={msg}
-                  onChange={(e) => setMsg(e.target.value)}
-                  rows={5}
-                  placeholder="Write a personal message for this leader…"
-                  style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: NAVY, resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: "0.75rem" }}
-                />
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => setEditMsg(false)} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px", fontSize: "14px", color: TSEC, cursor: "pointer", fontFamily: SANS }}>Cancel</button>
-                  <button onClick={saveMessage} disabled={savingMsg} style={{ flex: 1, background: NAVY, border: "none", borderRadius: 10, padding: "10px", fontSize: "14px", fontWeight: 600, color: "#fff", cursor: savingMsg ? "default" : "pointer", fontFamily: SANS, opacity: savingMsg ? 0.7 : 1 }}>
-                    {savingMsg ? "Saving…" : "Save"}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Team assignment */}
-      {em && (
-        <>
-          <SectionLabel>Team Assignment</SectionLabel>
-          <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
-            {!editTeam ? (
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
-                    Team {em.team_number || "—"} · {em.ministry || "No ministry"}
-                  </div>
-                  <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>Role: {em.event_role}</div>
-                </div>
-                <button onClick={() => { setTeamNum(em?.team_number?.toString() || ""); setMinistry(em?.ministry || ""); setEditTeam(true); }} style={{ background: "none", border: "none", color: ORANGE, fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: SANS }}>
-                  Edit
-                </button>
-              </div>
-            ) : (
-              <>
-                <FieldLabel>TEAM NUMBER</FieldLabel>
-                <input type="number" value={teamNum} onChange={(e) => setTeamNum(e.target.value)} min="1" max="99" placeholder="e.g. 7" style={{ ...inputStyle, marginBottom: "0.75rem" }} />
-                <FieldLabel>MINISTRY</FieldLabel>
-                <select value={ministry} onChange={(e) => setMinistry(e.target.value)} style={{ ...selectStyle, marginBottom: "0.875rem" }}>
-                  <option value="">Select ministry</option>
-                  <option value="EM">English Ministry (EM)</option>
-                  <option value="MM">Mongolian Ministry (MM)</option>
-                </select>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => setEditTeam(false)} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px", fontSize: "14px", color: TSEC, cursor: "pointer", fontFamily: SANS }}>Cancel</button>
-                  <button onClick={saveTeam} disabled={savingTeam} style={{ flex: 1, background: NAVY, border: "none", borderRadius: 10, padding: "10px", fontSize: "14px", fontWeight: 600, color: "#fff", cursor: savingTeam ? "default" : "pointer", fontFamily: SANS, opacity: savingTeam ? 0.7 : 1 }}>
-                    {savingTeam ? "Saving…" : "Save"}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </>
       )}
 
       {/* Profile Tags */}
@@ -438,6 +433,16 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
           busy={busy}
         />
       )}
+    </div>
+  );
+}
+
+function InfoRow({ label, value, last }) {
+  if (!value) return null;
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.875rem 1.25rem", borderBottom: last ? "none" : `1px solid ${BORDER}` }}>
+      <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{label}</span>
+      <span style={{ fontSize: "14px", color: NAVY, fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>{value}</span>
     </div>
   );
 }
