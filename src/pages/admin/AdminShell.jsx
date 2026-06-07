@@ -163,6 +163,8 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
             <EventList
               data={data}
               onSelect={(e) => nav("events.detail", { event: e })}
+              onToast={showToast}
+              onRefresh={onRefresh}
             />
           )}
           {screen === "events.new" && (
