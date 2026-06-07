@@ -62,7 +62,7 @@ export default function MyTeam({ data, onBack }) {
       <SectionLabel>Co-Leader</SectionLabel>
       {coLeader ? (
         <Card style={{ padding: "1rem 1.25rem", marginBottom: "1rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.75rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.875rem" }}>
             <Avatar url={coLeader.photo_url} name={coLeader.full_name} size={48} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{coLeader.full_name}</div>
@@ -71,14 +71,20 @@ export default function MyTeam({ data, onBack }) {
               )}
             </div>
           </div>
-          {coLeader.phone && (
-            <a
-              href={`tel:${coLeader.phone}`}
-              style={{ display: "block", padding: "10px", textAlign: "center", background: ORANGE, color: "#fff", borderRadius: 8, textDecoration: "none", fontSize: "14px", fontWeight: 600, fontFamily: SANS }}
-            >
-              Call {coLeader.full_name?.split(" ")[0]}
-            </a>
-          )}
+          <div style={{ display: "flex", gap: 8 }}>
+            {coLeader.phone && (
+              <a href={`tel:${coLeader.phone}`} style={contactBtnStyle(ORANGE)}>
+                <PhoneIcon color="#fff" />
+                Call {coLeader.full_name?.split(" ")[0]}
+              </a>
+            )}
+            {coLeader.email && (
+              <a href={`mailto:${coLeader.email}`} style={contactBtnStyle("transparent", NAVY, BORDER)}>
+                <MailIcon color={NAVY} />
+                Email
+              </a>
+            )}
+          </div>
         </Card>
       ) : (
         <Card style={{ padding: "1rem 1.25rem", marginBottom: "1rem", textAlign: "center" }}>
@@ -91,7 +97,7 @@ export default function MyTeam({ data, onBack }) {
         <>
           <SectionLabel>Your Coordinator</SectionLabel>
           <Card style={{ padding: "1rem 1.25rem", marginBottom: "1rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.75rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.875rem" }}>
               <Avatar url={coordinator.photo_url} name={coordinator.full_name} size={48} />
               <div>
                 <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{coordinator.full_name}</div>
@@ -100,10 +106,16 @@ export default function MyTeam({ data, onBack }) {
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               {coordinator.phone && (
-                <a href={`tel:${coordinator.phone}`} style={contactBtnStyle(NAVY)}>Call</a>
+                <a href={`tel:${coordinator.phone}`} style={contactBtnStyle(NAVY)}>
+                  <PhoneIcon color="#fff" />
+                  Call
+                </a>
               )}
               {coordinator.email && (
-                <a href={`mailto:${coordinator.email}`} style={contactBtnStyle("transparent", NAVY, BORDER)}>Email</a>
+                <a href={`mailto:${coordinator.email}`} style={contactBtnStyle("transparent", NAVY, BORDER)}>
+                  <MailIcon color={NAVY} />
+                  Email
+                </a>
               )}
             </div>
           </Card>
@@ -245,5 +257,23 @@ function contactBtnStyle(bg, color = "#fff", border = "transparent") {
     background: bg, color, border: `1px solid ${border}`,
     borderRadius: 8, textDecoration: "none",
     fontSize: "14px", fontWeight: 600, fontFamily: SANS,
+    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
   };
+}
+
+function PhoneIcon({ color }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .99h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+    </svg>
+  );
+}
+
+function MailIcon({ color }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
+    </svg>
+  );
 }

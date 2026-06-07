@@ -605,7 +605,7 @@ export default function OnboardingFlow({ data, onDone, onExit }) {
     onExit();
   }
 
-  const next = () => setStep((s) => Math.min(s + 1, 5));
+  const next = () => setStep((s) => Math.min(s + 1, 4));
 
   async function handleFinish(checklistData) {
     try {
@@ -628,7 +628,6 @@ export default function OnboardingFlow({ data, onDone, onExit }) {
   const steps = [
     <WelcomePage key="welcome" profile={profile} activeEvent={activeEvent} onNext={next} />,
     <PersonalMessagePage key="message" eventMember={eventMember} onNext={next} />,
-    <EventInfoPage key="info" activeEvent={activeEvent} eventMember={eventMember} onNext={next} />,
     <RequirementsPage key="req" onNext={next} />,
     <TeamRevealPage key="team" eventMember={eventMember} coLeader={coLeader} onNext={next} />,
     <ChecklistPage key="checklist" onFinish={handleFinish} />,
@@ -652,7 +651,7 @@ export default function OnboardingFlow({ data, onDone, onExit }) {
           Save & exit
         </button>
       </div>
-      <ProgressDots step={step} total={6} />
+      <ProgressDots step={step} total={5} />
       <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: "70vh" }}>
         {steps[step]}
       </div>
