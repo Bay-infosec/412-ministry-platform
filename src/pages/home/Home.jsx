@@ -1,39 +1,96 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "../../lib/supabase.js";
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
-import { Card, SectionLabel } from "../../components/ui/index.js";
+import { SectionLabel } from "../../components/ui/index.js";
 import { DailyVerse, ContactForm } from "../../components/shared/index.js";
 import { CHECKLIST_ITEMS } from "../../lib/checklist.js";
 
-function daysUntil(dateStr) {
-  if (!dateStr) return null;
-  const m1 = dateStr.match(/([A-Za-z]+ \d+)[–\-]\d+,?\s*(\d{4})/);
-  const m2 = dateStr.match(/([A-Za-z]+ \d+,\s*\d{4})/);
-  const parsed = m1 ? new Date(`${m1[1]}, ${m1[2]}`) : m2 ? new Date(m2[1]) : null;
-  if (!parsed || isNaN(parsed)) return null;
-  return Math.ceil((parsed - new Date()) / 86400000);
+// ── Prayer chain helpers (mirrors PrayerChain.jsx) ────────────────────────────
+const CHAIN_START = new Date("2026-07-10");
+const NUM_TEAMS = 12;
+
+function getNextPrayerDate(teamNumber) {
+  if (!teamNumber) return null;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const offset = teamNumber - 1;
+  const d1 = new Date(CHAIN_START); d1.setDate(d1.getDate() + offset);
+  const d2 = new Date(CHAIN_START); d2.setDate(d2.getDate() + offset + NUM_TEAMS);
+  if (d1 >= today) return d1;
+  if (d2 >= today) return d2;
+  return null;
 }
 
-export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenOnboarding, chatUnread, onlineUsers }) {
-  const { profile, eventMember, eventChecklist, announcements, unreadCount, activeEvent, trainingMaterials } = data;
+function fmtDate(d) {
+  return d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+}
+
+function daysUntil(d) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const diff = Math.ceil((d - today) / 86400000);
+  return diff;
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+export default function Home({
+  data, onNavigate, onOpenChat, onOpenOnboarding, onOpenMyTeam, onOpenUpdates, chatUnread, onlineUsers,
+}) {
+  const { profile, eventMember, eventChecklist, announcements, unreadCount, activeEvent } = data;
+
   const othersOnline = (onlineUsers || []).filter((u) => u.user_id !== profile.id);
-  const [showContact, setShowContact] = useState(false);
-  const [progressDismissed, setProgressDismissed] = useState(false);
-  const [dismissedAnnIds, setDismissedAnnIds] = useState(() => new Set());
-
   const displayName = profile.nickname || (profile.full_name || "").split(" ")[0];
-  const latestAnn = (announcements || []).find(() => true);
-  const days = daysUntil(activeEvent?.dates);
 
+  // Dismissals (session-only)
+  const [annDismissed, setAnnDismissed] = useState(false);
+  const [showContact, setShowContact] = useState(false);
+
+  // Upcoming zoom/board meetings
+  const [meetings, setMeetings] = useState([]);
+  useEffect(() => {
+    supabase
+      .from("events")
+      .select("id, name, type, dates, location, audience")
+      .in("type", ["zoom_meeting", "board_meeting"])
+      .neq("status", "archived")
+      .order("created_at", { ascending: true })
+      .then(({ data: rows }) => setMeetings(rows || []));
+  }, []);
+
+  // Coordinator: fetch team leaders' onboarding progress
+  const isCoordinator = eventMember?.event_role === "coordinator";
+  const [teamProgress, setTeamProgress] = useState([]);
+  useEffect(() => {
+    if (!isCoordinator || !activeEvent || !profile?.id) return;
+    supabase
+      .from("event_members")
+      .select("id, team_number, onboarding_completed, event_role, profiles!event_members_profile_id_fkey(full_name, photo_url)")
+      .eq("event_id", activeEvent.id)
+      .eq("coordinator_id", profile.id)
+      .neq("event_role", "coordinator")
+      .order("team_number")
+      .then(({ data: rows }) => setTeamProgress(rows || []));
+  }, [isCoordinator, activeEvent?.id, profile?.id]);
+
+  // Checklist stats
   const checklistItems = eventChecklist?.items || {};
-  const doneCount = CHECKLIST_ITEMS.filter((i) => checklistItems[i.id]).length;
-  const checklistPct = Math.round((doneCount / CHECKLIST_ITEMS.length) * 100);
+  const checklistDone = CHECKLIST_ITEMS.filter((i) => checklistItems[i.id]).length;
+  const onboardingStep = eventMember?.onboarding_step ?? 0;
+  const onboardingComplete = eventMember?.onboarding_completed;
+  const TOTAL_STEPS = 6;
 
-  const showProgressCard = eventMember && !progressDismissed;
+  // Latest announcement
+  const latestAnn = (announcements || []).find(() => true);
+
+  // Next prayer date for this team
+  const nextPrayer = getNextPrayerDate(eventMember?.team_number);
+
+  // Upcoming meeting (first one)
+  const nextMeeting = meetings[0] || null;
 
   return (
     <Shell withNav>
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────────── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
         <div>
           <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
@@ -43,13 +100,10 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenO
             Hi <span style={{ color: ORANGE }}>{displayName}</span>.
           </div>
         </div>
+        {/* Chat button */}
         <button
           onClick={onOpenChat}
-          style={{
-            background: NAVY, border: "none", borderRadius: 20,
-            cursor: "pointer", padding: "8px 14px",
-            display: "flex", alignItems: "center", gap: 6,
-          }}
+          style={{ background: NAVY, border: "none", borderRadius: 20, cursor: "pointer", padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -63,203 +117,43 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenO
         </button>
       </div>
 
-      {/* Leader progress card — always visible for event members */}
-      {showProgressCard && (
-        <div style={{
-          background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16,
-          padding: "1rem 1.25rem", marginBottom: "1rem", position: "relative",
-        }}>
-          {/* Dismiss */}
-          <button
-            onClick={() => setProgressDismissed(true)}
-            style={{ position: "absolute", top: 10, right: 10, background: "none", border: "none", cursor: "pointer", color: TSEC, fontSize: "18px", lineHeight: 1, padding: "2px 6px" }}
-          >
-            ×
-          </button>
-
-          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: 8 }}>
-            Your Progress
-          </div>
-
-          {/* Onboarding row */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{
-                width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-                background: eventMember.onboarding_completed ? "#059669" : ORANGE,
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                {eventMember.onboarding_completed
-                  ? <span style={{ color: "#fff", fontSize: 10 }}>✓</span>
-                  : <span style={{ color: "#fff", fontSize: 10, fontWeight: 700 }}>!</span>}
-              </div>
-              <span style={{ fontSize: "13px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>Onboarding</span>
-            </div>
-            {eventMember.onboarding_completed ? (
-              <span style={{ fontSize: "12px", color: "#059669", fontFamily: SANS, fontWeight: 600 }}>Complete</span>
-            ) : (
-              <button
-                onClick={onOpenOnboarding}
-                style={{ background: "none", border: "none", color: ORANGE, fontSize: "12px", fontWeight: 700, cursor: "pointer", fontFamily: SANS, padding: 0 }}
-              >
-                Continue →
-              </button>
-            )}
-          </div>
-
-          {/* Checklist row */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{
-                width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-                background: doneCount === CHECKLIST_ITEMS.length ? "#059669" : BORDER,
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                {doneCount === CHECKLIST_ITEMS.length
-                  ? <span style={{ color: "#fff", fontSize: 10 }}>✓</span>
-                  : <span style={{ fontSize: "10px", fontWeight: 700, color: TSEC }}>{doneCount}</span>}
-              </div>
-              <span style={{ fontSize: "13px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>Checklist</span>
-            </div>
-            <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
-              {doneCount} / {CHECKLIST_ITEMS.length}
-            </span>
-          </div>
-
-          {/* Progress bar */}
-          <div style={{ height: 5, borderRadius: 3, background: BORDER, overflow: "hidden" }}>
-            <div style={{
-              height: "100%", borderRadius: 3,
-              background: doneCount === CHECKLIST_ITEMS.length ? "#059669" : ORANGE,
-              width: `${checklistPct}%`,
-              transition: "width 0.4s ease",
-            }} />
-          </div>
-
-          {/* CTA */}
-          <button
-            onClick={() => onOpenPage("myteam")}
-            style={{
-              marginTop: 12, width: "100%", background: NAVY, color: "#fff",
-              border: "none", borderRadius: 10, padding: "10px",
-              fontSize: "13px", fontWeight: 600, fontFamily: SANS, cursor: "pointer",
-            }}
-          >
-            View checklist in My Team →
-          </button>
-        </div>
-      )}
-
-      {/* Conference info card — primary data block */}
-      {activeEvent && (
-        <div style={{
-          background: NAVY, borderRadius: 16, padding: "1.5rem",
-          marginBottom: "1rem", fontFamily: SANS,
-        }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", marginBottom: "0.25rem" }}>
-                {eventMember ? "Your Event" : "Upcoming Event"}
-              </div>
-              <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: "0.25rem" }}>
-                {activeEvent.name}
-              </div>
-              <div style={{ fontSize: "13px", color: "#B8C0D0" }}>{activeEvent.dates}</div>
-              {activeEvent.location && (
-                <div style={{ fontSize: "13px", color: "#B8C0D0" }}>{activeEvent.location}</div>
-              )}
-            </div>
-            {/* Day countdown */}
-            {days !== null && days >= 0 && (
-              <div style={{ textAlign: "center", flexShrink: 0, marginLeft: 16 }}>
-                {days === 0 ? (
-                  <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: ORANGE }}>It's here!</div>
-                ) : (
-                  <>
-                    <div style={{ fontFamily: SERIF, fontSize: "42px", fontWeight: 600, color: "#fff", lineHeight: 1 }}>{days}</div>
-                    <div style={{ fontSize: "10px", color: "#B8C0D0", fontWeight: 600, letterSpacing: "0.06em" }}>{days === 1 ? "DAY" : "DAYS"}</div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Fee */}
-          {activeEvent.fee && (
-            <div style={{ fontSize: "13px", color: "#B8C0D0", marginBottom: "0.75rem" }}>
-              Registration fee: <span style={{ color: GOLD, fontWeight: 600 }}>{activeEvent.fee}</span>
-            </div>
-          )}
-
-          {/* Verse */}
-          {activeEvent.verse_text && (
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem", marginTop: "0.25rem" }}>
-              <div style={{ fontFamily: SERIF, fontSize: "14px", color: "#FFE066", lineHeight: 1.65, fontStyle: "italic", marginBottom: "0.25rem" }}>
-                "{activeEvent.verse_text}"
-              </div>
-              <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: GOLD, textTransform: "uppercase", fontFamily: SANS }}>
-                {activeEvent.verse}
-              </div>
-            </div>
-          )}
-
-          {/* Register button */}
-          {activeEvent.registration_url ? (
-            <a
-              href={activeEvent.registration_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "block", marginTop: "1rem", background: ORANGE, color: "#fff",
-                borderRadius: 10, padding: "11px 0", textAlign: "center",
-                fontSize: "14px", fontWeight: 700, fontFamily: SANS, textDecoration: "none",
-              }}
-            >
-              Register now →
-            </a>
-          ) : (
-            <button
-              onClick={() => onNavigate("event")}
-              style={{
-                marginTop: "1rem", background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)",
-                border: "none", borderRadius: 10, padding: "10px 0", width: "100%",
-                fontSize: "13px", fontWeight: 600, fontFamily: SANS, cursor: "pointer",
-              }}
-            >
-              View event details →
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Latest announcement */}
-      {latestAnn && !dismissedAnnIds.has(latestAnn.id) && (
+      {/* ── Announcement ───────────────────────────────────────────── */}
+      {latestAnn && !annDismissed && (
         <div style={{ position: "relative", marginBottom: "1rem" }}>
           <button
-            onClick={() => onNavigate("updates")}
-            style={{ width: "100%", textAlign: "left", background: "#EEF2FC", borderRadius: 14, padding: "1rem 1.25rem", paddingRight: "2.5rem", border: "none", cursor: "pointer", fontFamily: SANS }}
+            onClick={onOpenUpdates}
+            style={{
+              width: "100%", textAlign: "left", background: "#EEF2FC",
+              borderRadius: 14, padding: "1rem 1.25rem", paddingRight: "2.75rem",
+              border: "none", cursor: "pointer", fontFamily: SANS,
+            }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-              <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", color: "#1A4FBF" }}>ANNOUNCEMENT</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em", color: "#1A4FBF", textTransform: "uppercase" }}>
+                Announcement
+              </div>
               {unreadCount > 0 && (
                 <div style={{ background: "#E53E3E", color: "#fff", fontSize: "10px", fontWeight: 700, borderRadius: 99, padding: "2px 7px" }}>
                   {unreadCount} new
                 </div>
               )}
             </div>
-            <div style={{ fontSize: "14px", fontWeight: 600, color: "#1A3080", marginBottom: 2 }}>{latestAnn.title}</div>
-            <div style={{ fontSize: "13px", color: "#1A3080", lineHeight: 1.5, opacity: 0.85, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#1A3080", marginBottom: 3 }}>{latestAnn.title}</div>
+            <div style={{
+              fontSize: "13px", color: "#1A3080", lineHeight: 1.5, opacity: 0.8,
+              display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+            }}>
               {latestAnn.body}
             </div>
           </button>
           <button
-            onClick={() => setDismissedAnnIds((prev) => new Set([...prev, latestAnn.id]))}
+            onClick={() => setAnnDismissed(true)}
             style={{
-              position: "absolute", top: 8, right: 10,
-              background: "rgba(26,79,191,0.1)", border: "none", borderRadius: "50%",
-              width: 22, height: 22, cursor: "pointer",
+              position: "absolute", top: 10, right: 10,
+              background: "rgba(26,79,191,0.12)", border: "none", borderRadius: "50%",
+              width: 24, height: 24, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#1A4FBF", fontSize: "15px", lineHeight: 1, fontFamily: SANS,
+              color: "#1A4FBF", fontSize: "16px", lineHeight: 1,
             }}
           >
             ×
@@ -267,33 +161,211 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenO
         </div>
       )}
 
-      {/* Daily verse */}
+      {/* ── Bible verse ─────────────────────────────────────────────── */}
       <DailyVerse />
 
-      {/* Training materials */}
-      {trainingMaterials && trainingMaterials.length > 0 && (
-        <div style={{ marginBottom: "1rem" }}>
-          <SectionLabel>Training</SectionLabel>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {trainingMaterials.map((m) => (
-              <Card key={m.id} style={{ padding: "1rem 1.25rem" }}>
-                <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, marginBottom: 4 }}>{m.title}</div>
-                {m.body && <div style={{ fontSize: "13px", color: TSEC, lineHeight: 1.5 }}>{m.body}</div>}
-                {m.external_url && (
-                  <div style={{ marginTop: 6 }}>
-                    <a href={m.external_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: "12px", color: ORANGE, fontWeight: 600, textDecoration: "none" }}>Open</a>
-                  </div>
-                )}
-              </Card>
-            ))}
+      {/* ── Onboarding invitation (all leaders) ────────────────────── */}
+      {eventMember && (
+        <div style={{
+          background: NAVY, borderRadius: 16, padding: "1.25rem 1.5rem",
+          marginBottom: "1rem",
+        }}>
+          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.18em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 6 }}>
+            {onboardingComplete ? "Pre-Conference" : "Onboarding Invitation"}
+          </div>
+
+          {/* Onboarding step progress */}
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: SANS }}>
+                Onboarding
+              </span>
+              <span style={{ fontSize: "11px", color: "#B8C0D0", fontFamily: SANS }}>
+                {onboardingComplete ? "Complete" : `Step ${Math.min(onboardingStep + 1, TOTAL_STEPS)} of ${TOTAL_STEPS}`}
+              </span>
+            </div>
+            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.15)", overflow: "hidden" }}>
+              <div style={{
+                height: "100%", borderRadius: 3,
+                background: onboardingComplete ? "#22C55E" : ORANGE,
+                width: onboardingComplete ? "100%" : `${Math.round((onboardingStep / TOTAL_STEPS) * 100)}%`,
+                transition: "width 0.4s ease",
+              }} />
+            </div>
+          </div>
+
+          {/* Checklist progress */}
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: SANS }}>
+                Pre-Conference Checklist
+              </span>
+              <span style={{ fontSize: "11px", color: "#B8C0D0", fontFamily: SANS }}>
+                {checklistDone} / {CHECKLIST_ITEMS.length}
+              </span>
+            </div>
+            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.15)", overflow: "hidden" }}>
+              <div style={{
+                height: "100%", borderRadius: 3,
+                background: checklistDone === CHECKLIST_ITEMS.length ? "#22C55E" : GOLD,
+                width: `${Math.round((checklistDone / CHECKLIST_ITEMS.length) * 100)}%`,
+                transition: "width 0.4s ease",
+              }} />
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div style={{ display: "flex", gap: 8 }}>
+            {!onboardingComplete && (
+              <button
+                onClick={onOpenOnboarding}
+                style={{
+                  flex: 1, background: ORANGE, color: "#fff", border: "none",
+                  borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 700,
+                  fontFamily: SANS, cursor: "pointer",
+                }}
+              >
+                {onboardingStep === 0 ? "Start Onboarding →" : "Continue →"}
+              </button>
+            )}
+            <button
+              onClick={onOpenMyTeam}
+              style={{
+                flex: 1, background: "rgba(255,255,255,0.12)", color: "#fff", border: "none",
+                borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 600,
+                fontFamily: SANS, cursor: "pointer",
+              }}
+            >
+              View Checklist
+            </button>
           </div>
         </div>
       )}
 
-      {/* Contact */}
+      {/* ── Event & upcoming info ───────────────────────────────────── */}
+      {(activeEvent || nextPrayer || nextMeeting) && (
+        <div style={{ marginBottom: "1rem" }}>
+          <SectionLabel>Upcoming</SectionLabel>
+          <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden" }}>
+
+            {/* Active event */}
+            {activeEvent && (
+              <InfoRow
+                icon="📅"
+                label={activeEvent.name}
+                value={activeEvent.dates || "Dates TBD"}
+                accent={ORANGE}
+              />
+            )}
+
+            {/* Registration fee */}
+            {activeEvent?.fee && (
+              <InfoRow
+                icon="💰"
+                label="Registration Fee"
+                value={activeEvent.fee}
+              />
+            )}
+
+            {/* Next prayer date */}
+            {nextPrayer && (
+              <InfoRow
+                icon="🙏"
+                label="Your Team Prays"
+                value={fmtDate(nextPrayer)}
+                sub={`Team ${eventMember?.team_number} · ${daysUntil(nextPrayer) === 0 ? "Today!" : `in ${daysUntil(nextPrayer)} day${daysUntil(nextPrayer) === 1 ? "" : "s"}`}`}
+                accent={NAVY}
+              />
+            )}
+
+            {/* Next zoom/board meeting */}
+            {nextMeeting && (
+              <InfoRow
+                icon={nextMeeting.type === "zoom_meeting" ? "💻" : "🏢"}
+                label={nextMeeting.name}
+                value={nextMeeting.dates || "Date TBD"}
+                sub={nextMeeting.location || undefined}
+                last
+              />
+            )}
+          </div>
+
+          {/* Register button if event has registration URL */}
+          {activeEvent?.registration_url && (
+            <a
+              href={activeEvent.registration_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "block", marginTop: "0.625rem", background: ORANGE, color: "#fff",
+                borderRadius: 10, padding: "11px 0", textAlign: "center",
+                fontSize: "14px", fontWeight: 700, fontFamily: SANS, textDecoration: "none",
+              }}
+            >
+              Register now →
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* ── Coordinator: team leaders' progress ────────────────────── */}
+      {isCoordinator && teamProgress.length > 0 && (
+        <div style={{ marginBottom: "1rem" }}>
+          <SectionLabel>Your Leaders' Progress</SectionLabel>
+          <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden" }}>
+            {teamProgress.map((m, i) => {
+              const done = m.onboarding_completed;
+              return (
+                <div
+                  key={m.id}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "0.875rem 1.25rem",
+                    borderBottom: i < teamProgress.length - 1 ? `1px solid ${BORDER}` : "none",
+                  }}
+                >
+                  <div style={{
+                    width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+                    background: m.profiles?.photo_url ? "transparent" : BG,
+                    overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+                    border: `1px solid ${BORDER}`,
+                  }}>
+                    {m.profiles?.photo_url
+                      ? <img src={m.profiles.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : <span style={{ fontFamily: SERIF, fontSize: 14, color: TSEC }}>{m.profiles?.full_name?.charAt(0)}</span>}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: "13px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
+                      {m.profiles?.full_name}
+                    </div>
+                    <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>
+                      Team {m.team_number}
+                    </div>
+                  </div>
+                  <span style={{
+                    fontSize: "11px", fontWeight: 700, fontFamily: SANS,
+                    color: done ? "#059669" : ORANGE,
+                    background: done ? "#DCFCE7" : "#FFF7ED",
+                    borderRadius: 20, padding: "3px 10px", flexShrink: 0,
+                  }}>
+                    {done ? "Done ✓" : "In progress"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Contact ─────────────────────────────────────────────────── */}
       <button
         onClick={() => setShowContact(true)}
-        style={{ width: "100%", background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", cursor: "pointer", fontFamily: SANS, display: "flex", alignItems: "center", gap: 12, marginBottom: "0.5rem" }}
+        style={{
+          width: "100%", background: "#fff", border: `1px solid ${BORDER}`,
+          borderRadius: 14, padding: "1rem 1.25rem", cursor: "pointer",
+          fontFamily: SANS, display: "flex", alignItems: "center", gap: 12,
+          marginBottom: "0.5rem",
+        }}
       >
         <div style={{ width: 38, height: 38, borderRadius: 10, background: BG, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={NAVY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -311,5 +383,24 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenO
 
       {showContact && <ContactForm profile={profile} onClose={() => setShowContact(false)} />}
     </Shell>
+  );
+}
+
+// ── Shared row component ──────────────────────────────────────────────────────
+
+function InfoRow({ icon, label, value, sub, accent, last }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "flex-start", gap: 12,
+      padding: "0.875rem 1.25rem",
+      borderBottom: last ? "none" : `1px solid ${BORDER}`,
+    }}>
+      <span style={{ fontSize: "18px", flexShrink: 0, marginTop: 1 }}>{icon}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: "14px", fontWeight: 600, color: accent || NAVY, fontFamily: SANS }}>{value}</div>
+        {sub && <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>{sub}</div>}
+      </div>
+    </div>
   );
 }

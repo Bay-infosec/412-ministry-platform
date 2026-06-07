@@ -453,9 +453,10 @@ export default function App() {
           <Home
             data={data}
             onNavigate={navigate}
-            onOpenPage={setPage}
             onOpenChat={openChat}
             onOpenOnboarding={() => { setTab("event"); setPage("onboarding"); }}
+            onOpenMyTeam={() => { setTab("event"); setPage("myteam"); }}
+            onOpenUpdates={() => navigate("updates")}
             chatUnread={chatUnread}
             onlineUsers={onlineUsers}
           />
