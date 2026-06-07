@@ -2,6 +2,15 @@ import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/con
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel } from "../../components/ui/index.js";
 
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const m1 = dateStr.match(/([A-Za-z]+ \d+)[–\-]\d+,?\s*(\d{4})/);
+  const m2 = dateStr.match(/([A-Za-z]+ \d+,\s*\d{4})/);
+  const parsed = m1 ? new Date(`${m1[1]}, ${m1[2]}`) : m2 ? new Date(m2[1]) : null;
+  if (!parsed || isNaN(parsed)) return null;
+  return Math.ceil((parsed - new Date()) / 86400000);
+}
+
 export default function EventHome({ data, onOpenPage, onNavigate }) {
   const { activeEvent, eventMember, profile, isAdmin } = data;
 
@@ -16,6 +25,7 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
   }
 
   const isCoordinator = eventMember?.event_role === "coordinator" || isAdmin;
+  const days = daysUntil(activeEvent?.dates);
 
   const sections = [
     ...(eventMember ? [{ id: "onboarding", label: "Onboarding", desc: eventMember.onboarding_completed ? "Review your setup" : "Complete your setup" }] : []),
@@ -33,38 +43,59 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
   return (
     <Shell withNav>
       {/* Event header card */}
-      <div style={{
-        background: NAVY,
-        borderRadius: 16,
-        padding: "1.5rem",
-        marginBottom: "1rem",
-        fontFamily: SANS,
-      }}>
-        <div style={{
-          fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em",
-          color: GOLD, textTransform: "uppercase", marginBottom: "0.25rem",
-        }}>
-          Active Event
-        </div>
-        <div style={{
-          fontFamily: SERIF, fontSize: "22px", fontWeight: 600,
-          color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem",
-        }}>
-          {activeEvent.name}
-        </div>
-        {activeEvent.dates && (
-          <div style={{ fontSize: "13px", color: "#B8C0D0" }}>{activeEvent.dates}</div>
-        )}
-        {activeEvent.location && (
-          <div style={{ fontSize: "13px", color: "#B8C0D0" }}>{activeEvent.location}</div>
-        )}
-        {activeEvent.verse && (
-          <div style={{
-            marginTop: "0.75rem", fontSize: "13px", color: GOLD,
-            fontStyle: "italic", fontFamily: SERIF, opacity: 0.9, lineHeight: 1.5,
-          }}>
-            "{activeEvent.verse}"
+      <div style={{ background: NAVY, borderRadius: 16, padding: "1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", marginBottom: "0.25rem" }}>
+              Active Event
+            </div>
+            <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: "0.25rem" }}>
+              {activeEvent.name}
+            </div>
+            {activeEvent.dates && <div style={{ fontSize: "13px", color: "#B8C0D0" }}>{activeEvent.dates}</div>}
+            {activeEvent.location && <div style={{ fontSize: "13px", color: "#B8C0D0" }}>{activeEvent.location}</div>}
           </div>
+          {days !== null && days >= 0 && (
+            <div style={{ textAlign: "center", flexShrink: 0, marginLeft: 16 }}>
+              {days === 0 ? (
+                <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: ORANGE }}>It's here!</div>
+              ) : (
+                <>
+                  <div style={{ fontFamily: SERIF, fontSize: "42px", fontWeight: 600, color: "#fff", lineHeight: 1 }}>{days}</div>
+                  <div style={{ fontSize: "10px", color: "#B8C0D0", fontWeight: 600, letterSpacing: "0.06em" }}>{days === 1 ? "DAY" : "DAYS"}</div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        {activeEvent.fee && (
+          <div style={{ fontSize: "13px", color: "#B8C0D0", marginBottom: "0.75rem" }}>
+            Registration fee: <span style={{ color: GOLD, fontWeight: 600 }}>{activeEvent.fee}</span>
+          </div>
+        )}
+        {activeEvent.verse_text && (
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem" }}>
+            <div style={{ fontFamily: SERIF, fontSize: "14px", color: "#FFE066", lineHeight: 1.65, fontStyle: "italic", marginBottom: "0.25rem" }}>
+              "{activeEvent.verse_text}"
+            </div>
+            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: GOLD, textTransform: "uppercase", fontFamily: SANS }}>
+              {activeEvent.verse}
+            </div>
+          </div>
+        )}
+        {activeEvent.registration_url && (
+          <a
+            href={activeEvent.registration_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "block", marginTop: "1rem", background: ORANGE, color: "#fff",
+              borderRadius: 10, padding: "11px 0", textAlign: "center",
+              fontSize: "14px", fontWeight: 700, fontFamily: SANS, textDecoration: "none",
+            }}
+          >
+            Register now →
+          </a>
         )}
       </div>
 

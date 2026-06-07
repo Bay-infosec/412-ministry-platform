@@ -405,7 +405,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
                 <Badge variant={h.events?.status} />
               </div>
               <div style={{ fontSize: "13px", color: TSEC }}>
-                {h.event_role} · Team {h.team_number}
+                {h.event_role === "leader" ? "Team leader" : h.event_role} · Team {h.team_number}
               </div>
             </Card>
           ))

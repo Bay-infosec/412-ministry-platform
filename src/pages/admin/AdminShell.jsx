@@ -7,6 +7,7 @@ import InviteFlow from "./people/InviteFlow.jsx";
 import EventList from "./events/EventList.jsx";
 import EventDetail from "./events/EventDetail.jsx";
 import CoLeaderPairing from "./events/CoLeaderPairing.jsx";
+import { AnnouncementList, AnnouncementEditor } from "./announcements/index.js";
 
 export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }) {
   const [screen, setScreen] = useState("home");
@@ -24,6 +25,8 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
     if (params.event !== undefined) setSelectedEvent(params.event);
   }
 
+  const [editingAnn, setEditingAnn] = useState(null); // null = list, {} = new, {id,...} = edit
+
   const titles = {
     home: "Admin",
     "people.list": "People",
@@ -32,6 +35,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
     "events.list": "Events",
     "events.detail": selectedEvent?.name || "Event",
     "events.pairing": "Co-leader Pairing",
+    "announcements": editingAnn ? (editingAnn.id ? "Edit Announcement" : "New Announcement") : "Announcements",
   };
 
   const backs = {
@@ -42,6 +46,12 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
     "events.list": "home",
     "events.detail": "events.list",
     "events.pairing": "events.detail",
+    "announcements": editingAnn ? null : "home",
+  };
+
+  const handleAnnouncementsBack = () => {
+    if (editingAnn) { setEditingAnn(null); return; }
+    nav("home");
   };
 
   const backTarget = backs[screen];
@@ -57,7 +67,10 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
         background: "#fff", flexShrink: 0,
       }}>
         <button
-          onClick={() => backTarget ? nav(backTarget) : onClose()}
+          onClick={() => {
+            if (screen === "announcements") { handleAnnouncementsBack(); return; }
+            backTarget ? nav(backTarget) : onClose();
+          }}
           style={{
             background: "none", border: "none", cursor: "pointer",
             padding: "4px 6px 4px 0", color: NAVY,
@@ -146,6 +159,25 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
               onToast={showToast}
             />
           )}
+          {screen === "announcements" && !editingAnn && (
+            <AnnouncementList
+              data={data}
+              isAdmin={isAdmin}
+              onNew={() => setEditingAnn({})}
+              onEdit={(ann) => setEditingAnn(ann)}
+              onToast={showToast}
+            />
+          )}
+          {screen === "announcements" && editingAnn && (
+            <AnnouncementEditor
+              data={data}
+              ann={editingAnn.id ? editingAnn : null}
+              isAdmin={isAdmin}
+              onSaved={() => { setEditingAnn(null); onRefresh(); }}
+              onToast={showToast}
+              onCancel={() => setEditingAnn(null)}
+            />
+          )}
         </div>
       </div>
 
@@ -159,17 +191,14 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
 }
 
 function AdminHome({ data, onNav, isAdmin }) {
-  const { allProfiles, allEvents, pendingAnnouncements } = data;
+  const { allProfiles, allEvents, allAnnouncements, pendingAnnouncements } = data;
   const activeEvent = (allEvents || []).find((e) => e.status === "active");
   const pendingCount = (pendingAnnouncements || []).length;
 
   return (
     <div>
       <div style={{ marginBottom: "1.75rem" }}>
-        <div style={{
-          fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em",
-          color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4,
-        }}>
+        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
           412 Ministry
         </div>
         <div style={{ fontFamily: SERIF, fontSize: "28px", fontWeight: 600, color: NAVY, lineHeight: 1.2 }}>
@@ -196,29 +225,20 @@ function AdminHome({ data, onNav, isAdmin }) {
         count={(allEvents || []).length}
         onClick={() => onNav("events.list")}
       />
-
-      {pendingCount > 0 && (
-        <div style={{
-          background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 14,
-          padding: "1rem 1.25rem", marginTop: "0.25rem",
-          display: "flex", alignItems: "center", gap: 12,
-        }}>
-          <div style={{ fontSize: "22px" }}>⏳</div>
-          <div>
-            <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
-              {pendingCount} announcement{pendingCount > 1 ? "s" : ""} pending approval
-            </div>
-            <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
-              Open the Updates tab to review.
-            </div>
-          </div>
-        </div>
-      )}
+      <EntryCard
+        icon={<AnnIcon />}
+        iconBg="#F0FDF4"
+        label="Announcements"
+        sub={pendingCount > 0 ? `${pendingCount} pending approval` : "Post & manage announcements"}
+        count={(allAnnouncements || []).length}
+        badge={pendingCount > 0}
+        onClick={() => onNav("announcements")}
+      />
     </div>
   );
 }
 
-function EntryCard({ icon, iconBg, label, sub, count, onClick }) {
+function EntryCard({ icon, iconBg, label, sub, count, badge, onClick }) {
   return (
     <button
       onClick={onClick}
@@ -245,12 +265,13 @@ function EntryCard({ icon, iconBg, label, sub, count, onClick }) {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {count > 0 && (
-            <span style={{
-              fontSize: "12px", fontWeight: 700, color: "#374151",
-              background: "#F3F4F6", borderRadius: 20,
-              padding: "3px 10px", fontFamily: SANS,
-            }}>
+          {badge && (
+            <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff", background: "#E53E3E", borderRadius: 20, padding: "3px 10px", fontFamily: SANS }}>
+              {count}
+            </span>
+          )}
+          {!badge && count > 0 && (
+            <span style={{ fontSize: "12px", fontWeight: 700, color: "#374151", background: "#F3F4F6", borderRadius: 20, padding: "3px 10px", fontFamily: SANS }}>
               {count}
             </span>
           )}
@@ -281,6 +302,15 @@ function EventIcon() {
       <line x1="16" y1="2" x2="16" y2="6" />
       <line x1="8" y1="2" x2="8" y2="6" />
       <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+
+function AnnIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z" />
+      <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
     </svg>
   );
 }
