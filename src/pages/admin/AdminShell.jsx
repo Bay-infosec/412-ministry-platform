@@ -8,6 +8,7 @@ import EventList from "./events/EventList.jsx";
 import EventDetail from "./events/EventDetail.jsx";
 import CoLeaderPairing from "./events/CoLeaderPairing.jsx";
 import { AnnouncementList, AnnouncementEditor } from "./announcements/index.js";
+import { ChurchList, TrainingMaterials } from "./settings/index.js";
 
 export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }) {
   const [screen, setScreen] = useState("home");
@@ -36,6 +37,9 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
     "events.detail": selectedEvent?.name || "Event",
     "events.pairing": "Co-leader Pairing",
     "announcements": editingAnn ? (editingAnn.id ? "Edit Announcement" : "New Announcement") : "Announcements",
+    "settings": "Settings",
+    "settings.churches": "Church List",
+    "settings.materials": "Training Materials",
   };
 
   const backs = {
@@ -47,6 +51,9 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
     "events.detail": "events.list",
     "events.pairing": "events.detail",
     "announcements": editingAnn ? null : "home",
+    "settings": "home",
+    "settings.churches": "settings",
+    "settings.materials": "settings",
   };
 
   const handleAnnouncementsBack = () => {
@@ -54,7 +61,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
     nav("home");
   };
 
-  const backTarget = backs[screen];
+  const backTarget = backs[screen] ?? "home";
 
   return (
     <div style={{
@@ -178,6 +185,15 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
               onCancel={() => setEditingAnn(null)}
             />
           )}
+          {screen === "settings" && (
+            <SettingsHome onNav={nav} />
+          )}
+          {screen === "settings.churches" && (
+            <ChurchList onToast={showToast} />
+          )}
+          {screen === "settings.materials" && (
+            <TrainingMaterials onToast={showToast} />
+          )}
         </div>
       </div>
 
@@ -234,6 +250,15 @@ function AdminHome({ data, onNav, isAdmin }) {
         badge={pendingCount > 0}
         onClick={() => onNav("announcements")}
       />
+      {isAdmin && (
+        <EntryCard
+          icon={<SettingsIcon />}
+          iconBg="#F5F3FF"
+          label="Settings"
+          sub="Churches & training materials"
+          onClick={() => onNav("settings")}
+        />
+      )}
     </div>
   );
 }
@@ -311,6 +336,56 @@ function AnnIcon() {
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z" />
       <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
+    </svg>
+  );
+}
+
+function SettingsIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+function SettingsHome({ onNav }) {
+  return (
+    <div>
+      <EntryCard
+        icon={<ChurchIcon />}
+        iconBg="#EEF2FC"
+        label="Church List"
+        sub="Add, edit & approve church submissions"
+        onClick={() => onNav("settings.churches")}
+      />
+      <EntryCard
+        icon={<MaterialIcon />}
+        iconBg="#FFF5EC"
+        label="Training Materials"
+        sub="Add, reorder & publish training content"
+        onClick={() => onNav("settings.materials")}
+      />
+    </div>
+  );
+}
+
+function ChurchIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A4FBF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 22H6a2 2 0 0 1-2-2V10l8-7 8 7v10a2 2 0 0 1-2 2z" />
+      <path d="M9 22V12h6v10" />
+      <line x1="12" y1="3" x2="12" y2="1" />
+      <line x1="10" y1="2" x2="14" y2="2" />
+    </svg>
+  );
+}
+
+function MaterialIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8621A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
     </svg>
   );
 }

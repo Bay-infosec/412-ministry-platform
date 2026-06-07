@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
 import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 import { Card, Field, Button } from "../../../components/ui/index.js";
+import { sendAnnouncementEmails } from "../../../lib/emailjs.js";
 
 const AUDIENCE_TYPES = [
   { value: "all",      label: "Everyone" },
@@ -74,6 +75,11 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
         ? "Submitted for admin approval."
         : "Saved as draft.";
     onToast(msg);
+
+    if (status === "published" && activeEventId) {
+      sendAnnouncementEmails(buildAudience(), { title: payload.title, body: payload.body }, activeEventId);
+    }
+
     onSaved();
   };
 

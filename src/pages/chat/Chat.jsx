@@ -4,7 +4,7 @@ import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SANS, SERIF } from "../../lib/con
 import { Avatar } from "../../components/ui/index.js";
 
 export default function Chat({ data, onClose }) {
-  const { profile, activeEvent, eventMember, allProfiles } = data;
+  const { profile, activeEvent, eventMember } = data;
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState("");
@@ -14,9 +14,11 @@ export default function Chat({ data, onClose }) {
 
   const profileMap = useMemo(() => {
     const map = {};
-    for (const p of allProfiles || []) map[p.id] = p;
+    for (const msg of messages) {
+      if (msg.profiles) map[msg.profile_id] = msg.profiles;
+    }
     return map;
-  }, [allProfiles]);
+  }, [messages]);
 
   useEffect(() => {
     if (!activeEvent) return;
@@ -58,7 +60,7 @@ export default function Chat({ data, onClose }) {
     setLoading(true);
     const { data: rows } = await supabase
       .from("chat_messages")
-      .select("*")
+      .select("*, profiles(id, full_name, photo_url)")
       .eq("event_id", activeEvent.id)
       .order("created_at", { ascending: true })
       .limit(200);

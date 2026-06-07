@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
 import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 import { Card, SectionLabel } from "../../../components/ui/index.js";
+import { sendAnnouncementEmails } from "../../../lib/emailjs.js";
 
 const STATUS_COLORS = {
   published:        { bg: "#D1FAE5", color: "#065F46" },
@@ -32,7 +33,7 @@ function AudienceChip({ audience }) {
 }
 
 export default function AnnouncementList({ data, onNew, onEdit, onToast, isAdmin }) {
-  const { allAnnouncements = [] } = data;
+  const { allAnnouncements = [], activeEvent } = data;
   const [busy, setBusy] = useState(null);
 
   const grouped = {
@@ -48,6 +49,9 @@ export default function AnnouncementList({ data, onNew, onEdit, onToast, isAdmin
     if (error) { onToast("Could not approve.", "error"); return; }
     onToast(`"${ann.title}" published.`);
     data.allAnnouncements = allAnnouncements.map((a) => a.id === ann.id ? { ...a, status: "published" } : a);
+    if (activeEvent?.id) {
+      sendAnnouncementEmails(ann.audience, ann, activeEvent.id);
+    }
   };
 
   const reject = async (ann) => {

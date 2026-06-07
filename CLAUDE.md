@@ -54,6 +54,7 @@ A mobile-first PWA for 412 Ministry — a Mongolian-American Christian youth/lea
 - **Platform roles:** `admin` | `moderator` | `member`
 - **Event roles:** `leader` | `coordinator` | `participant` | `volunteer`
 - Coordinator is an event role, not a platform role. Coordinators are also team leaders this year.
+- **Moderators (Khaliunaa, Bilgee, Enkhbayar):** platform_role = "moderator", NOT in event_members. They access the admin panel with limited permissions.
 
 ### Home screen content tiers
 - **Tier 1 — Always visible:** Daily verse (api.bible), training materials, contact button
@@ -130,16 +131,16 @@ All tables created with RLS. Complete SQL already ran successfully.
 
 | Table | Rows | Notes |
 |-------|------|-------|
-| `profiles` | 28 | Linked to auth.users. platform_role: admin/moderator/member |
-| `churches` | 17 | Seeded with Mongolian churches in US |
+| `profiles` | 28 | Linked to auth.users. platform_role: admin/moderator/member. Has church_name_custom for pending church submissions. |
+| `churches` | 17 | columns: id, name, city, state, created_at |
 | `events` | 1 | Active: Set Apart 2026 |
-| `event_members` | 24 | Has onboarding_step, onboarding_visited, coleader_revealed |
+| `event_members` | 24 | co_leader_id and coordinator_id store profile_id (NOT event_members.id). All 12 teams fully paired and coordinator-assigned. |
 | `event_checklist` | 24 | JSONB items field, flexible per event |
 | `event_content` | 0 | Per-event onboarding pages (not yet used) |
 | `event_join_requests` | 0 | Approval flow for public events |
 | `announcements` | 0 | Audience-filtered, draft/pending_approval/published |
 | `announcement_reads` | 0 | Tracks who read what |
-| `training_materials` | 0 | Articles/links/videos |
+| `training_materials` | 0 | columns: id, title, body, type, external_url, display_order, published, created_at |
 | `messages` | 0 | Chat (table exists, feature not built) |
 
 Profile trigger auto-creates profile row on auth user creation. ✅
@@ -164,30 +165,30 @@ src/
 ├── lib/
 │   ├── supabase.js
 │   ├── constants.js           — colors, fonts
-│   └── utils.js               — fmtPhone, fmtDate, matchesAudience
+│   └── utils.js               — fmtPhone, formatPhoneInput, validatePassword, fmtDate, matchesAudience
 ├── components/
 │   ├── ui/                    — Button, Field, Card, Avatar, Modal, Toast, Chip, TabBar, Badge, SectionLabel
 │   ├── layout/                — Shell, BottomNav, BackBtn
 │   └── shared/                — ContactForm, DailyVerse
 ├── pages/
-│   ├── auth/                  — Login, ChangePassword ✅
-│   ├── home/                  — Home ✅
+│   ├── auth/                  — Login ✅, ChangePassword ✅ (password validation enforced)
+│   ├── home/                  — Home ✅ (dismissible onboarding banner, rich conference card, countdown, fee, verse, register button)
 │   ├── event/
-│   │   ├── EventHome ✅
-│   │   ├── onboarding/        — OnboardingFlow ✅ (but saves to wrong table — see bugs)
+│   │   ├── EventHome ✅ (same rich conference card as Home)
+│   │   ├── onboarding/        — OnboardingFlow ✅ (saves to event_checklist table ✅)
 │   │   ├── MyTeam ✅
-│   │   ├── PrayerChain ⚠️ (hardcoded names)
+│   │   ├── PrayerChain ✅ (pulls from DB, 12-team schedule Jul10–Aug2, Aug3 all pray, 7 prayer topics)
 │   │   ├── TheFour ✅
-│   │   ├── FieldGuide ⚠️ (placeholder URL — real URL in connections above)
+│   │   ├── FieldGuide ✅ (real Google Drive URL)
 │   │   └── Chat ❌ (not built)
 │   ├── updates/               — Updates ✅
-│   ├── profile/               — Profile ✅
-│   └── admin/                 — ❌ NOT BUILT (button exists in Profile, nothing renders)
-│       ├── AdminShell
-│       ├── people/            — PeopleList, PersonDetail, InviteFlow
-│       ├── events/            — EventList, EventDetail, MemberAssign, CoLeaderPairing, EventContent
-│       ├── announcements/     — AnnouncementList, AnnouncementEditor, ApprovalQueue
-│       └── settings/          — ChurchList, TrainingMaterials
+│   ├── profile/               — Profile ✅ (phone formatting, password validation, church Other option, history shows "Team leader")
+│   └── admin/                 ✅ BUILT
+│       ├── AdminShell ✅       — People, Events, Announcements, Settings entry points
+│       ├── people/            — PeopleList ✅, PersonDetail ✅, InviteFlow ✅
+│       ├── events/            — EventList ✅, EventDetail ✅, CoLeaderPairing ✅
+│       ├── announcements/     — AnnouncementList ✅, AnnouncementEditor ✅ (draft/pending/published flow)
+│       └── settings/          — ChurchList 🔨 (in progress), TrainingMaterials 🔨 (in progress)
 ```
 
 ---
@@ -195,11 +196,12 @@ src/
 ## Known Bugs
 
 - [x] Fixed: `EventHome` imported twice in `App.jsx`
-- [ ] `OnboardingFlow` saves checklist to `event_members.checklist` (doesn't exist) — should write to `event_checklist` table with JSONB items
-- [ ] `PrayerChain` has hardcoded names — should pull from `event_members` joined with `profiles`
-- [ ] `FieldGuide` has placeholder URL — real URL: `https://drive.google.com/file/d/1VVARCRm2Rl9NkH7i0wzDot5KwJbN-dF7/preview`
+- [x] Fixed: `OnboardingFlow` now writes to `event_checklist` table
+- [x] Fixed: `PrayerChain` now pulls from DB (event_members + profiles)
+- [x] Fixed: `FieldGuide` real URL set
+- [x] Fixed: HTTP 500 on events/announcements/event_members — recursive RLS policy replaced with `auth.uid() IS NOT NULL`
+- [x] Fixed: Khaliunaa's stale event_members coordinator record removed
 - [ ] Coordinator sees themselves in their own coordinator team view
-- [ ] `.env` missing EmailJS variables (added in session 1)
 
 ---
 
@@ -243,15 +245,26 @@ src/
 |------|---------|---------------|
 | 2026-06-06 | Account 1 | Set up Claude Code. Cloned repo. Created .env. Connected Supabase + Vercel MCP. Fixed double EventHome import. Created CLAUDE.md. Read full v2 (LeaderOnboarding) codebase. Read Claude.pdf — captured complete architecture decisions. Updated CLAUDE.md. Added EmailJS vars to .env. Fixed FieldGuide URL. Fixed OnboardingFlow checklist table bug. |
 | 2026-06-07 | Account 1 | Built complete admin panel: AdminShell, PeopleList, PersonDetail, InviteFlow, EventList, EventDetail, CoLeaderPairing. Fixed Modal.jsx useState bug. Wired AdminShell into App.jsx. Deployed `reset-password` edge function. Build passes clean (118 modules). |
+| 2026-06-07 | Account 1 | Phone formatting (formatPhoneInput), password validation (validatePassword), church Other option in Profile. Home redesign: dismissible onboarding banner, rich conference card with countdown/fee/verse/register button. EventHome: same card. PrayerChain: full rewrite from DB, 12-team schedule, 7 prayer topics. Profile history: "Team leader". Admin Announcements: AnnouncementList + AnnouncementEditor with draft/pending/published flow wired into AdminShell. Fixed HTTP 500 recursive RLS policies on events/announcements/event_members. Removed Khaliunaa's stale event_members record. Verified all 12 teams fully paired with co-leaders and coordinators (co_leader_id stores profile_id). |
 
 ---
 
 ## Next Up
 
-1. **Home improvements** — countdown to conference date, dismissible announcements
-2. **PrayerChain from DB** — currently hardcoded, needs `event_members` join `profiles`
-3. **Admin: Announcements** — AnnouncementEditor + ApprovalQueue (moderator posts need admin approval)
-4. **Admin: Settings** — ChurchList, TrainingMaterials management pages
+1. **Admin: Settings** — ChurchList (view/add/edit churches + approve pending church_name_custom submissions), TrainingMaterials (add/edit/reorder/publish) — **IN PROGRESS**
+2. **Onboarding personal messages** — admin writes per-person welcome message stored in event_members
+3. **Chat** — Supabase Realtime, per-event room
+
+---
+
+## Sync Notes (append-only — add dated, attributed entries; never edit or delete prior ones)
+
+This section exists so the two accounts can correct each other's understanding without erasing history. If another section looks stale, don't rewrite it in place — append a dated note here pointing to the current truth, how it was verified, and which section should be treated as canonical going forward.
+
+- **2026-06-06 (Account 2 — verification pass against live source + Supabase):**
+  - The **"Features Missing vs V2"** table still lists "Admin panel (full)" and "Co-leader pairing UI" as 🔴 HIGH/missing, but the **File Structure** section (lines ~186-191) shows both ✅ BUILT, and the 2026-06-07 Progress Log entry confirms the build passes clean. **Treat File Structure as the canonical "what's built" source** — the Features Missing table and Build Priority Order steps 1-4 are now superseded by it and shouldn't be trusted at face value.
+  - **Confirmed still open — Coordinator "My Teams" view**: `EventHome.jsx:40` registers a `coordinator` section labeled "My Teams" ("Overview of teams you oversee"), but no dedicated coordinator-overview component exists yet (no `*Coordinator*` / `*MyTeams*` file in `src/`). This is the root cause of the original "coordinator sees themselves in their own team" complaint from the design chat — the overview screen meant to filter the coordinator out of their own team list was never built, so coordinators currently fall back to the regular `MyTeam` view where they appear as a member of their own team. **Fix = build that component, excluding `profile_id === coordinator_id` from the rendered member list.**
+  - ⚠️ **Security finding**: `~/Desktop/Claude.pdf` (the shared design-chat export) contains the Supabase **`anon` key AND `service_role` key** plus EmailJS service/template/public-key credentials in plaintext, and was distributed via a public `claude.ai/share` link. The `service_role` key bypasses RLS entirely. **Recommend rotating the Supabase API keys and revoking that share link** before relying on this doc/PDF for anything else.
 
 ---
 

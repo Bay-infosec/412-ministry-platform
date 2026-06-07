@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../../lib/constants.js";
 import { Shell } from "../../../components/layout/index.js";
@@ -314,67 +314,175 @@ function RequirementsPage({ onNext }) {
   );
 }
 
-function TeamRevealPage({ eventMember, onNext }) {
-  const coLeader = eventMember?.co_leader || null;
+function TeamRevealPage({ eventMember, coLeader, onNext }) {
   const teamNumber = eventMember?.team_number;
   const ministry = eventMember?.ministry;
+  const alreadyRevealed = eventMember?.coleader_revealed;
+
+  const [revealed, setRevealed] = useState(!!alreadyRevealed);
+  const [transitioning, setTransitioning] = useState(false);
+
+  async function handleReveal() {
+    if (revealed || transitioning) return;
+    setTransitioning(true);
+    await supabase
+      .from("event_members")
+      .update({ coleader_revealed: true })
+      .eq("id", eventMember.id);
+    setTimeout(() => {
+      setRevealed(true);
+      setTransitioning(false);
+    }, 500);
+  }
+
+  const firstName = coLeader?.full_name?.split(" ")[0] || "them";
 
   return (
     <>
+      <style>{`
+        @keyframes revealIn {
+          0%  { opacity: 0; transform: scale(0.82); }
+          60% { transform: scale(1.04); }
+          100%{ opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulse-orb {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(239,171,37,0.3); }
+          50%       { box-shadow: 0 0 0 14px rgba(239,171,37,0); }
+        }
+        .reveal-card { animation: revealIn 0.65s cubic-bezier(0.34,1.2,0.64,1) forwards; }
+        .pulse-orb   { animation: pulse-orb 2s ease-in-out infinite; }
+      `}</style>
+
       <StepTag current={5} total={6} />
       <StepTitle>Your team.</StepTitle>
-      <StepBody>Here is your team assignment and the person you will be leading alongside.</StepBody>
+      <StepBody>You have been assigned to lead one of the twelve teams at Set Apart 2026.</StepBody>
+
+      {/* Team number card */}
       <div style={{
-        background: NAVY, borderRadius: 16, padding: "1.5rem",
+        background: NAVY, borderRadius: 20, padding: "1.5rem",
         marginBottom: "0.75rem", textAlign: "center",
       }}>
-        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", marginBottom: 8, fontFamily: SANS }}>
+        <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.22em", color: GOLD, textTransform: "uppercase", marginBottom: 8, fontFamily: SANS }}>
           Team
         </div>
-        <div style={{ fontFamily: SERIF, fontSize: "64px", color: GOLD, lineHeight: 1, marginBottom: 8 }}>
+        <div style={{ fontFamily: SERIF, fontSize: "72px", color: GOLD, lineHeight: 1, marginBottom: 6 }}>
           {teamNumber || "—"}
         </div>
         {ministry && (
-          <div style={{ fontSize: "12px", color: "#B8C0D0", fontFamily: SANS, letterSpacing: "0.1em" }}>
-            {ministry}
+          <div style={{ fontSize: "12px", color: "#B8C0D0", fontFamily: SANS, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+            {ministry === "EM" ? "English Ministry" : ministry === "MM" ? "Mongolian Ministry" : ministry}
           </div>
         )}
       </div>
-      {coLeader ? (
-        <Card style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: 14, marginBottom: "1rem" }}>
-          <div style={{
-            width: 52, height: 52, borderRadius: "50%", overflow: "hidden",
-            background: BG, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+
+      {/* Co-leader section */}
+      {!revealed ? (
+        /* ── Mystery card ── */
+        <div style={{
+          background: NAVY, borderRadius: 20, padding: "2rem 1.75rem",
+          marginBottom: "1rem", textAlign: "center",
+          opacity: transitioning ? 0 : 1,
+          transform: transitioning ? "scale(0.92)" : "scale(1)",
+          transition: "opacity 0.45s ease, transform 0.45s ease",
+        }}>
+          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.2em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.5rem" }}>
+            Your Co-Leader
+          </div>
+
+          {/* Mystery orb */}
+          <div className="pulse-orb" style={{
+            width: 90, height: 90, borderRadius: "50%",
+            margin: "0 auto 1.5rem",
+            background: "radial-gradient(circle at 40% 35%, rgba(239,171,37,0.25), rgba(22,32,56,0.6))",
+            border: "2px solid rgba(239,171,37,0.35)",
+            display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            {coLeader.photo_url ? (
-              <img src={coLeader.photo_url} alt={coLeader.full_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            ) : (
-              <span style={{ fontFamily: SERIF, fontSize: 20, color: TSEC }}>
-                {coLeader.full_name?.charAt(0)}
-              </span>
-            )}
+            <span style={{ fontFamily: SERIF, fontSize: "44px", color: "rgba(239,171,37,0.55)", lineHeight: 1 }}>?</span>
           </div>
-          <div>
-            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: 3 }}>
-              Your co-leader
-            </div>
-            <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
-              {coLeader.full_name}
-            </div>
-            {coLeader.ministry_role && (
-              <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{coLeader.ministry_role}</div>
-            )}
+
+          <div style={{
+            fontFamily: SERIF, fontSize: "15px", color: "#B8C0D0",
+            fontStyle: "italic", lineHeight: 1.75, marginBottom: "0.5rem",
+          }}>
+            "Two are better than one, because they have a good return for their labor."
           </div>
-        </Card>
+          <div style={{ fontSize: "11px", fontWeight: 700, color: "rgba(239,171,37,0.6)", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.75rem" }}>
+            Ecclesiastes 4:9
+          </div>
+
+          <button
+            onClick={handleReveal}
+            disabled={transitioning}
+            style={{
+              width: "100%", padding: "15px", border: "none", borderRadius: 14,
+              background: transitioning ? "rgba(232,98,26,0.5)" : ORANGE,
+              color: "#fff", fontSize: "15px", fontWeight: 700, fontFamily: SANS,
+              cursor: transitioning ? "wait" : "pointer",
+              letterSpacing: "0.02em",
+              transition: "background 0.2s",
+            }}
+          >
+            {transitioning ? "Revealing…" : "Reveal your co-leader →"}
+          </button>
+        </div>
+      ) : coLeader ? (
+        /* ── Revealed card ── */
+        <div className="reveal-card" style={{
+          background: NAVY, borderRadius: 20, padding: "2rem 1.75rem",
+          marginBottom: "1rem", textAlign: "center",
+        }}>
+          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.2em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.5rem" }}>
+            Your Co-Leader
+          </div>
+
+          {/* Avatar with gold ring */}
+          <div style={{
+            width: 96, height: 96, borderRadius: "50%",
+            margin: "0 auto 1.25rem",
+            border: `3px solid ${GOLD}`,
+            padding: 3,
+            background: NAVY,
+          }}>
+            <div style={{
+              width: "100%", height: "100%", borderRadius: "50%",
+              overflow: "hidden", background: BG,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {coLeader.photo_url ? (
+                <img src={coLeader.photo_url} alt={coLeader.full_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <span style={{ fontFamily: SERIF, fontSize: 36, color: TSEC }}>
+                  {coLeader.full_name?.charAt(0)}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div style={{ fontFamily: SERIF, fontSize: "28px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: 4 }}>
+            {coLeader.full_name}
+          </div>
+          {coLeader.ministry_role && (
+            <div style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS, marginBottom: "1.5rem" }}>
+              {coLeader.ministry_role}
+            </div>
+          )}
+
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: "1.25rem" }}>
+            <div style={{ fontFamily: SERIF, fontSize: "16px", color: GOLD, fontStyle: "italic", lineHeight: 1.65 }}>
+              You and {firstName} will lead Team {teamNumber} together.
+            </div>
+          </div>
+        </div>
       ) : (
-        <Card style={{ padding: "1rem 1.25rem", marginBottom: "1rem", textAlign: "center" }}>
-          <span style={{ fontSize: "13px", color: TSEC, fontFamily: SANS }}>
+        <Card style={{ padding: "1.25rem", marginBottom: "1rem", textAlign: "center" }}>
+          <span style={{ fontSize: "14px", color: TSEC, fontFamily: SANS }}>
             Co-leader assignment coming soon.
           </span>
         </Card>
       )}
+
       <div style={{ flex: 1 }} />
-      <PrimaryBtn onClick={onNext}>Continue</PrimaryBtn>
+      <PrimaryBtn onClick={onNext} disabled={transitioning}>Continue</PrimaryBtn>
     </>
   );
 }
@@ -467,8 +575,14 @@ function ProgressBar({ step, total }) {
 // ── Main shell ────────────────────────────────────────────────────────────────
 
 export default function OnboardingFlow({ data, onDone }) {
-  const { profile, activeEvent, eventMember } = data;
+  const { profile, activeEvent, eventMember, coLeader } = data;
   const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (eventMember?.id && !eventMember.onboarding_visited) {
+      supabase.from("event_members").update({ onboarding_visited: true }).eq("id", eventMember.id);
+    }
+  }, [eventMember?.id]);
 
   const next = () => setStep((s) => Math.min(s + 1, 5));
 
@@ -495,7 +609,7 @@ export default function OnboardingFlow({ data, onDone }) {
     <PersonalMessagePage key="message" eventMember={eventMember} onNext={next} />,
     <EventInfoPage key="info" activeEvent={activeEvent} eventMember={eventMember} onNext={next} />,
     <RequirementsPage key="req" onNext={next} />,
-    <TeamRevealPage key="team" eventMember={eventMember} onNext={next} />,
+    <TeamRevealPage key="team" eventMember={eventMember} coLeader={coLeader} onNext={next} />,
     <ChecklistPage key="checklist" onFinish={handleFinish} />,
   ];
 

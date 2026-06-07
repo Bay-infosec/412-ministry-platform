@@ -93,6 +93,38 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
         </div>
       </div>
 
+      {/* Onboarding progress summary */}
+      {!loading && members.length > 0 && (() => {
+        const leaders = members.filter((m) => m.event_role === "leader");
+        const complete    = leaders.filter((m) => m.onboarding_completed).length;
+        const inProgress  = leaders.filter((m) => !m.onboarding_completed && m.onboarding_visited).length;
+        const notStarted  = leaders.filter((m) => !m.onboarding_completed && !m.onboarding_visited).length;
+        return (
+          <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.75rem" }}>
+              Onboarding · {leaders.length} leaders
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {[
+                { label: "Complete",    count: complete,   bg: "#D1FAE5", color: "#065F46" },
+                { label: "In progress", count: inProgress, bg: "#FEF3C7", color: "#92400E" },
+                { label: "Not started", count: notStarted, bg: "#FEE2E2", color: "#991B1B" },
+              ].map(({ label, count, bg, color }) => (
+                <div key={label} style={{ flex: 1, background: bg, borderRadius: 10, padding: "0.625rem", textAlign: "center" }}>
+                  <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 700, color, lineHeight: 1 }}>{count}</div>
+                  <div style={{ fontFamily: SANS, fontSize: "10px", fontWeight: 600, color, marginTop: 3, lineHeight: 1.3 }}>{label}</div>
+                </div>
+              ))}
+            </div>
+            {notStarted > 0 && (
+              <div style={{ fontSize: "12px", color: "#991B1B", fontFamily: SANS, marginTop: "0.75rem" }}>
+                ⚠ {notStarted} leader{notStarted !== 1 ? "s have" : " has"} not opened onboarding yet — consider reaching out.
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Members header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
         <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: "#E8621A", textTransform: "uppercase", fontFamily: "sans-serif" }}>
@@ -214,8 +246,22 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
   );
 }
 
+const ONBOARDING_STATUS = {
+  complete:    { label: "Complete",     bg: "#D1FAE5", color: "#065F46" },
+  in_progress: { label: "In progress",  bg: "#FEF3C7", color: "#92400E" },
+  not_started: { label: "Not started",  bg: "#FEE2E2", color: "#991B1B" },
+};
+
+function onboardingStatus(member) {
+  if (member.onboarding_completed) return "complete";
+  if (member.onboarding_visited)   return "in_progress";
+  return "not_started";
+}
+
 function MemberRow({ member, onRemove }) {
   const p = member.profiles || {};
+  const status = onboardingStatus(member);
+  const st = ONBOARDING_STATUS[status];
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 10,
@@ -229,14 +275,16 @@ function MemberRow({ member, onRemove }) {
         </div>
         <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>
           {member.event_role}{member.ministry ? ` · ${member.ministry}` : ""}
-          {member.onboarding_completed ? " · ✓" : ""}
         </div>
       </div>
+      <span style={{ fontSize: "10px", fontWeight: 700, background: st.bg, color: st.color, borderRadius: 20, padding: "3px 8px", fontFamily: SANS, flexShrink: 0 }}>
+        {st.label}
+      </span>
       <button onClick={onRemove} style={{
         background: "none", border: "none", cursor: "pointer",
-        color: "#DC2626", fontSize: "13px", fontFamily: SANS, padding: "4px 8px",
+        color: "#DC2626", fontSize: "13px", fontFamily: SANS, padding: "4px 4px",
       }}>
-        Remove
+        ✕
       </button>
     </div>
   );
