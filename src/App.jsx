@@ -277,7 +277,7 @@ export default function App() {
 
         const { data: aem } = await supabase
           .from("event_members")
-          .select("*, profiles(full_name, photo_url, email)")
+          .select("*, profiles!event_members_profile_id_fkey(full_name, photo_url, email)")
           .order("team_number");
         allEventMembers = aem || [];
 

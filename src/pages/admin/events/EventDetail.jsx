@@ -120,7 +120,8 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
     await supabase.from("events").insert({ ...fields, status: "inactive" });
     setDuplicating(false);
     onToast(`Duplicated "${event.name}" as inactive.`);
-    onRefresh();
+    await onRefresh();
+    onBack?.();
   }
 
   async function deleteEvent() {
