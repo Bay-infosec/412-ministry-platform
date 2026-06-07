@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
+import { formatPhoneInput, validatePassword } from "../../lib/utils.js";
 import { NAVY, ORANGE, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, Field, Button, Avatar, SectionLabel, Badge } from "../../components/ui/index.js";
@@ -142,7 +143,10 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
   const [nickname, setNickname] = useState(profile.nickname || "");
   const [phone, setPhone] = useState(profile.phone || "");
   const [ministryRole, setMinistryRole] = useState(profile.ministry_role || "");
-  const [churchId, setChurchId] = useState(profile.church_id || "");
+  const [churchId, setChurchId] = useState(
+    profile.church_id ? profile.church_id : (profile.church_name_custom ? "other" : "")
+  );
+  const [customChurch, setCustomChurch] = useState(profile.church_name_custom || "");
   const [photoUrl, setPhotoUrl] = useState(profile.photo_url || "");
   const [cropFile, setCropFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -182,12 +186,26 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
   };
 
   const save = async () => {
-    setBusy(true);
     setMsg("");
-    const { error } = await supabase
-      .from("profiles")
-      .update({ nickname, phone, ministry_role: ministryRole, church_id: churchId || null, photo_url: photoUrl })
-      .eq("id", profile.id);
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phone && phoneDigits.length !== 10) {
+      setMsg("Please enter a valid 10-digit phone number, e.g. (619)555-1234.");
+      return;
+    }
+    if (churchId === "other" && !customChurch.trim()) {
+      setMsg("Please enter your church name.");
+      return;
+    }
+    setBusy(true);
+    const updates = {
+      nickname,
+      phone,
+      ministry_role: ministryRole,
+      photo_url: photoUrl,
+      church_id: churchId && churchId !== "other" ? churchId : null,
+      church_name_custom: churchId === "other" ? customChurch.trim() : null,
+    };
+    const { error } = await supabase.from("profiles").update(updates).eq("id", profile.id);
     setBusy(false);
     if (error) { setMsg("Could not save."); return; }
     setMsg("Saved.");
@@ -197,7 +215,8 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
 
   const changePw = async () => {
     setPwMsg("");
-    if (pw1.length < 8) { setPwMsg("At least 8 characters."); return; }
+    const pwErr = validatePassword(pw1);
+    if (pwErr) { setPwMsg(pwErr); return; }
     if (pw1 !== pw2) { setPwMsg("Passwords do not match."); return; }
     const { error } = await supabase.auth.updateUser({ password: pw1 });
     if (error) { setPwMsg("Could not update password."); return; }
@@ -205,7 +224,11 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
     setMsg("Password updated.");
   };
 
-  const churchName = (churches || []).find((c) => c.id === profile.church_id)?.name;
+  const churchName = profile.church_id
+    ? (churches || []).find((c) => c.id === profile.church_id)?.name
+    : profile.church_name_custom
+      ? `${profile.church_name_custom} (pending)`
+      : null;
 
   if (!editing) {
     return (
@@ -504,8 +527,8 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
           label="PHONE"
           type="tel"
           value={phone}
-          onChange={setPhone}
-          placeholder="Your phone number"
+          onChange={(val) => setPhone(formatPhoneInput(val))}
+          placeholder="(xxx)xxx-xxxx"
         />
         <Field
           label="MINISTRY ROLE"
@@ -549,7 +572,33 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
                 {c.name}{c.city ? ` — ${c.city}` : ""}
               </option>
             ))}
+            <option value="other">Other (not listed)</option>
           </select>
+          {churchId === "other" && (
+            <div style={{ marginTop: 8 }}>
+              <input
+                type="text"
+                value={customChurch}
+                onChange={(e) => setCustomChurch(e.target.value)}
+                placeholder="Enter your church name"
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: `1px solid ${BORDER}`,
+                  fontSize: "15px",
+                  fontFamily: SANS,
+                  color: NAVY,
+                  background: "#fff",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+              <div style={{ fontSize: "11px", color: TSEC, marginTop: 4, fontFamily: SANS }}>
+                Your church will be listed as pending until an admin adds it to the official list.
+              </div>
+            </div>
+          )}
         </div>
 
         {msg && (
@@ -606,7 +655,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
               type="password"
               value={pw1}
               onChange={setPw1}
-              placeholder="At least 8 characters"
+              placeholder="Min 8 chars, capital, number, symbol"
             />
             <Field
               label="CONFIRM"

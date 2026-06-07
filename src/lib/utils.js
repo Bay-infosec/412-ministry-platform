@@ -1,8 +1,26 @@
 export function fmtPhone(raw) {
-  const d = String(raw || "").replace(/\D/g, "");
-  if (d.length === 11) return `+${d[0]} (${d.slice(1,4)}) ${d.slice(4,7)}-${d.slice(7)}`;
-  if (d.length === 10) return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+  let d = String(raw || "").replace(/\D/g, "");
+  if (d.length === 11 && d[0] === "1") d = d.slice(1);
+  if (d.length === 10) return `(${d.slice(0,3)})${d.slice(3,6)}-${d.slice(6)}`;
   return raw || "";
+}
+
+export function formatPhoneInput(raw) {
+  let d = raw.replace(/\D/g, "");
+  if (d.length === 11 && d[0] === "1") d = d.slice(1);
+  d = d.slice(0, 10);
+  if (d.length === 0) return "";
+  if (d.length <= 3) return `(${d}`;
+  if (d.length <= 6) return `(${d.slice(0,3)})${d.slice(3)}`;
+  return `(${d.slice(0,3)})${d.slice(3,6)}-${d.slice(6)}`;
+}
+
+export function validatePassword(pw) {
+  if (pw.length < 8) return "Password must be at least 8 characters.";
+  if (!/[A-Z]/.test(pw)) return "Password must include at least one capital letter.";
+  if (!/[0-9]/.test(pw)) return "Password must include at least one number.";
+  if (!/[^A-Za-z0-9]/.test(pw)) return "Password must include at least one special character.";
+  return null;
 }
 
 export function fmtDate(d) {

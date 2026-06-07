@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../lib/supabase.js";
+import { validatePassword } from "../../lib/utils.js";
 import { NAVY, ORANGE, TSEC, SERIF, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, Field, Button } from "../../components/ui/index.js";
@@ -12,10 +13,8 @@ export default function ChangePassword({ onDone }) {
 
   const submit = async () => {
     setErr("");
-    if (pw1.length < 8) {
-      setErr("Password must be at least 8 characters.");
-      return;
-    }
+    const pwErr = validatePassword(pw1);
+    if (pwErr) { setErr(pwErr); return; }
     if (pw1 !== pw2) {
       setErr("The two passwords do not match.");
       return;
@@ -95,7 +94,7 @@ export default function ChangePassword({ onDone }) {
           type="password"
           value={pw1}
           onChange={setPw1}
-          placeholder="At least 8 characters"
+          placeholder="Min 8 chars, capital, number, symbol"
         />
         <Field
           label="CONFIRM NEW PASSWORD"
