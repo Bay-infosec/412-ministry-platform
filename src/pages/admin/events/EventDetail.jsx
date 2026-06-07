@@ -11,6 +11,8 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
   const [busy, setBusy] = useState(false);
   const [addQuery, setAddQuery] = useState("");
   const [pendingRemove, setPendingRemove] = useState(null);
+  const [editingMessage, setEditingMessage] = useState(null); // member object
+  const [messageText, setMessageText] = useState("");
 
   useEffect(() => {
     fetchMembers();
@@ -168,6 +170,10 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
                   key={m.id}
                   member={m}
                   onRemove={() => setPendingRemove(m)}
+                  onEditMessage={() => {
+                    setEditingMessage(m);
+                    setMessageText(m.personal_message || "");
+                  }}
                 />
               ))}
             </div>
@@ -230,6 +236,92 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
         </div>
       )}
 
+      {/* Personal message editor */}
+      {editingMessage && (
+        <div style={overlay}>
+          <div style={{ ...sheet, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
+            <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: NAVY, marginBottom: 4 }}>
+              Personal Message
+            </div>
+            <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginBottom: "1rem" }}>
+              For {editingMessage.profiles?.full_name} — shown on their onboarding step 2.
+            </div>
+            <textarea
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              placeholder="Write a personal note for this leader — encouragement, specific affirmations, or a scripture just for them…"
+              rows={7}
+              style={{
+                width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10,
+                padding: "12px 14px", fontSize: "14px", fontFamily: SANS, color: NAVY,
+                resize: "vertical", outline: "none", boxSizing: "border-box",
+                lineHeight: 1.6, marginBottom: "0.75rem",
+              }}
+            />
+            {messageText.trim() && (
+              <div style={{
+                background: NAVY, borderRadius: 12, padding: "1rem 1.25rem",
+                marginBottom: "0.75rem", position: "relative", overflow: "hidden",
+              }}>
+                <div style={{
+                  position: "absolute", top: 8, left: 14,
+                  fontFamily: SERIF, fontSize: "60px", color: "#EFAB25",
+                  opacity: 0.12, lineHeight: 1, userSelect: "none",
+                }}>
+                  "
+                </div>
+                <div style={{
+                  fontFamily: SERIF, fontSize: "14px", color: "#fff",
+                  lineHeight: 1.75, whiteSpace: "pre-wrap", position: "relative",
+                }}>
+                  {messageText.trim()}
+                </div>
+                <div style={{
+                  fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em",
+                  textTransform: "uppercase", color: "#EFAB25", fontFamily: SANS,
+                  marginTop: "0.75rem",
+                }}>
+                  Preview
+                </div>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={async () => {
+                  setBusy(true);
+                  await supabase
+                    .from("event_members")
+                    .update({ personal_message: messageText.trim() || null })
+                    .eq("id", editingMessage.id);
+                  setBusy(false);
+                  onToast(`Message saved for ${editingMessage.profiles?.full_name}.`);
+                  setEditingMessage(null);
+                  await fetchMembers();
+                }}
+                disabled={busy}
+                style={{
+                  flex: 1, background: NAVY, color: "#fff", border: "none",
+                  borderRadius: 10, padding: "11px", fontSize: "14px",
+                  fontWeight: 600, cursor: "pointer", fontFamily: SANS,
+                }}
+              >
+                {busy ? "Saving…" : "Save message"}
+              </button>
+              <button
+                onClick={() => setEditingMessage(null)}
+                style={{
+                  background: "none", border: `1px solid ${BORDER}`, borderRadius: 10,
+                  padding: "11px 16px", fontSize: "14px", color: TSEC,
+                  cursor: "pointer", fontFamily: SANS,
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Remove confirmation */}
       {pendingRemove && (
         <Modal
@@ -258,10 +350,11 @@ function onboardingStatus(member) {
   return "not_started";
 }
 
-function MemberRow({ member, onRemove }) {
+function MemberRow({ member, onRemove, onEditMessage }) {
   const p = member.profiles || {};
   const status = onboardingStatus(member);
   const st = ONBOARDING_STATUS[status];
+  const hasMessage = !!member.personal_message;
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 10,
@@ -280,9 +373,24 @@ function MemberRow({ member, onRemove }) {
       <span style={{ fontSize: "10px", fontWeight: 700, background: st.bg, color: st.color, borderRadius: 20, padding: "3px 8px", fontFamily: SANS, flexShrink: 0 }}>
         {st.label}
       </span>
+      <button
+        onClick={onEditMessage}
+        title={hasMessage ? "Edit personal message" : "Write personal message"}
+        style={{
+          background: "none", border: "none", cursor: "pointer",
+          padding: "4px", display: "flex", alignItems: "center",
+          color: hasMessage ? "#EFAB25" : BORDER,
+          flexShrink: 0,
+        }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill={hasMessage ? "#EFAB25" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      </button>
       <button onClick={onRemove} style={{
         background: "none", border: "none", cursor: "pointer",
         color: "#DC2626", fontSize: "13px", fontFamily: SANS, padding: "4px 4px",
+        flexShrink: 0,
       }}>
         ✕
       </button>
