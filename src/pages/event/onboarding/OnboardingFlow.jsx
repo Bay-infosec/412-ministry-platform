@@ -64,6 +64,11 @@ function WelcomePage({ profile, activeEvent, onNext }) {
   const firstName = profile?.full_name?.split(" ")[0] || "Friend";
   return (
     <>
+      {/* Logo */}
+      <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
+        <img src="/logo.png" alt="412 Ministry" style={{ height: 60, width: "auto" }} />
+      </div>
+
       {/* Hero card */}
       <div style={{
         background: NAVY, borderRadius: 24, padding: "2rem 1.75rem 1.75rem",
@@ -73,7 +78,7 @@ function WelcomePage({ profile, activeEvent, onNext }) {
           fontSize: "10px", fontWeight: 700, letterSpacing: "0.22em",
           color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.25rem",
         }}>
-          412 Ministry · {activeEvent?.name || "Set Apart 2026"}
+          {activeEvent?.name || "Set Apart 2026"}
         </div>
         <div style={{
           fontFamily: SERIF, fontSize: "52px", fontWeight: 600,

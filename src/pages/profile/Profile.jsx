@@ -1,8 +1,140 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
 import { NAVY, ORANGE, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, Field, Button, Avatar, SectionLabel, Badge } from "../../components/ui/index.js";
+
+const CROP_SIZE = 270;
+
+function PhotoCropModal({ file, onConfirm, onCancel }) {
+  const [imgSrc, setImgSrc] = useState(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [scale, setScale] = useState(1);
+  const [minScale, setMinScale] = useState(0.5);
+  const [dragging, setDragging] = useState(false);
+  const dragOrigin = useRef(null);
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    const reader = new FileReader();
+    reader.onload = (e) => setImgSrc(e.target.result);
+    reader.readAsDataURL(file);
+  }, [file]);
+
+  const onImgLoad = () => {
+    const img = imgRef.current;
+    const fill = Math.max(CROP_SIZE / img.naturalWidth, CROP_SIZE / img.naturalHeight);
+    setMinScale(fill);
+    setScale(fill);
+  };
+
+  const startDrag = (clientX, clientY) => {
+    setDragging(true);
+    dragOrigin.current = { x: clientX - offset.x, y: clientY - offset.y };
+  };
+  const moveDrag = (clientX, clientY) => {
+    if (!dragging || !dragOrigin.current) return;
+    setOffset({ x: clientX - dragOrigin.current.x, y: clientY - dragOrigin.current.y });
+  };
+  const endDrag = () => setDragging(false);
+
+  const handleConfirm = () => {
+    const img = imgRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = 400;
+    canvas.height = 400;
+    const ctx = canvas.getContext("2d");
+    const srcW = CROP_SIZE / scale;
+    const srcH = CROP_SIZE / scale;
+    const srcX = (img.naturalWidth - srcW) / 2 - offset.x / scale;
+    const srcY = (img.naturalHeight - srcH) / 2 - offset.y / scale;
+    ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, 400, 400);
+    canvas.toBlob((blob) => onConfirm(blob), "image/jpeg", 0.92);
+  };
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 999,
+      background: "rgba(0,0,0,0.88)",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      padding: "1rem",
+    }}>
+      <div style={{ color: "#fff", fontFamily: SANS, fontSize: "15px", fontWeight: 600, marginBottom: 20 }}>
+        Drag to adjust your photo
+      </div>
+
+      {/* Circular crop frame */}
+      <div
+        style={{
+          width: CROP_SIZE, height: CROP_SIZE,
+          borderRadius: "50%", overflow: "hidden",
+          border: "3px solid #fff", position: "relative",
+          cursor: dragging ? "grabbing" : "grab", flexShrink: 0,
+          background: "#111",
+        }}
+        onMouseDown={(e) => startDrag(e.clientX, e.clientY)}
+        onMouseMove={(e) => moveDrag(e.clientX, e.clientY)}
+        onMouseUp={endDrag}
+        onMouseLeave={endDrag}
+        onTouchStart={(e) => { const t = e.touches[0]; startDrag(t.clientX, t.clientY); }}
+        onTouchMove={(e) => { e.preventDefault(); const t = e.touches[0]; moveDrag(t.clientX, t.clientY); }}
+        onTouchEnd={endDrag}
+      >
+        {imgSrc && (
+          <img
+            ref={imgRef}
+            src={imgSrc}
+            alt="crop preview"
+            onLoad={onImgLoad}
+            draggable={false}
+            style={{
+              position: "absolute",
+              left: "50%", top: "50%",
+              transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px)) scale(${scale})`,
+              transformOrigin: "center",
+              maxWidth: "none",
+              userSelect: "none", pointerEvents: "none",
+            }}
+          />
+        )}
+      </div>
+
+      {/* Zoom slider */}
+      <div style={{ marginTop: 20, display: "flex", alignItems: "center", gap: 12 }}>
+        <button
+          onClick={() => setScale((s) => Math.max(minScale, +(s - 0.1).toFixed(2)))}
+          style={{ color: "#fff", background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 6, padding: "6px 14px", cursor: "pointer", fontSize: 18, fontFamily: SANS }}
+        >−</button>
+        <input
+          type="range" min={minScale} max={minScale * 3} step="0.01"
+          value={scale}
+          onChange={(e) => setScale(Number(e.target.value))}
+          style={{ width: 130, accentColor: ORANGE }}
+        />
+        <button
+          onClick={() => setScale((s) => Math.min(minScale * 3, +(s + 0.1).toFixed(2)))}
+          style={{ color: "#fff", background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 6, padding: "6px 14px", cursor: "pointer", fontSize: 18, fontFamily: SANS }}
+        >+</button>
+      </div>
+
+      {/* Action buttons */}
+      <div style={{ marginTop: 24, display: "flex", gap: 12 }}>
+        <button
+          onClick={onCancel}
+          style={{ padding: "12px 22px", borderRadius: 10, background: "rgba(255,255,255,0.14)", color: "#fff", border: "none", fontFamily: SANS, fontSize: "14px", cursor: "pointer" }}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleConfirm}
+          style={{ padding: "12px 28px", borderRadius: 10, background: ORANGE, color: "#fff", border: "none", fontFamily: SANS, fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+        >
+          Use this photo
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
   const { profile, history, churches } = data;
@@ -12,6 +144,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
   const [ministryRole, setMinistryRole] = useState(profile.ministry_role || "");
   const [churchId, setChurchId] = useState(profile.church_id || "");
   const [photoUrl, setPhotoUrl] = useState(profile.photo_url || "");
+  const [cropFile, setCropFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
@@ -24,16 +157,15 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
     profile.platform_role === "admin" ||
     profile.platform_role === "moderator";
 
-  const uploadPhoto = async (file) => {
-    if (!file) return;
+  const uploadPhoto = async (blob) => {
+    if (!blob) return;
     setUploading(true);
     setMsg("");
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${profile.id}/${Date.now()}.${ext}`;
+      const path = `${profile.id}/${Date.now()}.jpg`;
       const { error } = await supabase.storage
         .from("avatars")
-        .upload(path, file, { upsert: true });
+        .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
       if (error) {
         setMsg("Photo upload failed.");
         setUploading(false);
@@ -319,10 +451,18 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin }) {
             type="file"
             accept="image/*"
             style={{ display: "none" }}
-            onChange={(e) => uploadPhoto(e.target.files[0])}
+            onChange={(e) => { if (e.target.files[0]) setCropFile(e.target.files[0]); e.target.value = ""; }}
           />
         </label>
       </div>
+
+      {cropFile && (
+        <PhotoCropModal
+          file={cropFile}
+          onConfirm={(blob) => { setCropFile(null); uploadPhoto(blob); }}
+          onCancel={() => setCropFile(null)}
+        />
+      )}
 
       <Card style={{ marginBottom: "1rem" }}>
         <div style={{ marginBottom: "1rem" }}>

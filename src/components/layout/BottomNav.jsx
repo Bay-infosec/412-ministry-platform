@@ -12,6 +12,7 @@ export default function BottomNav({
   onNavigate,
   hasEvent,
   unreadCount,
+  profilePhotoUrl,
 }) {
   const items = [
     { key: "home", label: "Home" },
@@ -59,18 +60,30 @@ export default function BottomNav({
               position: "relative",
             }}
           >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke={active === it.key ? ORANGE : TSEC}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d={ICONS[it.key]} />
-            </svg>
+            {it.key === "profile" && profilePhotoUrl ? (
+              <img
+                src={profilePhotoUrl}
+                alt="Profile"
+                style={{
+                  width: 22, height: 22, borderRadius: "50%", objectFit: "cover",
+                  border: `2px solid ${active === "profile" ? ORANGE : "transparent"}`,
+                  boxSizing: "border-box",
+                }}
+              />
+            ) : (
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={active === it.key ? ORANGE : TSEC}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d={ICONS[it.key]} />
+              </svg>
+            )}
             {it.badge && (
               <div
                 style={{

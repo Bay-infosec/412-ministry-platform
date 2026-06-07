@@ -415,6 +415,7 @@ export default function App() {
           onNavigate={navigate}
           hasEvent={hasEvent}
           unreadCount={data.unreadCount}
+          profilePhotoUrl={data.profile.photo_url}
         />
         {page === "admin" && data.isAdmin && (
           <AdminShell

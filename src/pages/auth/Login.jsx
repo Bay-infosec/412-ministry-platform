@@ -43,19 +43,11 @@ export default function Login({ onLoggedIn }) {
           marginBottom: "2.5rem",
         }}
       >
-        <div
-          style={{
-            fontSize: "12px",
-            fontWeight: 700,
-            letterSpacing: "0.18em",
-            color: ORANGE,
-            textTransform: "uppercase",
-            marginBottom: "0.75rem",
-            fontFamily: SANS,
-          }}
-        >
-          412 Ministry
-        </div>
+        <img
+          src="/logo.png"
+          alt="412 Ministry"
+          style={{ width: 110, height: "auto", marginBottom: "1.5rem" }}
+        />
         <div
           style={{
             fontFamily: SERIF,
