@@ -19,7 +19,7 @@ function daysUntil(dateStr) {
   return Math.ceil((parsed - new Date()) / 86400000);
 }
 
-export default function EventHome({ data, onOpenPage, onNavigate }) {
+export default function EventHome({ data, onOpenPage, onNavigate, onOpenChat }) {
   const { activeEvent, eventMember, profile, isAdmin } = data;
 
   if (!activeEvent) {
@@ -205,6 +205,27 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
               </div>
             )}
           </div>
+        )}
+
+        {/* Team Chat row */}
+        {onOpenChat && (
+          <button
+            onClick={onOpenChat}
+            style={{
+              width: "100%", textAlign: "left", background: "none",
+              border: "none", borderBottom: sections.length > 0 ? `1px solid ${BORDER}` : "none",
+              padding: "1rem 1.25rem", cursor: "pointer", fontFamily: SANS,
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY }}>Team Chat</div>
+              <div style={{ fontSize: "12px", color: TSEC, marginTop: 2 }}>Message your team and leaders</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+          </button>
         )}
 
         {sections.map((s, i) => (

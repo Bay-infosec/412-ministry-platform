@@ -147,7 +147,7 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
     // Resolve DM other-person profiles
     const otherIds = (dmRows || []).map((c) => c.participant_a === myId ? c.participant_b : c.participant_a);
     const { data: dmProfiles } = otherIds.length
-      ? await supabase.from("profiles").select("id, full_name, photo_url").in("id", otherIds)
+      ? await supabase.from("profiles").select("id, full_name, nickname, photo_url").in("id", otherIds)
       : { data: [] };
     const profileMap = Object.fromEntries((dmProfiles || []).map((p) => [p.id, p]));
 
@@ -169,17 +169,22 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
     if (!activeEvent?.id) return;
     const { data: rows } = await supabase
       .from("event_members")
-      .select("profile_id, profiles!event_members_profile_id_fkey(id, full_name, photo_url)")
+      .select("profile_id, profiles!event_members_profile_id_fkey(id, full_name, nickname, photo_url)")
       .eq("event_id", activeEvent.id)
       .neq("profile_id", myId);
     setAllMembers((rows || []).map((r) => r.profiles).filter(Boolean));
   }
 
   const onlineIds = new Set(onlineUsers.map((u) => u.user_id));
-  // Self always appears first; normalize full_name → name for presence objects
+  const memberById = Object.fromEntries(allMembers.map((m) => [m.id, m]));
+  // Self always first; cross-ref allMembers to get nickname for online users
   const activeRow = [
-    { user_id: myId, name: profile.full_name, photo_url: profile.photo_url, isSelf: true },
-    ...onlineUsers.filter((u) => u.user_id !== myId).map((u) => ({ ...u, name: u.full_name || u.name })),
+    { user_id: myId, name: profile.full_name, nickname: profile.nickname, photo_url: profile.photo_url, isSelf: true },
+    ...onlineUsers.filter((u) => u.user_id !== myId).map((u) => ({
+      ...u,
+      name: u.full_name || u.name,
+      nickname: memberById[u.user_id]?.nickname || null,
+    })),
   ];
 
   const filtered = search.trim()
@@ -248,7 +253,7 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
                     <div style={{ position: "absolute", bottom: 1, right: 1, width: 14, height: 14, borderRadius: "50%", background: "#22C55E", border: "2.5px solid #fff" }} />
                   </div>
                   <span style={{ fontSize: "11px", fontWeight: 600, color: u.isSelf ? ORANGE : NAVY, fontFamily: SANS, maxWidth: 62, textAlign: "center", lineHeight: 1.3, wordBreak: "break-word" }}>
-                    {u.isSelf ? "You" : (u.name || "").split(" ")[0]}
+                    {u.isSelf ? "You" : (u.nickname || (u.name || "").split(" ")[0])}
                   </span>
                 </button>
               ))}
@@ -301,9 +306,14 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
                   </div>
                   <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 3 }}>
-                      <span style={{ fontSize: "14px", fontWeight: c.unread > 0 ? 700 : 600, color: NAVY, fontFamily: SANS }}>
-                        {c.type === "group" ? c.group_name : c.other?.full_name}
-                      </span>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                        <span style={{ fontSize: "14px", fontWeight: c.unread > 0 ? 700 : 600, color: NAVY, fontFamily: SANS }}>
+                          {c.type === "group" ? c.group_name : c.other?.full_name}
+                        </span>
+                        {c.type === "dm" && c.other?.nickname && (
+                          <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, fontStyle: "italic" }}>"{c.other.nickname}"</span>
+                        )}
+                      </div>
                       {c.lastMsg && (
                         <span style={{ fontSize: "11px", color: c.unread > 0 ? ORANGE : TSEC, fontFamily: SANS, fontWeight: c.unread > 0 ? 700 : 400, flexShrink: 0, marginLeft: 8 }}>
                           {fmtTime(c.lastMsg.created_at)}
@@ -459,7 +469,12 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
           {!isGroup && isOnline && <div style={{ position: "absolute", bottom: 0, right: 0, width: 11, height: 11, borderRadius: "50%", background: "#22C55E", border: "2px solid #fff" }} />}
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: "15px", fontWeight: 700, color: NAVY, fontFamily: SANS }}>{title}</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+            <span style={{ fontSize: "15px", fontWeight: 700, color: NAVY, fontFamily: SANS }}>{title}</span>
+            {!isGroup && !isSelf && conv.other?.nickname && (
+              <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, fontStyle: "italic" }}>"{conv.other.nickname}"</span>
+            )}
+          </div>
           <div style={{ fontSize: "11px", fontFamily: SANS, fontWeight: 600, color: isOnline ? "#22C55E" : TSEC }}>
             {isGroup ? "Group" : isSelf ? "Only visible to you" : isOnline ? "Active now" : "Offline"}
           </div>

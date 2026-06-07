@@ -461,6 +461,7 @@ export default function App() {
             data={data}
             onOpenPage={setPage}
             onNavigate={navigate}
+            onOpenChat={openChat}
           />
         )}
         {tab === "event" && page === "onboarding" && (
