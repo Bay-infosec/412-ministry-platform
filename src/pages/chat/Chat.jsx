@@ -176,7 +176,11 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
   }
 
   const onlineIds = new Set(onlineUsers.map((u) => u.user_id));
-  const onlinePeople = onlineUsers.filter((u) => u.user_id !== myId);
+  // Self always appears first; others follow (excluding self duplicate)
+  const activeRow = [
+    { user_id: myId, name: profile.full_name, photo_url: profile.photo_url, isSelf: true },
+    ...onlineUsers.filter((u) => u.user_id !== myId),
+  ];
 
   const filtered = search.trim()
     ? allMembers.filter((m) => (m.full_name || "").toLowerCase().includes(search.toLowerCase()))
@@ -227,24 +231,24 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
         </div>
 
         {/* Active now — horizontal scroll, below search */}
-        {!search && onlinePeople.length > 0 && (
+        {!search && (
           <div style={{ background: "#fff", borderBottom: `1px solid ${BORDER}`, padding: "0.875rem 0" }}>
             <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, padding: "0 1.25rem", marginBottom: "0.625rem" }}>
               Active now
             </div>
             <div style={{ display: "flex", gap: 16, overflowX: "auto", padding: "0 1.25rem 2px", scrollbarWidth: "none" }}>
-              {onlinePeople.map((u) => (
+              {activeRow.map((u) => (
                 <button
                   key={u.user_id}
-                  onClick={() => onOpenThread({ type: "dm", other: { id: u.user_id, full_name: u.name, photo_url: u.photo_url } })}
+                  onClick={() => onOpenThread({ type: "dm", other: { id: u.user_id, full_name: u.name, photo_url: u.photo_url, isSelf: u.isSelf } })}
                   style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flexShrink: 0, padding: 0 }}
                 >
                   <div style={{ position: "relative" }}>
                     <Avatar url={u.photo_url} name={u.name} size={54} />
                     <div style={{ position: "absolute", bottom: 1, right: 1, width: 14, height: 14, borderRadius: "50%", background: "#22C55E", border: "2.5px solid #fff" }} />
                   </div>
-                  <span style={{ fontSize: "11px", fontWeight: 600, color: NAVY, fontFamily: SANS, maxWidth: 58, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {(u.name || "").split(" ")[0]}
+                  <span style={{ fontSize: "11px", fontWeight: 600, color: u.isSelf ? ORANGE : NAVY, fontFamily: SANS, maxWidth: 58, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {u.isSelf ? "You" : (u.name || "").split(" ")[0]}
                   </span>
                 </button>
               ))}
@@ -339,8 +343,9 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
-  const isOnline = !isGroup && onlineUsers.some((u) => u.user_id === conv.other?.id);
-  const title = isGroup ? conv.group_name : conv.other?.full_name;
+  const isSelf = !isGroup && conv.other?.id === myId;
+  const isOnline = !isGroup && !isSelf && onlineUsers.some((u) => u.user_id === conv.other?.id);
+  const title = isGroup ? conv.group_name : isSelf ? "My Notes" : conv.other?.full_name;
 
   useEffect(() => { init(); }, [conv.id, conv.other?.id]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
@@ -455,8 +460,8 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: "15px", fontWeight: 700, color: NAVY, fontFamily: SANS }}>{title}</div>
-          <div style={{ fontSize: "11px", fontFamily: SANS, fontWeight: 600, color: !isGroup && isOnline ? "#22C55E" : TSEC }}>
-            {isGroup ? "Group" : isOnline ? "Active now" : "Offline"}
+          <div style={{ fontSize: "11px", fontFamily: SANS, fontWeight: 600, color: isOnline ? "#22C55E" : TSEC }}>
+            {isGroup ? "Group" : isSelf ? "Only visible to you" : isOnline ? "Active now" : "Offline"}
           </div>
         </div>
       </div>
@@ -472,7 +477,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
             </div>
             <div style={{ fontFamily: SERIF, fontSize: "18px", color: NAVY, marginBottom: 6 }}>{title}</div>
             <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
-              {isGroup ? "Send the first message to the group." : "Send a message to start the conversation."}
+              {isGroup ? "Send the first message to the group." : isSelf ? "Jot down notes, links, or reminders — only you can see this." : "Send a message to start the conversation."}
             </div>
           </div>
         ) : (
