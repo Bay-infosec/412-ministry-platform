@@ -11,8 +11,10 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
   const [busy, setBusy] = useState(false);
   const [addQuery, setAddQuery] = useState("");
   const [pendingRemove, setPendingRemove] = useState(null);
-  const [editingMessage, setEditingMessage] = useState(null); // member object
+  const [editingMessage, setEditingMessage] = useState(null);
   const [messageText, setMessageText] = useState("");
+  const [coordModal, setCoordModal] = useState(null); // { teamNumber }
+  const [assigningCoord, setAssigningCoord] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -73,6 +75,29 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
   }
 
   const grouped = groupByTeam(members);
+
+  // Map profile_id → profile for all coordinators in this event
+  const coordinatorMap = {};
+  for (const m of members) {
+    if (m.event_role === "coordinator") {
+      coordinatorMap[m.profile_id] = m.profiles;
+    }
+  }
+  const coordinatorsList = members.filter((m) => m.event_role === "coordinator");
+
+  async function assignCoordinator(teamNumber, coordinatorProfileId) {
+    setAssigningCoord(true);
+    await supabase
+      .from("event_members")
+      .update({ coordinator_id: coordinatorProfileId })
+      .eq("event_id", event.id)
+      .eq("team_number", teamNumber)
+      .neq("event_role", "coordinator");
+    setAssigningCoord(false);
+    setCoordModal(null);
+    onToast(`Coordinator assigned to Team ${teamNumber}.`);
+    await fetchMembers();
+  }
 
   return (
     <div>
@@ -156,15 +181,37 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1.5rem" }}>
           {grouped.map(({ teamNumber, teamMembers }) => (
             <div key={teamNumber}>
-              {teamNumber !== "unassigned" && (
-                <div style={{
-                  fontSize: "11px", fontWeight: 700, color: TSEC,
-                  letterSpacing: "0.1em", fontFamily: SANS, textTransform: "uppercase",
-                  marginBottom: "0.375rem", marginTop: "0.5rem",
-                }}>
-                  Team {teamNumber}
-                </div>
-              )}
+              {teamNumber !== "unassigned" && (() => {
+                const leaders = teamMembers.filter((m) => m.event_role === "leader");
+                const coordId = leaders[0]?.coordinator_id;
+                const coordProfile = coordinatorMap[coordId];
+                const coordName = coordProfile?.full_name?.split(" ")[0] || null;
+                return (
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    marginBottom: "0.375rem", marginTop: "0.5rem",
+                  }}>
+                    <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.1em", fontFamily: SANS, textTransform: "uppercase" }}>
+                      Team {teamNumber}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: "11px", color: coordName ? TSEC : "#DC2626", fontFamily: SANS }}>
+                        {coordName ? `Coord: ${coordName}` : "No coordinator"}
+                      </span>
+                      <button
+                        onClick={() => setCoordModal({ teamNumber })}
+                        style={{
+                          background: "none", border: `1px solid ${BORDER}`, borderRadius: 6,
+                          padding: "2px 7px", fontSize: "10px", fontWeight: 600,
+                          color: TSEC, cursor: "pointer", fontFamily: SANS,
+                        }}
+                      >
+                        Change
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
               {teamMembers.map((m) => (
                 <MemberRow
                   key={m.id}
@@ -230,6 +277,65 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
               borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600,
               color: TSEC, cursor: "pointer", fontFamily: SANS,
             }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Coordinator assignment modal */}
+      {coordModal && (
+        <div style={overlay}>
+          <div style={{ ...sheet, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
+            <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: NAVY, marginBottom: 4 }}>
+              Assign Coordinator
+            </div>
+            <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginBottom: "1rem" }}>
+              Team {coordModal.teamNumber} — pick a coordinator below.
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", marginBottom: "0.75rem" }}>
+              {coordinatorsList.length === 0 ? (
+                <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, textAlign: "center", padding: "1rem 0" }}>
+                  No coordinators enrolled in this event yet.
+                </div>
+              ) : (
+                coordinatorsList.map((c) => (
+                  <button
+                    key={c.id}
+                    disabled={assigningCoord}
+                    onClick={() => assignCoordinator(coordModal.teamNumber, c.profile_id)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 12, width: "100%",
+                      background: "none", border: "none", borderRadius: 10,
+                      padding: "0.75rem 0.25rem", cursor: "pointer", textAlign: "left",
+                      borderBottom: `1px solid ${BORDER}`,
+                      opacity: assigningCoord ? 0.5 : 1,
+                    }}
+                  >
+                    <Avatar url={c.profiles?.photo_url} name={c.profiles?.full_name} size={40} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
+                        {c.profiles?.full_name}
+                      </div>
+                      <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
+                        Team {c.team_number} · {c.ministry}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: "12px", color: ORANGE, fontWeight: 600, fontFamily: SANS }}>
+                      {assigningCoord ? "…" : "Assign"}
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+            <button
+              onClick={() => setCoordModal(null)}
+              style={{
+                width: "100%", background: "none", border: `1px solid ${BORDER}`,
+                borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600,
+                color: TSEC, cursor: "pointer", fontFamily: SANS,
+              }}
+            >
               Cancel
             </button>
           </div>

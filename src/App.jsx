@@ -428,10 +428,7 @@ export default function App() {
           />
         )}
         {page === "chat" && (
-          <Chat
-            data={data}
-            onClose={() => setPage(null)}
-          />
+          <Chat data={data} onClose={() => setPage(null)} />
         )}
       </>
     );

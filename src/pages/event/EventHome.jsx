@@ -33,7 +33,6 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
     { id: "prayer_chain", label: "Prayer Chain", desc: "Pray for one another" },
     { id: "the_four", label: "The Four", desc: "Your four essentials" },
     { id: "field_guide", label: "Field Guide", desc: "Resources and references" },
-    { id: "chat", label: "Chat", desc: "Team conversation" },
   ];
 
   if (isCoordinator) {
