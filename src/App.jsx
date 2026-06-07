@@ -375,6 +375,7 @@ export default function App() {
             onNavigate={navigate}
             onOpenPage={setPage}
             onOpenChat={() => setPage("chat")}
+            onOpenOnboarding={() => { setTab("event"); setPage("onboarding"); }}
           />
         )}
         {tab === "event" && !page && (

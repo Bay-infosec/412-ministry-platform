@@ -15,7 +15,7 @@ function daysUntil(dateStr) {
   return diff;
 }
 
-export default function Home({ data, onNavigate, onOpenPage, onOpenChat }) {
+export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenOnboarding }) {
   const { profile, eventMember, announcements, unreadCount, activeEvent, trainingMaterials } = data;
   const [showContact, setShowContact] = useState(false);
   const displayName = profile.nickname || (profile.full_name || "").split(" ")[0];
@@ -41,6 +41,33 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat }) {
           </svg>
         </button>
       </div>
+
+      {eventMember && !eventMember.onboarding_completed && (
+        <button
+          onClick={onOpenOnboarding}
+          style={{
+            width:"100%", textAlign:"left", background:ORANGE, borderRadius:14,
+            padding:"1rem 1.25rem", marginBottom:"1.25rem", border:"none",
+            cursor:"pointer", fontFamily:SANS,
+            display:"flex", alignItems:"center", justifyContent:"space-between",
+          }}
+        >
+          <div>
+            <div style={{ fontSize:"10px", fontWeight:700, letterSpacing:"0.1em", color:"rgba(255,255,255,0.8)", marginBottom:3, textTransform:"uppercase" }}>
+              Action required
+            </div>
+            <div style={{ fontSize:"15px", fontWeight:700, color:"#fff", marginBottom:2 }}>
+              Complete your onboarding
+            </div>
+            <div style={{ fontSize:"12px", color:"rgba(255,255,255,0.85)" }}>
+              A few steps to get you set up for {activeEvent?.name || "the conference"}
+            </div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 6l6 6-6 6"/>
+          </svg>
+        </button>
+      )}
 
       <DailyVerse/>
 
@@ -87,9 +114,9 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat }) {
           <div style={{ fontFamily:SERIF, fontSize:"22px", fontWeight:600, color:"#fff", lineHeight:1.2, marginBottom:"0.5rem" }}>{activeEvent.name}</div>
           <div style={{ fontSize:"13px", color:"#B8C0D0" }}>{activeEvent.dates}</div>
           {activeEvent.location&&<div style={{ fontSize:"13px", color:"#B8C0D0" }}>{activeEvent.location}</div>}
-          {eventMember&&(
-            <div style={{ marginTop:"0.75rem", background: eventMember.onboarding_completed ? "rgba(255,255,255,0.15)" : ORANGE, borderRadius:8, padding:"6px 12px", display:"inline-block", fontSize:"12px", fontWeight:700, color:"#fff" }}>
-              {eventMember.onboarding_completed ? "Review onboarding →" : "Continue onboarding →"}
+          {eventMember?.onboarding_completed && (
+            <div style={{ marginTop:"0.75rem", background:"rgba(255,255,255,0.15)", borderRadius:8, padding:"6px 12px", display:"inline-block", fontSize:"12px", fontWeight:600, color:"rgba(255,255,255,0.85)" }}>
+              Review onboarding →
             </div>
           )}
         </button>
