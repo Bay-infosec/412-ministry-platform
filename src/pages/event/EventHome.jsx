@@ -72,19 +72,6 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
             Registration fee: <span style={{ color: GOLD, fontWeight: 600 }}>{activeEvent.fee}</span>
           </div>
         )}
-        {activeEvent.zoom_training_dates && (
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem", marginBottom: "0.5rem" }}>
-            <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-              Leader Zoom Training
-            </div>
-            <div style={{ fontSize: "13px", color: "#fff", fontFamily: SANS, fontWeight: 600, marginBottom: 2 }}>
-              {activeEvent.zoom_training_dates}
-            </div>
-            <div style={{ fontSize: "11px", color: "#B8C0D0", fontFamily: SANS }}>
-              Mandatory for all team leaders
-            </div>
-          </div>
-        )}
         {activeEvent.verse_text && (
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem" }}>
             <div style={{ fontFamily: SERIF, fontSize: "14px", color: "#FFE066", lineHeight: 1.65, fontStyle: "italic", marginBottom: "0.25rem" }}>
@@ -110,6 +97,18 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
           </a>
         )}
       </div>
+
+      {/* Zoom training row */}
+      {activeEvent.zoom_training_dates && (
+        <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "0.875rem 1.25rem", marginBottom: "1rem", display: "flex", alignItems: "flex-start", gap: 12 }}>
+          <span style={{ fontSize: "18px", flexShrink: 0, marginTop: 1 }}>💻</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 2 }}>Leader Zoom Training</div>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{activeEvent.zoom_training_dates}</div>
+            <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>Mandatory for all team leaders</div>
+          </div>
+        </div>
+      )}
 
       {/* Onboarding banner */}
       {eventMember && !eventMember.onboarding_completed && (

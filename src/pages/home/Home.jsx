@@ -249,16 +249,6 @@ export default function Home({
           {/* Action buttons */}
           <div style={{ display: "flex", gap: 8 }}>
             <button
-              onClick={onOpenOnboarding}
-              style={{
-                flex: 1, background: ORANGE, color: "#fff", border: "none",
-                borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 700,
-                fontFamily: SANS, cursor: "pointer",
-              }}
-            >
-              {onboardingStep > 0 && !onboardingComplete ? "Continue →" : "Start →"}
-            </button>
-            <button
               onClick={onOpenMyTeam}
               style={{
                 flex: 1, background: "rgba(255,255,255,0.12)", color: "#fff", border: "none",
@@ -267,6 +257,16 @@ export default function Home({
               }}
             >
               View Checklist
+            </button>
+            <button
+              onClick={onOpenOnboarding}
+              style={{
+                flex: 1, background: ORANGE, color: "#fff", border: "none",
+                borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 700,
+                fontFamily: SANS, cursor: "pointer",
+              }}
+            >
+              {onboardingStep > 0 && !onboardingComplete ? "Continue →" : "Start →"}
             </button>
           </div>
         </div>
@@ -307,19 +307,6 @@ export default function Home({
               Registration fee: <span style={{ color: GOLD, fontWeight: 600 }}>{activeEvent.fee}</span>
             </div>
           )}
-          {activeEvent.zoom_training_dates && (
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem", marginBottom: "0.5rem" }}>
-              <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-                Leader Zoom Training
-              </div>
-              <div style={{ fontSize: "13px", color: "#fff", fontFamily: SANS, fontWeight: 600, marginBottom: 2 }}>
-                {activeEvent.zoom_training_dates}
-              </div>
-              <div style={{ fontSize: "11px", color: "#B8C0D0", fontFamily: SANS }}>
-                Mandatory for all team leaders
-              </div>
-            </div>
-          )}
           {activeEvent.verse_text && (
             <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem" }}>
               <div style={{ fontFamily: SERIF, fontSize: "14px", color: "#FFE066", lineHeight: 1.65, fontStyle: "italic", marginBottom: "0.25rem" }}>
@@ -348,23 +335,36 @@ export default function Home({
       )}
 
       {/* ── Upcoming info rows ──────────────────────────────────────── */}
-      {(nextPrayer || nextMeeting) && (
+      {(nextPrayer || activeEvent?.zoom_training_dates || nextMeeting) && (
         <div style={{ marginBottom: "1rem" }}>
           <SectionLabel>Upcoming</SectionLabel>
           <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden" }}>
 
-            {/* Next prayer date */}
-            {nextPrayer && (
+            {/* Prayer countdown — days is the headline */}
+            {nextPrayer && (() => {
+              const days = daysUntil(nextPrayer);
+              return (
+                <InfoRow
+                  icon="🙏"
+                  label="Your Team Prayer Day"
+                  value={days === 0 ? "Today!" : `in ${days} day${days === 1 ? "" : "s"}`}
+                  sub={`${fmtDate(nextPrayer)} · Team ${eventMember?.team_number}`}
+                  accent={days === 0 ? ORANGE : NAVY}
+                />
+              );
+            })()}
+
+            {/* Zoom training — part of conference */}
+            {activeEvent?.zoom_training_dates && (
               <InfoRow
-                icon="🙏"
-                label="Your Team Prays"
-                value={fmtDate(nextPrayer)}
-                sub={`Team ${eventMember?.team_number} · ${daysUntil(nextPrayer) === 0 ? "Today!" : `in ${daysUntil(nextPrayer)} day${daysUntil(nextPrayer) === 1 ? "" : "s"}`}`}
-                accent={NAVY}
+                icon="💻"
+                label="Leader Zoom Training"
+                value={activeEvent.zoom_training_dates}
+                sub="Mandatory for all team leaders"
               />
             )}
 
-            {/* Next zoom/board meeting */}
+            {/* Other standalone meetings */}
             {nextMeeting && (
               <InfoRow
                 icon={nextMeeting.type === "zoom_meeting" ? "💻" : "🏢"}
@@ -374,6 +374,8 @@ export default function Home({
                 last
               />
             )}
+
+            {/* If no meeting row was last, mark zoom or prayer as last */}
           </div>
         </div>
       )}
