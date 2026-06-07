@@ -15,6 +15,9 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
   const [messageText, setMessageText] = useState("");
   const [coordModal, setCoordModal] = useState(null); // { teamNumber }
   const [assigningCoord, setAssigningCoord] = useState(false);
+  const [addRole, setAddRole] = useState("leader");
+  const [archiveModal, setArchiveModal] = useState(false);
+  const [archiving, setArchiving] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -45,7 +48,7 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
       .insert({
         event_id: event.id,
         profile_id: profile.id,
-        event_role: "leader",
+        event_role: addRole,
         status: "accepted",
         onboarding_completed: false,
         onboarding_visited: false,
@@ -85,6 +88,15 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
   }
   const coordinatorsList = members.filter((m) => m.event_role === "coordinator");
 
+  async function archiveEvent() {
+    setArchiving(true);
+    await supabase.from("events").update({ status: "archived" }).eq("id", event.id);
+    setArchiving(false);
+    setArchiveModal(false);
+    onToast(`${event.name} archived.`, "info");
+    onRefresh();
+  }
+
   async function assignCoordinator(teamNumber, coordinatorProfileId) {
     setAssigningCoord(true);
     await supabase
@@ -115,8 +127,22 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
         {[event.dates, event.location].filter(Boolean).map((v, i) => (
           <div key={i} style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS }}>{v}</div>
         ))}
-        <div style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS, marginTop: 4 }}>
-          {members.length} enrolled · {event.team_count || "?"} teams
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
+          <div style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS }}>
+            {members.length} enrolled · {event.team_count || "?"} teams
+          </div>
+          {event.status === "active" && (
+            <button
+              onClick={() => setArchiveModal(true)}
+              style={{
+                background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8,
+                padding: "5px 12px", fontSize: "12px", fontWeight: 600,
+                color: "rgba(255,255,255,0.7)", cursor: "pointer", fontFamily: SANS,
+              }}
+            >
+              Archive
+            </button>
+          )}
         </div>
       </div>
 
@@ -233,6 +259,22 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
           <div style={{ ...sheet, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
             <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: NAVY, marginBottom: "0.75rem" }}>
               Add Member
+            </div>
+            {/* Role picker */}
+            <div style={{ display: "flex", gap: 6, marginBottom: "0.75rem" }}>
+              {["leader", "coordinator"].map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setAddRole(r)}
+                  style={{
+                    flex: 1, padding: "8px", borderRadius: 8, border: `1.5px solid ${addRole === r ? ORANGE : BORDER}`,
+                    background: addRole === r ? "#FFF5EC" : "#fff", color: addRole === r ? ORANGE : TSEC,
+                    fontSize: "13px", fontWeight: 600, fontFamily: SANS, cursor: "pointer", textTransform: "capitalize",
+                  }}
+                >
+                  {r}
+                </button>
+              ))}
             </div>
             <input
               value={addQuery}
@@ -437,6 +479,19 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
           onCancel={() => setPendingRemove(null)}
           onConfirm={removeMember}
           busy={busy}
+        />
+      )}
+
+      {/* Archive confirmation */}
+      {archiveModal && (
+        <Modal
+          title="Archive Event"
+          message={`Archive "${event.name}"? It will no longer appear as the active event and members will lose access to event features.`}
+          confirmLabel="Archive"
+          variant="danger"
+          onCancel={() => setArchiveModal(false)}
+          onConfirm={archiveEvent}
+          busy={archiving}
         />
       )}
     </div>

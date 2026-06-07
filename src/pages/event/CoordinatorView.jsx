@@ -15,6 +15,7 @@ export default function CoordinatorView({ data, onBack }) {
       .select("id, team_number, ministry, event_role, profiles!event_members_profile_id_fkey(full_name, photo_url)")
       .eq("event_id", activeEvent.id)
       .eq("coordinator_id", profile.id)
+      .neq("event_role", "coordinator")
       .order("team_number")
       .then(({ data: rows }) => {
         const grouped = {};
