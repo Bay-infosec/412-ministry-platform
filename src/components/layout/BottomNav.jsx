@@ -3,6 +3,7 @@ import { ORANGE, TSEC, BORDER, SANS } from "../../lib/constants.js";
 const ICONS = {
   home: "M3 12l9-9 9 9M5 10v10h14V10",
   event: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+  events: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
   updates: "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9",
   profile: "M12 12a4 4 0 100-8 4 4 0 000 8zM4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1",
 };
@@ -13,10 +14,12 @@ export default function BottomNav({
   hasEvent,
   unreadCount,
   profilePhotoUrl,
+  hasPublicEvents,
 }) {
   const items = [
     { key: "home", label: "Home" },
     ...(hasEvent ? [{ key: "event", label: "Event" }] : []),
+    ...(hasPublicEvents ? [{ key: "events", label: "Events" }] : []),
     { key: "updates", label: "Updates", badge: unreadCount > 0 },
     { key: "profile", label: "Profile" },
   ];

@@ -2,8 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>412 Ministry</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#162038" />
+
+    <!-- iOS home screen -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="412 Ministry" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+
+    <!-- Android / general -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="412 Ministry" />
+    <meta name="description" content="412 Ministry Platform — events, teams, and community" />
+
+    <style>
+      /* Prevent auto-zoom on input focus on iOS */
+      input, textarea, select { font-size: 16px !important; }
+      * { -webkit-tap-highlight-color: transparent; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

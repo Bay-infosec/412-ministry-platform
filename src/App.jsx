@@ -10,6 +10,7 @@ import { Shell } from "./components/layout/index.js";
 import { SANS, TSEC, ORANGE } from "./lib/constants.js";
 import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide, CoordinatorView, MyChecklist } from "./pages/event/index.js";
 import { OnboardingFlow } from "./pages/event/onboarding/index.js";
+import { EventsBrowser } from "./pages/events/index.js";
 import { AdminShell } from "./pages/admin/index.js";
 import { Chat } from "./pages/chat/index.js";
 
@@ -279,12 +280,21 @@ export default function App() {
       const isAdmin = profile.platform_role === "admin";
       const isModerator = profile.platform_role === "moderator" || isAdmin;
 
+      // Public events — visible to all logged-in users for the events browser
+      const { data: publicEventsRaw } = await supabase
+        .from("events")
+        .select("id, name, type, description, dates, location, fee, registration_url, visible_to_public, allow_join_requests, status, start_date, end_date")
+        .eq("visible_to_public", true)
+        .order("start_date", { ascending: true });
+      const publicEvents = publicEventsRaw || [];
+
       let allProfiles = null;
       let allEvents = null;
       let allEventMembers = null;
       let allAnnouncements = null;
       let pendingAnnouncements = null;
       let joinRequests = null;
+      let assignedEventIds = null; // null = admin (all), array = moderator's events
 
       if (isModerator) {
         const { data: ap } = await supabase
@@ -293,37 +303,92 @@ export default function App() {
           .order("full_name");
         allProfiles = ap || [];
 
-        const { data: ae } = await supabase
-          .from("events")
-          .select("*")
-          .order("created_at", { ascending: false });
-        allEvents = ae || [];
+        if (isAdmin) {
+          // Admin sees all events, all members, all announcements
+          const { data: ae } = await supabase
+            .from("events")
+            .select("*")
+            .order("created_at", { ascending: false });
+          allEvents = ae || [];
 
-        const { data: aem } = await supabase
-          .from("event_members")
-          .select("*, profiles!event_members_profile_id_fkey(full_name, photo_url, email)")
-          .order("team_number");
-        allEventMembers = aem || [];
+          const { data: aem } = await supabase
+            .from("event_members")
+            .select("*, profiles!event_members_profile_id_fkey(full_name, photo_url, email)")
+            .order("team_number");
+          allEventMembers = aem || [];
 
-        const { data: aa } = await supabase
-          .from("announcements")
-          .select("*")
-          .order("created_at", { ascending: false });
-        allAnnouncements = aa || [];
+          const { data: aa } = await supabase
+            .from("announcements")
+            .select("*")
+            .order("created_at", { ascending: false });
+          allAnnouncements = aa || [];
 
-        const { data: pa } = await supabase
-          .from("announcements")
-          .select("*")
-          .eq("status", "pending_approval")
-          .order("created_at", { ascending: false });
-        pendingAnnouncements = pa || [];
+          const { data: pa } = await supabase
+            .from("announcements")
+            .select("*")
+            .eq("status", "pending_approval")
+            .order("created_at", { ascending: false });
+          pendingAnnouncements = pa || [];
 
-        const { data: jr } = await supabase
-          .from("event_join_requests")
-          .select("*, profiles(full_name, photo_url), events(name)")
-          .eq("status", "pending")
-          .order("created_at", { ascending: false });
-        joinRequests = jr || [];
+          const { data: jr } = await supabase
+            .from("event_join_requests")
+            .select("*, profiles(full_name, photo_url), events(name)")
+            .eq("status", "pending")
+            .order("created_at", { ascending: false });
+          joinRequests = jr || [];
+        } else {
+          // Moderator: scope to assigned events only
+          const { data: assignments } = await supabase
+            .from("moderator_assignments")
+            .select("event_id")
+            .eq("moderator_id", user.id);
+          assignedEventIds = (assignments || []).map((a) => a.event_id);
+
+          if (assignedEventIds.length > 0) {
+            const { data: ae } = await supabase
+              .from("events")
+              .select("*")
+              .in("id", assignedEventIds)
+              .order("created_at", { ascending: false });
+            allEvents = ae || [];
+
+            const { data: aem } = await supabase
+              .from("event_members")
+              .select("*, profiles!event_members_profile_id_fkey(full_name, photo_url, email)")
+              .in("event_id", assignedEventIds)
+              .order("team_number");
+            allEventMembers = aem || [];
+
+            const { data: aa } = await supabase
+              .from("announcements")
+              .select("*")
+              .or(`event_id.in.(${assignedEventIds.join(",")}),event_id.is.null`)
+              .order("created_at", { ascending: false });
+            allAnnouncements = aa || [];
+
+            const { data: pa } = await supabase
+              .from("announcements")
+              .select("*")
+              .eq("status", "pending_approval")
+              .or(`event_id.in.(${assignedEventIds.join(",")}),event_id.is.null`)
+              .order("created_at", { ascending: false });
+            pendingAnnouncements = pa || [];
+
+            const { data: jr } = await supabase
+              .from("event_join_requests")
+              .select("*, profiles(full_name, photo_url), events(name)")
+              .in("event_id", assignedEventIds)
+              .eq("status", "pending")
+              .order("created_at", { ascending: false });
+            joinRequests = jr || [];
+          } else {
+            allEvents = [];
+            allEventMembers = [];
+            allAnnouncements = [];
+            pendingAnnouncements = [];
+            joinRequests = [];
+          }
+        }
       }
 
       setData({
@@ -348,6 +413,8 @@ export default function App() {
         allAnnouncements,
         pendingAnnouncements,
         joinRequests,
+        assignedEventIds,
+        publicEvents,
       });
 
       setPhase("app");
@@ -387,6 +454,21 @@ export default function App() {
       });
     return () => { ch.untrack(); supabase.removeChannel(ch); };
   }, [data?.profile?.id, data?.activeEvent?.id]);
+
+  // Realtime announcements — push new published announcements to all active users
+  useEffect(() => {
+    if (!data?.profile) return;
+    const ch = supabase
+      .channel("app-announcements")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "announcements", filter: "status=eq.published" }, () => {
+        loadData();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "announcements" }, (payload) => {
+        if (payload.new?.status === "published") loadData();
+      })
+      .subscribe();
+    return () => supabase.removeChannel(ch);
+  }, [data?.profile?.id]);
 
   // Chat unread badge — listen for new DMs addressed to me
   useEffect(() => {
@@ -490,6 +572,9 @@ export default function App() {
         {tab === "event" && page === "coordinator" && <CoordinatorView data={data} onBack={() => setPage(null)} />}
         {tab === "event" && page === "checklist" && <MyChecklist data={data} onBack={() => setPage(null)} />}
 
+        {tab === "events" && (
+          <EventsBrowser data={data} onRefresh={loadData} onNavigate={navigate} />
+        )}
         {tab === "updates" && (
           <Updates
             data={data}
@@ -510,6 +595,7 @@ export default function App() {
           active={tab}
           onNavigate={navigate}
           hasEvent={hasEvent}
+          hasPublicEvents={(data.publicEvents || []).length > 0}
           unreadCount={data.unreadCount}
           profilePhotoUrl={data.profile.photo_url}
         />

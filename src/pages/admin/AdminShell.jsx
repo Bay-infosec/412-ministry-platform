@@ -11,6 +11,8 @@ import CoLeaderPairing from "./events/CoLeaderPairing.jsx";
 import { AnnouncementList, AnnouncementEditor } from "./announcements/index.js";
 import { ChurchList, TrainingMaterials } from "./settings/index.js";
 import SystemGroups from "./groups/SystemGroups.jsx";
+import { ModeratorAssignments } from "./moderators/index.js";
+import { AuditLog } from "./audit/index.js";
 
 export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }) {
   const [screen, setScreen] = useState("home");
@@ -44,6 +46,8 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
     "settings.churches": "Church List",
     "settings.materials": "Training Materials",
     "groups": "System Groups",
+    "moderators": "Moderator Assignments",
+    "audit": "Audit Log",
   };
 
   const backs = {
@@ -60,6 +64,8 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
     "settings.churches": "settings",
     "settings.materials": "settings",
     "groups": "home",
+    "moderators": "home",
+    "audit": "home",
   };
 
   const handleAnnouncementsBack = () => {
@@ -224,6 +230,12 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
           {screen === "groups" && (
             <SystemGroups data={data} onToast={showToast} />
           )}
+          {screen === "moderators" && (
+            <ModeratorAssignments data={data} onToast={showToast} />
+          )}
+          {screen === "audit" && (
+            <AuditLog data={data} />
+          )}
         </div>
       </div>
 
@@ -296,6 +308,24 @@ function AdminHome({ data, onNav, isAdmin }) {
           label="System Groups"
           sub="Provision & sync platform chat groups"
           onClick={() => onNav("groups")}
+        />
+      )}
+      {isAdmin && (
+        <EntryCard
+          icon={<ModeratorIcon />}
+          iconBg="#EEF2FC"
+          label="Moderators"
+          sub="Assign moderators to events"
+          onClick={() => onNav("moderators")}
+        />
+      )}
+      {isAdmin && (
+        <EntryCard
+          icon={<AuditIcon />}
+          iconBg="#F5F3FF"
+          label="Audit Log"
+          sub="View admin activity history"
+          onClick={() => onNav("audit")}
         />
       )}
     </div>
@@ -433,6 +463,30 @@ function MaterialIcon() {
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8621A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </svg>
+  );
+}
+
+function ModeratorIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A4FBF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M20 8v6" />
+      <path d="M23 11h-6" />
+    </svg>
+  );
+}
+
+function AuditIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="2" width="14" height="20" rx="2" />
+      <line x1="9" y1="7" x2="15" y2="7" />
+      <line x1="9" y1="11" x2="15" y2="11" />
+      <line x1="9" y1="15" x2="13" y2="15" />
+      <circle cx="17" cy="19" r="3" />
+      <line x1="21" y1="21" x2="19.5" y2="20.5" />
     </svg>
   );
 }

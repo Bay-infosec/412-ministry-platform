@@ -3,6 +3,7 @@ import { supabase } from "../../../lib/supabase.js";
 import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 import { Card, Field, Button } from "../../../components/ui/index.js";
 import { sendAnnouncementEmails } from "../../../lib/emailjs.js";
+import { matchesAudience } from "../../../lib/utils.js";
 
 const AUDIENCE_TYPES = [
   { value: "all",      label: "Everyone" },
@@ -29,6 +30,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
     return ann.audience[0]?.value || "";
   });
   const [busy, setBusy] = useState(false);
+  const [sendEmail, setSendEmail] = useState(false);
 
   const buildAudience = () => {
     if (audienceType === "all") return [{ type: "all" }];
@@ -69,14 +71,58 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
     setBusy(false);
     if (error) { onToast("Could not save.", "error"); return; }
 
-    const msg = status === "published"
-      ? "Announcement published!"
-      : status === "pending_approval"
-        ? "Submitted for admin approval."
-        : "Saved as draft.";
-    onToast(msg);
+    // Email sending for published announcements
+    if (status === "published" && sendEmail) {
+      const audience = buildAudience();
+      const allProfiles = data.allProfiles || [];
+      const matched = allProfiles.filter((p) =>
+        matchesAudience(audience, {
+          id: p.id,
+          ministry: p.ministry,
+          team_number: p.team_number,
+          event_role: p.event_role,
+        })
+      );
 
-    if (status === "published" && activeEventId) {
+      // Send emails non-blocking
+      (async () => {
+        let count = 0;
+        for (const p of matched) {
+          if (p.email) {
+            try {
+              await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  service_id: "service_7njy4no",
+                  template_id: "template_ecf57nm",
+                  user_id: "FP0ZiFckHYBqYpN6s",
+                  template_params: {
+                    to_email: p.email,
+                    to_name: p.full_name || "",
+                    subject: payload.title,
+                    message: payload.body,
+                  },
+                }),
+              });
+              count++;
+            } catch {
+              // non-blocking — continue on failure
+            }
+          }
+        }
+        onToast(`Announcement published · email sent to ${count} ${count === 1 ? "person" : "people"}`);
+      })();
+    } else {
+      const msg = status === "published"
+        ? "Announcement published!"
+        : status === "pending_approval"
+          ? "Submitted for admin approval."
+          : "Saved as draft.";
+      onToast(msg);
+    }
+
+    if (status === "published" && activeEventId && !sendEmail) {
       sendAnnouncementEmails(buildAudience(), { title: payload.title, body: payload.body }, activeEventId);
     }
 
@@ -159,6 +205,25 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
           )}
         </div>
       </Card>
+
+      {isAdmin && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "0.75rem 1rem", marginBottom: "0.5rem",
+          background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 10,
+        }}>
+          <input
+            id="send-email-toggle"
+            type="checkbox"
+            checked={sendEmail}
+            onChange={(e) => setSendEmail(e.target.checked)}
+            style={{ width: 16, height: 16, accentColor: NAVY, cursor: "pointer", flexShrink: 0 }}
+          />
+          <label htmlFor="send-email-toggle" style={{ fontSize: "14px", color: NAVY, fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
+            Also send email to audience
+          </label>
+        </div>
+      )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {/* Primary action */}
