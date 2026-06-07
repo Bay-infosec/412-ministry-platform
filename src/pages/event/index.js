@@ -5,3 +5,4 @@ export { default as TheFour } from "./TheFour.jsx";
 export { default as FieldGuide } from "./FieldGuide.jsx";
 export { default as CoordinatorView } from "./CoordinatorView.jsx";
 export { default as MyChecklist } from "./MyChecklist.jsx";
+export { default as Attendance } from "./Attendance.jsx";

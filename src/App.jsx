@@ -8,7 +8,7 @@ import { Profile } from "./pages/profile/index.js";
 import { BottomNav } from "./components/layout/index.js";
 import { Shell } from "./components/layout/index.js";
 import { SANS, TSEC, ORANGE } from "./lib/constants.js";
-import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide, CoordinatorView, MyChecklist } from "./pages/event/index.js";
+import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide, CoordinatorView, MyChecklist, Attendance } from "./pages/event/index.js";
 import { OnboardingFlow } from "./pages/event/onboarding/index.js";
 import { EventsBrowser } from "./pages/events/index.js";
 import { AdminShell } from "./pages/admin/index.js";
@@ -29,32 +29,32 @@ function useFonts() {
 
 function LoadingScreen() {
   return (
-    <Shell>
-      <div
-        style={{
-          textAlign: "center",
-          marginTop: "6rem",
-          color: TSEC,
-          fontSize: "14px",
-          fontFamily: SANS,
-        }}
-      >
-        <div
-          style={{
-            fontSize: "12px",
-            fontWeight: 700,
-            letterSpacing: "0.18em",
-            color: ORANGE,
-            textTransform: "uppercase",
-            marginBottom: "1rem",
-            fontFamily: SANS,
-          }}
-        >
-          412 Ministry
-        </div>
+    <div style={{
+      position: "fixed", inset: 0, background: "#F7F4EF",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      gap: 20,
+    }}>
+      {/* Logo + spinning ring */}
+      <div style={{ position: "relative", width: 72, height: 72 }}>
+        <div style={{
+          position: "absolute",
+          inset: -10,
+          borderRadius: "50%",
+          border: "2.5px solid #E2DDD6",
+          borderTopColor: ORANGE,
+          animation: "spin412 1s linear infinite",
+        }} />
+        <img
+          src="/logo.png"
+          alt="412 Ministry"
+          style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", display: "block" }}
+        />
+      </div>
+      <div style={{ fontSize: "12px", fontWeight: 600, color: TSEC, fontFamily: SANS, letterSpacing: "0.04em" }}>
         Loading…
       </div>
-    </Shell>
+      <style>{`@keyframes spin412 { to { transform: rotate(360deg); } }`}</style>
+    </div>
   );
 }
 
@@ -571,6 +571,7 @@ export default function App() {
         {tab === "event" && page === "field_guide" && <FieldGuide data={data} onBack={() => setPage(null)} />}
         {tab === "event" && page === "coordinator" && <CoordinatorView data={data} onBack={() => setPage(null)} />}
         {tab === "event" && page === "checklist" && <MyChecklist data={data} onBack={() => setPage(null)} />}
+        {tab === "event" && page === "attendance" && <Attendance data={data} onBack={() => setPage(null)} />}
 
         {tab === "events" && (
           <EventsBrowser data={data} onRefresh={loadData} onNavigate={navigate} />

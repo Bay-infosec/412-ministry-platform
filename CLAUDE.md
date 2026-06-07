@@ -298,11 +298,370 @@ src/pages/
 
 ## Next Up
 
-1. **Design refresh** — platform is too dark; planned for future session
-2. **Loading screen animation** — logo with animated ring + "Loading..." text
-3. **Attendance UI** — check-in screen for coordinators/admins per event day
-4. **Rotate Supabase API keys** — service_role key was in a shared Claude.pdf doc (security)
-5. **Push notifications** — Web Push API + service worker for messages/announcements when app is closed
+1. **Resend migration** — replace EmailJS. Needs Resend API key + verified sender domain. See Resend section below.
+2. **Rotate Supabase API keys** — service_role key was in shared Claude.pdf (security — do this soon)
+3. **Design system overhaul** — full redesign spec below. Start a fresh session for this.
+4. **Push notifications** — Web Push API + service worker
+
+---
+
+## Design System Overhaul — Implementation Guide
+### For Account 2 to implement in a dedicated session
+
+The new design is named **Bold Light** (exaggerated minimalism, oversized type, system fonts).
+This is a full replacement of all styles across all files. Do NOT do this piecemeal — do it in one session.
+
+---
+
+### Step 0 — Replace constants.js completely
+
+Replace the entire export in `src/lib/constants.js` with:
+
+```js
+export const C = {
+  orange:      "#FF4D00",
+  dark:        "#111111",
+  dark2:       "#222222",
+  white:       "#FFFFFF",
+  bg:          "#FAFAFA",
+  border:      "#E5E5E5",
+  text:        "#111111",
+  muted:       "#999999",
+  faint:       "#CCCCCC",
+  verseBg:     "#FFF5F0",
+  verseBorder: "#FFD5C0",
+  success:     "#27AE60",
+  barBg:       "#F0F0F0",
+};
+
+// Legacy aliases — remove these after all files are updated
+export const NAVY   = C.dark;
+export const ORANGE = C.orange;
+export const GOLD   = C.orange;
+export const TSEC   = C.muted;
+export const BORDER = C.border;
+export const BG     = C.bg;
+export const SANS   = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif";
+export const SERIF  = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif";
+```
+
+Adding legacy aliases means the build won't break immediately — files still using NAVY/ORANGE etc. will get the new colors automatically. Replace them file by file as you go.
+
+**Remove the Google Fonts link from `useFonts()` in App.jsx** — system fonts load instantly, no link needed.
+
+---
+
+### Step 1 — Update shared layout components first
+
+**`src/components/layout/Shell.jsx`**
+- background: `#FAFAFA`
+- maxWidth: `460px`, margin: `0 auto`
+- padding: `0 16px`
+
+**`src/components/layout/BottomNav.jsx`** — 5 tabs, new design:
+```
+Tabs: Home · Conference · Chat · Updates · Profile
+Active: color #FF4D00
+Inactive: color #CCCCCC
+Background: #FAFAFA, border-top: 1px solid #E5E5E5
+Label: 8-9px, font-weight 800, text-transform uppercase
+```
+Chat tab is now a permanent primary tab (not a floating button). Move the chat open logic from `page === "chat"` overlay to a proper `tab === "chat"` route — same as the others.
+
+**`src/components/ui/Card.jsx`**
+- background: `#FFFFFF`
+- border: `1px solid #E5E5E5`
+- border-radius: `14px`
+
+**`src/components/ui/Avatar.jsx`**
+- background: `#FF4D00` (not NAVY)
+- initials: `font-size 18px, font-weight 900, color #FFFFFF`
+
+**`src/components/ui/SectionLabel.jsx`**
+- `font-size: 10px, font-weight: 800, text-transform: uppercase, letter-spacing: 0.14em, color: #999999`
+
+**`src/components/ui/Button.jsx`** (primary CTA)
+- `background: #FF4D00, color: #FFFFFF, border-radius: 12px, padding: 14px, font-size: 14-15px, font-weight: 700`
+
+---
+
+### Step 2 — Home screen
+
+**Top bar (no Shell padding — full-width white bar):**
+```
+background: #FAFAFA, border-bottom: 1px solid #E5E5E5, padding: 14px 16px 11px
+Left: "412 Ministry" — 13px 900, "Ministry" in #FF4D00
+Right: bell button — 32px circle, white bg, 1px #E5E5E5 border
+```
+
+**Hero greeting:**
+```
+Eyebrow: "GOOD MORNING" — 10px, 800, uppercase, letter-spacing 0.14em, color #999999
+Name:    "{firstName}" — 36-38px, 900, letter-spacing -0.04em, color #111111
+```
+
+**Verse card:**
+```
+background: #FFF5F0, border: 1px solid #FFD5C0, border-radius: 14px, padding: 12-13px
+Tag: "TODAY'S VERSE" — 9px 800 uppercase #FF4D00
+Text: 12px italic #111 line-height 1.65
+Ref:  9px 800 uppercase #FF4D00
+```
+
+**Event hero card (dark):**
+```
+background: #111111, border-radius: 16-18px, padding: 13-14px
+Tag: 9px 800 uppercase #FF4D00 — "YOUR EVENT · ACTIVE"
+Title: 19-20px 900 #FFFFFF letter-spacing -0.03em
+Sub: 11px #555555
+Pills: flex gap 6px, margin-top 10-11px
+  Primary pill: bg #FF4D00, color #FFFFFF
+  Secondary pill: bg #222222, color #FF4D00
+  Both: border-radius 8px, padding 4px 10px, 10px 800
+```
+
+**Quick access tiles (2-column grid, gap 8px):**
+```
+Default: bg #FFFFFF, border 1px #E5E5E5, border-radius 13px, padding 13px 10px
+  Icon: 20px #FF4D00
+  Label: 10px 800 uppercase #111111
+Chat tile: bg #FF4D00 (highlighted — it's the key CTA)
+  Icon + label: #FFFFFF
+```
+
+**Stat cards (2-column grid, gap 8px):**
+```
+bg #FFFFFF, border 1px #E5E5E5, border-radius 13px, padding 12px
+Number: 22px 900 #FF4D00 (or #111 for non-accent stats)
+Label: 9px 800 uppercase #999999 letter-spacing 0.1em
+```
+
+---
+
+### Step 3 — Conference screen (was EventHome)
+
+Same hero card as Home (dark #111111 background).
+
+The tab in the nav should say "Conference" not "Event".
+
+Zoom training row + section rows → same white card list style, but with heavier typography:
+- Row title: `13px 800 #111111`
+- Row sub: `11px #999999`
+
+---
+
+### Step 4 — Chat screen
+
+This becomes a **primary nav tab**, not an overlay. The `page === "chat"` pattern in App.jsx should become `tab === "chat"`, identical to how `tab === "updates"` or `tab === "home"` work. The Chat component already accepts `onClose` — replace that with `onNavigate` back to home or previous tab.
+
+Message bubbles:
+```
+Other: bg #FFFFFF, border 1px #E5E5E5, border-radius 14px 14px 14px 4px, padding 9px 12px
+  Name: 9px 800 #999 uppercase, letter-spacing 0.07em
+  Text: 12px 500 #111, line-height 1.5
+  Time: 9px #CCCCCC
+
+Mine: bg #FF4D00, border-radius 14px 14px 4px 14px
+  Text: 12px 500 #FFFFFF
+  Time: 9px #FFB896
+```
+
+Active people strip: pill style, bg #111111, color #FFFFFF, initials in #FF4D00.
+
+Input bar:
+```
+bg #FFFFFF, border 1px #E5E5E5, border-radius 12px, padding 9px 12px
+Send button: 28px sq, bg #FF4D00, border-radius 8px
+```
+
+---
+
+### Step 5 — Updates (Announcements)
+
+Announcement card:
+```
+bg #FFFFFF, border 1px #E5E5E5, border-left 3px solid #FF4D00, border-radius 14px, padding 13px
+Tag: 9px 800 uppercase #FF4D00
+Title: 13px 900 #111111
+Body: 11px #888888 line-height 1.55
+Date: 10px #CCCCCC font-weight 600
+```
+
+Chip badges:
+```
+Event chip: bg #FF4D00, color #FFFFFF, border-radius 20px, padding 3px 9px, 9px 800 uppercase
+Platform chip: bg #111111, color #FFFFFF
+```
+
+---
+
+### Step 6 — Profile screen
+
+Avatar: 56px circle, bg #FF4D00, initials 18px 900 #FFFFFF.
+
+Info rows:
+```
+bg #FFFFFF, border 1px #E5E5E5, border-radius 14px, padding 2px 13px
+Row: flex space-between, padding 9px 0, border-bottom 1px #F0F0F0
+Key: 11px #999999 600
+Value: 12px 800 #111111
+```
+
+Conference history card:
+```
+bg #111111, border-radius 14px, padding 13px
+Label: 9px 800 #FF4D00 uppercase
+Row: flex space-between, padding 6px 0, border-bottom 1px #222222
+Year: 12px 800 #FFFFFF
+Event: 11px #555555
+Active badge: bg #FF4D00, border-radius 6px, 9px 800 #FFFFFF
+Past badge: 10px 700 #555555
+```
+
+Sign out button: `bg #FFFFFF, border 1px #E5E5E5, border-radius 12px, padding 12-13px, 13px 800 #FF4D00`
+
+---
+
+### Step 7 — Checklist card (MyChecklist, Onboarding step 5)
+
+```
+Header: flex space-between
+  Title: 11-12px 800 uppercase #111 letter-spacing 0.08em
+  Pct: 12px 900 #FF4D00
+
+Progress bar track: bg #F0F0F0, border-radius 4px, height 4px
+Progress bar fill: bg #FF4D00, border-radius 4px
+
+Row: flex align-items-center gap 10px, padding 6px 0
+  Done: 16px circle bg #FF4D00 (or #27AE60), checkmark white
+        text: 12px #CCCCCC line-through
+  Pending: 16px circle border 1.5px #E5E5E5
+           text: 12px #111111
+```
+
+---
+
+### Step 8 — Prayer chain (PrayerChain)
+
+Prayer day card:
+```
+bg #FFF5F0, border 1px #FFD5C0, border-radius 14px, padding 12-13px, flex align-items-center gap 12px
+Date block: bg #FF4D00, border-radius 10px, 44x44px
+  Month: 8px 800 #FFFFFF uppercase letter-spacing 0.1em
+  Day: 18px 900 #FFFFFF line-height 1
+Info:
+  Label: 9px 800 uppercase #FF4D00
+  Title: 13px 800 #111111
+  Sub: 11px #999999
+```
+
+---
+
+### Step 9 — Onboarding flow
+
+Full screen, no bottom nav.
+```
+Progress bar: 4px height, #FF4D00 fill, #E5E5E5 track, top of screen
+Step counter: "Step X of 6" — 10px 800 uppercase #FF4D00
+Step title: 24px 900 #111 letter-spacing -0.03em
+Body text: 15-16px #111 line-height 1.75-1.85
+CTA: full width, 14-15px 700, #FF4D00 bg, white text, border-radius 12px, padding 14-16px
+Content cards inside: bg #FFFFFF, border 1px #E5E5E5, border-radius 12px, padding 1.25-1.5rem
+```
+
+Co-leader reveal:
+```
+Before: 80px circle, bg #E5E5E5, "?" centered (28px 900 #999)
+After: avatar + name + ministry role + church + phone
+```
+
+---
+
+### Step 10 — Admin panel
+
+Same component patterns, just with the new color values. The admin panel is dense — focus on getting the cards, buttons, and text weights right. The dark sidebar or header style should use `#111111` not `#162038`.
+
+---
+
+### What NOT to change during the design update
+
+- Supabase queries — don't touch any `.from()` calls
+- State management logic in App.jsx
+- RLS policies
+- Edge functions
+- Auth flow logic
+- The `matchesAudience` utility
+- Any file in `src/lib/` except `constants.js`
+
+---
+
+### Files to update (in order)
+
+1. `src/lib/constants.js` — new C object + legacy aliases
+2. `src/App.jsx` — remove Google Fonts link, update LoadingScreen colors, wire Chat as a tab
+3. `src/components/layout/Shell.jsx`
+4. `src/components/layout/BottomNav.jsx` — 5 tabs, Chat as primary
+5. `src/components/ui/Card.jsx`
+6. `src/components/ui/Avatar.jsx`
+7. `src/components/ui/Button.jsx`
+8. `src/components/ui/SectionLabel.jsx`
+9. `src/pages/auth/Login.jsx`
+10. `src/pages/auth/ChangePassword.jsx`
+11. `src/pages/home/Home.jsx`
+12. `src/pages/event/EventHome.jsx`
+13. `src/pages/chat/Chat.jsx`
+14. `src/pages/updates/Updates.jsx`
+15. `src/pages/profile/Profile.jsx`
+16. `src/pages/event/onboarding/OnboardingFlow.jsx`
+17. `src/pages/event/MyTeam.jsx`
+18. `src/pages/event/PrayerChain.jsx`
+19. `src/pages/event/MyChecklist.jsx`
+20. `src/pages/event/CoordinatorView.jsx`
+21. `src/pages/event/FieldGuide.jsx`
+22. `src/pages/event/TheFour.jsx`
+23. `src/pages/event/Attendance.jsx`
+24. `src/pages/events/EventsBrowser.jsx`
+25. All admin pages (AdminShell → PeopleList → PersonDetail → EventList → EventDetail → etc.)
+
+Build after every 5 files to catch breakage early.
+
+---
+
+## Resend Migration Guide
+### When you have the API key + verified domain
+
+Replace EmailJS with Resend for all outbound email. Resend runs server-side only (API key stays secret in Supabase edge function env vars — never in the browser).
+
+**3 email types to migrate:**
+1. Invite email (new user created by admin) — currently `create-user` edge function
+2. Password reset — currently `reset-password` edge function
+3. Announcement email — currently client-side EmailJS call in AnnouncementEditor.jsx
+
+**Steps:**
+1. Create account at resend.com, verify your sender domain, get API key
+2. Add `RESEND_API_KEY` to Supabase edge function secrets (Dashboard → Edge Functions → Secrets)
+3. Add `RESEND_FROM_EMAIL` (e.g. `noreply@yourdomain.com`)
+4. Create a new edge function `send-email` that accepts `{ to, subject, html }` and calls Resend API
+5. Update `create-user` and `reset-password` functions to call `send-email` instead of EmailJS
+6. Remove the client-side EmailJS send from `AnnouncementEditor.jsx` — call the edge function instead
+7. Remove `@emailjs/browser` from package.json
+
+**Resend API call (inside edge function):**
+```js
+const res = await fetch("https://api.resend.com/emails", {
+  method: "POST",
+  headers: {
+    "Authorization": `Bearer ${Deno.env.get("RESEND_API_KEY")}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    from: Deno.env.get("RESEND_FROM_EMAIL"),
+    to: [recipientEmail],
+    subject: subject,
+    html: htmlBody,
+  }),
+});
+```
 
 ---
 

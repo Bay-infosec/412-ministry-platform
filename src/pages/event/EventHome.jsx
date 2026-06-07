@@ -45,6 +45,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenChat }) 
 
   if (isCoordinator) {
     sections.push({ id: "coordinator", label: "My Teams", desc: "Overview of teams you oversee" });
+    sections.push({ id: "attendance", label: "Attendance", desc: "Check in team members each day" });
   }
 
   const zoom = activeEvent.zoom_training_dates ? splitZoomDisplay(activeEvent.zoom_training_dates) : null;
