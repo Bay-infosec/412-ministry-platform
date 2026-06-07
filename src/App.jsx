@@ -10,6 +10,7 @@ import { Shell } from "./components/layout/index.js";
 import { SANS, TSEC, ORANGE } from "./lib/constants.js";
 import { EventHome } from "./pages/event/index.js";
 import { OnboardingFlow } from "./pages/event/onboarding/index.js";
+import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide } from "./pages/event/index.js";
 
 
 function useFonts() {
