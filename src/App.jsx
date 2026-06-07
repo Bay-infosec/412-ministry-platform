@@ -11,6 +11,7 @@ import { SANS, TSEC, ORANGE } from "./lib/constants.js";
 import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide } from "./pages/event/index.js";
 import { OnboardingFlow } from "./pages/event/onboarding/index.js";
 import { AdminShell } from "./pages/admin/index.js";
+import { Chat } from "./pages/chat/index.js";
 
 
 function useFonts() {
@@ -373,6 +374,7 @@ export default function App() {
             data={data}
             onNavigate={navigate}
             onOpenPage={setPage}
+            onOpenChat={() => setPage("chat")}
           />
         )}
         {tab === "event" && !page && (
@@ -419,6 +421,12 @@ export default function App() {
             data={data}
             onClose={() => setPage(null)}
             onRefresh={loadData}
+          />
+        )}
+        {page === "chat" && (
+          <Chat
+            data={data}
+            onClose={() => setPage(null)}
           />
         )}
       </>

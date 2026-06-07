@@ -60,20 +60,66 @@ function StepBody({ children }) {
 
 // ── Steps ─────────────────────────────────────────────────────────────────────
 
-function WelcomePage({ profile, onNext }) {
+function WelcomePage({ profile, activeEvent, onNext }) {
   const firstName = profile?.full_name?.split(" ")[0] || "Friend";
   return (
     <>
+      {/* Hero card */}
+      <div style={{
+        background: NAVY, borderRadius: 24, padding: "2rem 1.75rem 1.75rem",
+        marginBottom: "1.5rem", textAlign: "center",
+      }}>
+        <div style={{
+          fontSize: "10px", fontWeight: 700, letterSpacing: "0.22em",
+          color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.25rem",
+        }}>
+          412 Ministry · {activeEvent?.name || "Set Apart 2026"}
+        </div>
+        <div style={{
+          fontFamily: SERIF, fontSize: "52px", fontWeight: 600,
+          color: "#fff", lineHeight: 1.05, marginBottom: "0.25rem",
+        }}>
+          {firstName}.
+        </div>
+        <div style={{
+          fontFamily: SERIF, fontSize: "22px", fontWeight: 400,
+          color: GOLD, fontStyle: "italic", marginBottom: "1.5rem",
+        }}>
+          Welcome.
+        </div>
+        {activeEvent?.verse ? (
+          <div style={{
+            borderTop: "1px solid rgba(255,255,255,0.12)",
+            paddingTop: "1.25rem",
+            fontFamily: SERIF, fontSize: "14px", fontStyle: "italic",
+            color: "#B8C0D0", lineHeight: 1.75,
+          }}>
+            "{activeEvent.verse}"
+          </div>
+        ) : (
+          <div style={{
+            borderTop: "1px solid rgba(255,255,255,0.12)",
+            paddingTop: "1.25rem",
+            fontFamily: SERIF, fontSize: "14px", fontStyle: "italic",
+            color: "#B8C0D0", lineHeight: 1.75,
+          }}>
+            "You did not choose me, but I chose you."
+          </div>
+        )}
+      </div>
+
       <StepTag current={1} total={6} />
-      <StepTitle>Welcome,<br />{firstName}.</StepTitle>
       <StepBody>
-        We are glad you are here. This onboarding will take just a few minutes
-        and will introduce you to your team, your co-leader, and what to expect
-        at Set Apart 2026.
+        We are so glad you are here. This onboarding walks you through everything
+        you need to know before{" "}
+        {activeEvent?.name || "the conference"} — your team, your co-leader, and
+        what to expect.
       </StepBody>
-      <StepBody>Take your time with each step. When you are ready, press continue.</StepBody>
+      <StepBody>
+        Take your time with each step. When you are ready, begin.
+      </StepBody>
       <div style={{ flex: 1 }} />
-      <PrimaryBtn onClick={onNext}>Continue</PrimaryBtn>
+      <PrimaryBtn onClick={onNext}>Begin →</PrimaryBtn>
     </>
   );
 }
@@ -85,23 +131,56 @@ function PersonalMessagePage({ eventMember, onNext }) {
       <StepTag current={2} total={6} />
       <StepTitle>A word for you.</StepTitle>
       {message ? (
-        <Card style={{ padding: "1.25rem", marginBottom: "1rem" }}>
+        <div style={{
+          background: NAVY, borderRadius: 20, padding: "1.75rem",
+          marginBottom: "1.25rem", position: "relative", overflow: "hidden",
+        }}>
+          {/* Decorative quote mark */}
           <div style={{
-            fontFamily: SERIF, fontSize: "16px", color: NAVY,
-            lineHeight: 1.75, marginBottom: "1rem", whiteSpace: "pre-wrap",
+            position: "absolute", top: 12, left: 18,
+            fontFamily: SERIF, fontSize: "80px", color: GOLD,
+            opacity: 0.15, lineHeight: 1, userSelect: "none",
+          }}>
+            "
+          </div>
+          <div style={{
+            fontFamily: SERIF, fontSize: "17px", color: "#fff",
+            lineHeight: 1.8, whiteSpace: "pre-wrap", position: "relative",
+            marginBottom: "1.25rem",
           }}>
             {message}
           </div>
           <div style={{
-            fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em",
-            textTransform: "uppercase", color: ORANGE, fontFamily: SANS,
-            paddingTop: "0.75rem", borderTop: `1px solid ${BORDER}`,
+            display: "flex", alignItems: "center", gap: 10,
+            paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.15)",
           }}>
-            412 Ministry Leadership
+            <div style={{
+              width: 28, height: 2, borderRadius: 1, background: GOLD,
+            }} />
+            <div style={{
+              fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em",
+              textTransform: "uppercase", color: GOLD, fontFamily: SANS,
+            }}>
+              412 Ministry Leadership
+            </div>
           </div>
-        </Card>
+        </div>
       ) : (
-        <StepBody>No personal message yet. Check back later.</StepBody>
+        <div style={{
+          border: `1.5px dashed ${BORDER}`, borderRadius: 20,
+          padding: "2rem 1.5rem", textAlign: "center", marginBottom: "1.25rem",
+        }}>
+          <div style={{
+            fontFamily: SERIF, fontSize: "32px", color: BORDER, marginBottom: "0.75rem",
+          }}>
+            ✦
+          </div>
+          <div style={{
+            fontFamily: SERIF, fontSize: "16px", color: TSEC, lineHeight: 1.7,
+          }}>
+            A personal note from the 412 leadership team is on its way.
+          </div>
+        </div>
       )}
       <div style={{ flex: 1 }} />
       <PrimaryBtn onClick={onNext}>Continue</PrimaryBtn>
@@ -407,7 +486,7 @@ export default function OnboardingFlow({ data, onDone }) {
   }
 
   const steps = [
-    <WelcomePage key="welcome" profile={profile} onNext={next} />,
+    <WelcomePage key="welcome" profile={profile} activeEvent={activeEvent} onNext={next} />,
     <PersonalMessagePage key="message" eventMember={eventMember} onNext={next} />,
     <EventInfoPage key="info" activeEvent={activeEvent} eventMember={eventMember} onNext={next} />,
     <RequirementsPage key="req" onNext={next} />,

@@ -4,7 +4,7 @@ import { Shell } from "../../components/layout/index.js";
 import { Card, Avatar, SectionLabel } from "../../components/ui/index.js";
 import { DailyVerse, ContactForm } from "../../components/shared/index.js";
 
-export default function Home({ data, onNavigate, onOpenPage }) {
+export default function Home({ data, onNavigate, onOpenPage, onOpenChat }) {
   const { profile, eventMember, announcements, unreadCount, activeEvent, trainingMaterials } = data;
   const [showContact, setShowContact] = useState(false);
   const displayName = profile.nickname || (profile.full_name || "").split(" ")[0];
@@ -17,8 +17,14 @@ export default function Home({ data, onNavigate, onOpenPage }) {
           <div style={{ fontSize:"11px", fontWeight:700, letterSpacing:"0.16em", color:ORANGE, textTransform:"uppercase", fontFamily:SANS }}>412 Ministry</div>
           <div style={{ fontFamily:SERIF, fontSize:"26px", fontWeight:600, color:NAVY, lineHeight:1.2 }}>Hi {displayName}.</div>
         </div>
-        <button onClick={()=>onNavigate("profile")} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}>
-          <Avatar url={profile.photo_url} name={profile.full_name} size={42}/>
+        <button
+          onClick={onOpenChat}
+          style={{ background:"none", border:"none", cursor:"pointer", padding:6, color:NAVY, display:"flex", alignItems:"center" }}
+          title="Team Chat"
+        >
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
         </button>
       </div>
 
