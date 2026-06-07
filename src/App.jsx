@@ -8,7 +8,7 @@ import { Profile } from "./pages/profile/index.js";
 import { BottomNav } from "./components/layout/index.js";
 import { Shell } from "./components/layout/index.js";
 import { SANS, TSEC, ORANGE } from "./lib/constants.js";
-import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide, CoordinatorView } from "./pages/event/index.js";
+import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide, CoordinatorView, MyChecklist } from "./pages/event/index.js";
 import { OnboardingFlow } from "./pages/event/onboarding/index.js";
 import { AdminShell } from "./pages/admin/index.js";
 import { Chat } from "./pages/chat/index.js";
@@ -389,6 +389,7 @@ export default function App() {
           <OnboardingFlow
             data={data}
             onDone={() => { loadData(); setPage(null); }}
+            onExit={() => { loadData(); setPage(null); }}
           />
         )}
         {tab === "event" && page === "myteam" && <MyTeam data={data} onBack={() => setPage(null)} />}
@@ -396,6 +397,7 @@ export default function App() {
         {tab === "event" && page === "the_four" && <TheFour data={data} onBack={() => setPage(null)} />}
         {tab === "event" && page === "field_guide" && <FieldGuide data={data} onBack={() => setPage(null)} />}
         {tab === "event" && page === "coordinator" && <CoordinatorView data={data} onBack={() => setPage(null)} />}
+        {tab === "event" && page === "checklist" && <MyChecklist data={data} onBack={() => setPage(null)} />}
 
         {tab === "updates" && (
           <Updates

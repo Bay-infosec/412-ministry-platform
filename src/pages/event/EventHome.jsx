@@ -1,6 +1,7 @@
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel } from "../../components/ui/index.js";
+import { CHECKLIST_ITEMS } from "../../lib/checklist.js";
 
 function daysUntil(dateStr) {
   if (!dateStr) return null;
@@ -12,7 +13,9 @@ function daysUntil(dateStr) {
 }
 
 export default function EventHome({ data, onOpenPage, onNavigate }) {
-  const { activeEvent, eventMember, profile, isAdmin } = data;
+  const { activeEvent, eventMember, eventChecklist, profile, isAdmin } = data;
+  const checklistItems = eventChecklist?.items || {};
+  const checklistDone = CHECKLIST_ITEMS.filter((i) => checklistItems[i.id]).length;
 
   if (!activeEvent) {
     return (
@@ -33,6 +36,7 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
     { id: "prayer_chain", label: "Prayer Chain", desc: "Pray for one another" },
     { id: "the_four", label: "The Four", desc: "Your four essentials" },
     { id: "field_guide", label: "Field Guide", desc: "Resources and references" },
+    ...(eventMember ? [{ id: "checklist", label: "My Checklist", desc: `${checklistDone} of ${CHECKLIST_ITEMS.length} tasks complete` }] : []),
   ];
 
   if (isCoordinator) {

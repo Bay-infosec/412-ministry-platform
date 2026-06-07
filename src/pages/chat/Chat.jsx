@@ -324,14 +324,24 @@ export default function Chat({ data, onClose }) {
 }
 
 function OnlineAvatar({ user }) {
+  const firstName = user.full_name?.split(" ")[0] || "?";
   return (
-    <div style={{ position: "relative", flexShrink: 0 }} title={user.full_name}>
-      <Avatar url={user.photo_url} name={user.full_name} size={26} />
-      <div style={{
-        position: "absolute", bottom: 0, right: 0,
-        width: 8, height: 8, borderRadius: "50%",
-        background: "#22C55E", border: "2px solid #fff",
-      }} />
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, flexShrink: 0 }}>
+      <div style={{ position: "relative" }}>
+        <Avatar url={user.photo_url} name={user.full_name} size={30} />
+        <div style={{
+          position: "absolute", bottom: 0, right: 0,
+          width: 8, height: 8, borderRadius: "50%",
+          background: "#22C55E", border: "2px solid #fff",
+        }} />
+      </div>
+      <span style={{
+        fontSize: "10px", color: "#374151", fontFamily: SANS, fontWeight: 500,
+        maxWidth: 42, textAlign: "center",
+        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+      }}>
+        {firstName}
+      </span>
     </div>
   );
 }

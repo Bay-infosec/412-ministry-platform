@@ -3,6 +3,7 @@ import { supabase } from "../../../lib/supabase.js";
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../../lib/constants.js";
 import { Shell } from "../../../components/layout/index.js";
 import { Card, SectionLabel } from "../../../components/ui/index.js";
+import { CHECKLIST_ITEMS } from "../../../lib/checklist.js";
 
 // ── Shared primitives ─────────────────────────────────────────────────────────
 
@@ -487,12 +488,6 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
   );
 }
 
-const CHECKLIST_ITEMS = [
-  { id: "field_guide", label: "Read the Field Guide" },
-  { id: "prayer_chain", label: "Review the Prayer Chain" },
-  { id: "contact_coleader", label: "Connect with your co-leader" },
-  { id: "confirm_attendance", label: "Confirm your attendance" },
-];
 
 function ChecklistPage({ onFinish }) {
   const [checked, setChecked] = useState({});
@@ -574,15 +569,23 @@ function ProgressBar({ step, total }) {
 
 // ── Main shell ────────────────────────────────────────────────────────────────
 
-export default function OnboardingFlow({ data, onDone }) {
+export default function OnboardingFlow({ data, onDone, onExit }) {
   const { profile, activeEvent, eventMember, coLeader } = data;
-  const [step, setStep] = useState(0);
+  const savedStep = eventMember?.onboarding_step || 0;
+  const [step, setStep] = useState(savedStep);
 
   useEffect(() => {
     if (eventMember?.id && !eventMember.onboarding_visited) {
       supabase.from("event_members").update({ onboarding_visited: true }).eq("id", eventMember.id);
     }
   }, [eventMember?.id]);
+
+  async function handleExit() {
+    await supabase.from("event_members")
+      .update({ onboarding_step: step })
+      .eq("id", eventMember.id);
+    onExit();
+  }
 
   const next = () => setStep((s) => Math.min(s + 1, 5));
 
@@ -615,19 +618,23 @@ export default function OnboardingFlow({ data, onDone }) {
 
   return (
     <Shell>
-      <ProgressBar step={step} total={6} />
-      {step > 0 && (
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+        {step > 0 ? (
+          <button
+            onClick={() => setStep((s) => s - 1)}
+            style={{ background: "none", border: "none", color: TSEC, fontSize: "14px", cursor: "pointer", padding: 0, fontFamily: SANS }}
+          >
+            ‹ Back
+          </button>
+        ) : <div />}
         <button
-          onClick={() => setStep((s) => s - 1)}
-          style={{
-            background: "none", border: "none", color: TSEC,
-            fontSize: "14px", cursor: "pointer", padding: 0,
-            fontFamily: SANS, marginBottom: "1rem", display: "block",
-          }}
+          onClick={handleExit}
+          style={{ background: "none", border: "none", color: TSEC, fontSize: "13px", cursor: "pointer", padding: 0, fontFamily: SANS }}
         >
-          ‹ Back
+          Save & exit
         </button>
-      )}
+      </div>
+      <ProgressBar step={step} total={6} />
       <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: "70vh" }}>
         {steps[step]}
       </div>
