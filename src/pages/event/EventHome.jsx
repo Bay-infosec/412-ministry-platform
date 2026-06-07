@@ -18,6 +18,7 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
   const isCoordinator = eventMember?.event_role === "coordinator" || isAdmin;
 
   const sections = [
+    ...(eventMember ? [{ id: "onboarding", label: "Onboarding", desc: eventMember.onboarding_completed ? "Review your setup" : "Complete your setup" }] : []),
     { id: "myteam", label: "My Team", desc: eventMember?.team_number ? `Team ${eventMember.team_number}` : "Team assignment" },
     { id: "prayer_chain", label: "Prayer Chain", desc: "Pray for one another" },
     { id: "the_four", label: "The Four", desc: "Your four essentials" },

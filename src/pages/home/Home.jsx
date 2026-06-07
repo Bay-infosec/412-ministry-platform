@@ -14,8 +14,10 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat }) {
     <Shell withNav>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"1.5rem" }}>
         <div>
-          <img src="/logo.png" alt="412 Ministry" style={{ height:48, width:"auto", display:"block", marginBottom:6 }} />
-          <div style={{ fontFamily:SERIF, fontSize:"26px", fontWeight:600, color:NAVY, lineHeight:1.2 }}>Hi {displayName}.</div>
+          <div style={{ fontSize:"11px", fontWeight:700, letterSpacing:"0.16em", color:ORANGE, textTransform:"uppercase", fontFamily:SANS, marginBottom:4 }}>412 Ministry</div>
+          <div style={{ fontFamily:SERIF, fontSize:"26px", fontWeight:600, color:NAVY, lineHeight:1.2 }}>
+            Hi <span style={{ color:ORANGE }}>{displayName}</span>.
+          </div>
         </div>
         <button
           onClick={onOpenChat}
@@ -47,8 +49,10 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat }) {
           <div style={{ fontFamily:SERIF, fontSize:"22px", fontWeight:600, color:"#fff", lineHeight:1.2, marginBottom:"0.5rem" }}>{activeEvent.name}</div>
           <div style={{ fontSize:"13px", color:"#B8C0D0" }}>{activeEvent.dates}</div>
           {activeEvent.location&&<div style={{ fontSize:"13px", color:"#B8C0D0" }}>{activeEvent.location}</div>}
-          {eventMember&&!eventMember.onboarding_completed&&(
-            <div style={{ marginTop:"0.75rem", background:ORANGE, borderRadius:8, padding:"6px 12px", display:"inline-block", fontSize:"12px", fontWeight:700, color:"#fff" }}>Continue onboarding</div>
+          {eventMember&&(
+            <div style={{ marginTop:"0.75rem", background: eventMember.onboarding_completed ? "rgba(255,255,255,0.15)" : ORANGE, borderRadius:8, padding:"6px 12px", display:"inline-block", fontSize:"12px", fontWeight:700, color:"#fff" }}>
+              {eventMember.onboarding_completed ? "Review onboarding →" : "Continue onboarding →"}
+            </div>
           )}
         </button>
       )}

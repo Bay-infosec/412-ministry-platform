@@ -65,8 +65,8 @@ export default function BottomNav({
                 src={profilePhotoUrl}
                 alt="Profile"
                 style={{
-                  width: 22, height: 22, borderRadius: "50%", objectFit: "cover",
-                  border: `2px solid ${active === "profile" ? ORANGE : "transparent"}`,
+                  width: 30, height: 30, borderRadius: "50%", objectFit: "cover",
+                  border: `2.5px solid ${active === "profile" ? ORANGE : "transparent"}`,
                   boxSizing: "border-box",
                 }}
               />
