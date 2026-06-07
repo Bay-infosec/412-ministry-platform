@@ -122,14 +122,13 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
 
       {/* Onboarding progress summary */}
       {!loading && members.length > 0 && (() => {
-        const leaders = members.filter((m) => m.event_role === "leader");
-        const complete    = leaders.filter((m) => m.onboarding_completed).length;
-        const inProgress  = leaders.filter((m) => !m.onboarding_completed && m.onboarding_visited).length;
-        const notStarted  = leaders.filter((m) => !m.onboarding_completed && !m.onboarding_visited).length;
+        const complete    = members.filter((m) => m.onboarding_completed).length;
+        const inProgress  = members.filter((m) => !m.onboarding_completed && m.onboarding_visited).length;
+        const notStarted  = members.filter((m) => !m.onboarding_completed && !m.onboarding_visited).length;
         return (
           <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
             <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.75rem" }}>
-              Onboarding · {leaders.length} leaders
+              Onboarding · {members.length} members
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               {[
@@ -145,7 +144,7 @@ export default function EventDetail({ event, data, onRefresh, onToast }) {
             </div>
             {notStarted > 0 && (
               <div style={{ fontSize: "12px", color: "#991B1B", fontFamily: SANS, marginTop: "0.75rem" }}>
-                ⚠ {notStarted} leader{notStarted !== 1 ? "s have" : " has"} not opened onboarding yet — consider reaching out.
+                ⚠ {notStarted} member{notStarted !== 1 ? "s have" : " has"} not opened onboarding yet — consider reaching out.
               </div>
             )}
           </div>
