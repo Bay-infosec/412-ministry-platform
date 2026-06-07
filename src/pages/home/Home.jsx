@@ -4,11 +4,23 @@ import { Shell } from "../../components/layout/index.js";
 import { Card, Avatar, SectionLabel } from "../../components/ui/index.js";
 import { DailyVerse, ContactForm } from "../../components/shared/index.js";
 
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  // Parse "August 5-9, 2026" → "August 5, 2026"  or  "August 5, 2026"
+  const m1 = dateStr.match(/([A-Za-z]+ \d+)[–\-]\d+,?\s*(\d{4})/);
+  const m2 = dateStr.match(/([A-Za-z]+ \d+,\s*\d{4})/);
+  const parsed = m1 ? new Date(`${m1[1]}, ${m1[2]}`) : m2 ? new Date(m2[1]) : null;
+  if (!parsed || isNaN(parsed)) return null;
+  const diff = Math.ceil((parsed - new Date()) / 86400000);
+  return diff;
+}
+
 export default function Home({ data, onNavigate, onOpenPage, onOpenChat }) {
   const { profile, eventMember, announcements, unreadCount, activeEvent, trainingMaterials } = data;
   const [showContact, setShowContact] = useState(false);
   const displayName = profile.nickname || (profile.full_name || "").split(" ")[0];
   const latestAnn = (announcements || []).find(() => true);
+  const days = daysUntil(activeEvent?.dates);
 
   return (
     <Shell withNav>
@@ -31,6 +43,32 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat }) {
       </div>
 
       <DailyVerse/>
+
+      {activeEvent && days !== null && days >= 0 && (
+        <div style={{
+          display:"flex", alignItems:"center", justifyContent:"space-between",
+          background:"#fff", border:`1px solid ${BORDER}`, borderRadius:14,
+          padding:"1rem 1.25rem", marginBottom:"1rem", fontFamily:SANS,
+        }}>
+          <div>
+            <div style={{ fontSize:"11px", fontWeight:700, letterSpacing:"0.1em", color:ORANGE, textTransform:"uppercase", marginBottom:3 }}>
+              {days === 0 ? "Today!" : "Countdown"}
+            </div>
+            <div style={{ fontSize:"14px", fontWeight:600, color:NAVY }}>{activeEvent.name}</div>
+            <div style={{ fontSize:"12px", color:TSEC, marginTop:2 }}>{activeEvent.dates}</div>
+          </div>
+          <div style={{ textAlign:"right", flexShrink:0 }}>
+            {days === 0 ? (
+              <div style={{ fontFamily:SERIF, fontSize:"22px", fontWeight:600, color:ORANGE }}>It's here!</div>
+            ) : (
+              <>
+                <div style={{ fontFamily:SERIF, fontSize:"44px", fontWeight:600, color:NAVY, lineHeight:1 }}>{days}</div>
+                <div style={{ fontSize:"11px", color:TSEC, fontWeight:600, letterSpacing:"0.04em" }}>{days === 1 ? "day" : "days"}</div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {latestAnn&&(
         <button onClick={()=>onNavigate("updates")} style={{ width:"100%", textAlign:"left", background:"#EEF2FC", borderRadius:14, padding:"1rem 1.25rem", marginBottom:"1rem", border:"none", cursor:"pointer", fontFamily:SANS }}>
