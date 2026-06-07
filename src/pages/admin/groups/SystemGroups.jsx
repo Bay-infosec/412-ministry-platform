@@ -182,7 +182,7 @@ export default function SystemGroups({ data, onToast }) {
   return (
     <div>
       <div style={{ marginBottom: "1.25rem" }}>
-        <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: NAVY, marginBottom: 4 }}>
+        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111", marginBottom: 4 }}>
           System Groups
         </div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>
@@ -211,11 +211,11 @@ export default function SystemGroups({ data, onToast }) {
                     {cfg.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "14px", fontWeight: 700, color: NAVY, fontFamily: SANS }}>{cfg.name}</div>
+                    <div style={{ fontSize: "14px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>{cfg.name}</div>
                     <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>{cfg.desc}</div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: NAVY }}>{memberCount}</div>
+                    <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111" }}>{memberCount}</div>
                     <div style={{ fontSize: "10px", color: TSEC, fontFamily: SANS }}>members</div>
                   </div>
                 </div>
@@ -227,7 +227,7 @@ export default function SystemGroups({ data, onToast }) {
                     onClick={() => cfg.isEvent ? syncEventGroup() : syncGroup(cfg, members)}
                     disabled={isSyncing}
                     style={{
-                      background: NAVY, color: "#fff", border: "none", borderRadius: 8,
+                      background: "#111111", color: "#fff", border: "none", borderRadius: 8,
                       padding: "7px 16px", fontSize: "12px", fontWeight: 700,
                       fontFamily: SANS, cursor: isSyncing ? "default" : "pointer",
                       opacity: isSyncing ? 0.6 : 1,
@@ -242,9 +242,9 @@ export default function SystemGroups({ data, onToast }) {
         </div>
       )}
 
-      <div style={{ background: "#FFF5EC", border: `1px solid ${ORANGE}44`, borderRadius: 12, padding: "0.875rem 1.25rem", marginTop: "1.25rem" }}>
-        <div style={{ fontSize: "12px", fontWeight: 700, color: ORANGE, fontFamily: SANS, marginBottom: 4 }}>After syncing</div>
-        <div style={{ fontSize: "12px", color: NAVY, fontFamily: SANS, lineHeight: 1.6 }}>
+      <div style={{ background: "#FFF5EC", border: "1px solid #FFD5C0", borderRadius: 12, padding: "0.875rem 1.25rem", marginTop: "1.25rem" }}>
+        <div style={{ fontSize: "12px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS, marginBottom: 4 }}>After syncing</div>
+        <div style={{ fontSize: "12px", color: "#111111", fontFamily: SANS, lineHeight: 1.6 }}>
           Members will see these groups in their messenger automatically. Re-sync any time to add new members.
           To add specific moderators to the Event Group, sync first, then use the messenger to add individuals.
         </div>

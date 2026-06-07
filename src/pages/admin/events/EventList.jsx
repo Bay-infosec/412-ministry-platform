@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { NAVY, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
 import { Modal } from "../../../components/ui/index.js";
 import { getTypeConfig } from "../../../lib/eventTypes.js";
 
@@ -112,7 +112,7 @@ function EventCard({ ev }) {
       padding: "1rem 1.25rem",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-        <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: NAVY, lineHeight: 1.2, flex: 1, marginRight: 8 }}>
+        <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 800, color: "#111111", lineHeight: 1.2, flex: 1, marginRight: 8 }}>
           {ev.name}
         </div>
         <span style={{

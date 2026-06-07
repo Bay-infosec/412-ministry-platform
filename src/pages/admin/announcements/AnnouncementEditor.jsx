@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 import { Card, Field, Button } from "../../../components/ui/index.js";
 import { sendEmail, sendAnnouncementEmails } from "../../../lib/email.js";
 import { matchesAudience } from "../../../lib/utils.js";
@@ -119,7 +119,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
 
   return (
     <div>
-      <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: NAVY, marginBottom: "1.25rem" }}>
+      <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 600, color: "#111111", marginBottom: "1.25rem" }}>
         {ann?.id ? "Edit Announcement" : "New Announcement"}
       </div>
 
@@ -138,7 +138,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
             style={{
               width: "100%", padding: "12px 14px", borderRadius: 10,
               border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS,
-              color: NAVY, resize: "vertical", outline: "none", boxSizing: "border-box",
+              color: "#111111", resize: "vertical", outline: "none", boxSizing: "border-box",
             }}
           />
         </div>
@@ -151,7 +151,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
           <select
             value={audienceType}
             onChange={(e) => { setAudienceType(e.target.value); setAudienceValue(""); }}
-            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: NAVY, background: "#fff", outline: "none" }}
+            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#111111", background: "#fff", outline: "none" }}
           >
             {AUDIENCE_TYPES.map((a) => (
               <option key={a.value} value={a.value}>{a.label}</option>
@@ -162,7 +162,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
             <select
               value={audienceValue}
               onChange={(e) => setAudienceValue(e.target.value)}
-              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: NAVY, background: "#fff", outline: "none" }}
+              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#111111", background: "#fff", outline: "none" }}
             >
               <option value="">Select ministry</option>
               {MINISTRIES.map((m) => <option key={m} value={m}>{m}</option>)}
@@ -176,14 +176,14 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
               value={audienceValue}
               onChange={(e) => setAudienceValue(e.target.value)}
               placeholder="Team number"
-              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: NAVY, outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#111111", outline: "none", boxSizing: "border-box" }}
             />
           )}
           {audienceType === "role" && (
             <select
               value={audienceValue}
               onChange={(e) => setAudienceValue(e.target.value)}
-              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: NAVY, background: "#fff", outline: "none" }}
+              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#111111", background: "#fff", outline: "none" }}
             >
               <option value="">Select role</option>
               {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -203,9 +203,9 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
             type="checkbox"
             checked={sendEmail}
             onChange={(e) => setSendEmail(e.target.checked)}
-            style={{ width: 16, height: 16, accentColor: NAVY, cursor: "pointer", flexShrink: 0 }}
+            style={{ width: 16, height: 16, accentColor: "#111111", cursor: "pointer", flexShrink: 0 }}
           />
-          <label htmlFor="send-email-toggle" style={{ fontSize: "14px", color: NAVY, fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
+          <label htmlFor="send-email-toggle" style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
             Also send email to audience
           </label>
         </div>
@@ -217,7 +217,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
           onClick={() => save(true)}
           disabled={busy}
           style={{
-            background: ORANGE, color: "#fff", border: "none", borderRadius: 10,
+            background: "#FF4D00", color: "#fff", border: "none", borderRadius: 10,
             padding: "14px", fontSize: "15px", fontWeight: 700, fontFamily: SANS,
             cursor: "pointer", width: "100%",
           }}
@@ -230,7 +230,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
           onClick={() => save(false)}
           disabled={busy}
           style={{
-            background: "#F3F4F6", color: NAVY, border: "none", borderRadius: 10,
+            background: "#F3F4F6", color: "#111111", border: "none", borderRadius: 10,
             padding: "12px", fontSize: "14px", fontWeight: 600, fontFamily: SANS,
             cursor: "pointer", width: "100%",
           }}

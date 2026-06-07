@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NAVY, TSEC, BORDER, SANS } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
 import { Avatar, Badge } from "../../../components/ui/index.js";
 
 export default function PeopleList({ data, onSelect }) {
@@ -27,7 +27,7 @@ export default function PeopleList({ data, onSelect }) {
           style={{
             width: "100%", padding: "12px 14px 12px 40px",
             border: `1px solid ${BORDER}`, borderRadius: 12,
-            fontSize: "15px", fontFamily: SANS, color: NAVY,
+            fontSize: "15px", fontFamily: SANS, color: "#111111",
             background: "#fff", outline: "none", boxSizing: "border-box",
           }}
         />
@@ -59,7 +59,7 @@ export default function PeopleList({ data, onSelect }) {
             <Avatar url={p.photo_url} name={p.full_name} size={42} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
-                fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS,
+                fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS,
                 whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
               }}>
                 {p.full_name}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 import { Card, SectionLabel, Modal } from "../../../components/ui/index.js";
 
 export default function ModeratorAssignments({ data, onToast }) {
@@ -113,7 +113,7 @@ export default function ModeratorAssignments({ data, onToast }) {
       <div style={{ display: "flex", justifyContent: "center", padding: "3rem 0" }}>
         <div style={{
           width: 28, height: 28, borderRadius: "50%",
-          border: `3px solid ${BORDER}`, borderTop: `3px solid ${NAVY}`,
+          border: `3px solid ${BORDER}`, borderTop: "3px solid #111111",
           animation: "spin 0.8s linear infinite",
         }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -124,7 +124,7 @@ export default function ModeratorAssignments({ data, onToast }) {
   return (
     <div style={{ fontFamily: SANS }}>
       <div style={{ marginBottom: "1.5rem" }}>
-        <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: NAVY }}>
+        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111" }}>
           Moderator Assignments
         </div>
         <div style={{ fontSize: "13px", color: TSEC, marginTop: 4 }}>
@@ -144,7 +144,7 @@ export default function ModeratorAssignments({ data, onToast }) {
               <Card key={mod.id} style={{ padding: "1rem 1.25rem" }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, marginBottom: 6 }}>
+                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", marginBottom: 6 }}>
                       {mod.full_name}
                     </div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -184,7 +184,7 @@ export default function ModeratorAssignments({ data, onToast }) {
                   <button
                     onClick={() => { setAssignModal(mod); setSelectedEventId(""); }}
                     style={{
-                      background: NAVY, color: "#fff", border: "none", borderRadius: 8,
+                      background: "#111111", color: "#fff", border: "none", borderRadius: 8,
                       padding: "7px 14px", fontSize: "12px", fontWeight: 700,
                       fontFamily: SANS, cursor: "pointer", flexShrink: 0,
                       whiteSpace: "nowrap",
@@ -211,11 +211,11 @@ export default function ModeratorAssignments({ data, onToast }) {
             width: "100%", maxWidth: 380, boxShadow: "0 8px 40px rgba(22,32,56,0.18)",
             fontFamily: SANS,
           }}>
-            <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: NAVY, marginBottom: 6 }}>
+            <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 600, color: "#111111", marginBottom: 6 }}>
               Assign to Event
             </div>
             <div style={{ fontSize: "13px", color: TSEC, marginBottom: "1rem" }}>
-              Assigning: <strong style={{ color: NAVY }}>{assignModal.full_name}</strong>
+              Assigning: <strong style={{ color: "#111111" }}>{assignModal.full_name}</strong>
             </div>
 
             <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: TSEC, marginBottom: 6, letterSpacing: "0.04em" }}>
@@ -227,7 +227,7 @@ export default function ModeratorAssignments({ data, onToast }) {
               style={{
                 width: "100%", padding: "12px 14px", borderRadius: 10,
                 border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS,
-                color: NAVY, background: "#fff", outline: "none", marginBottom: "1.25rem",
+                color: "#111111", background: "#fff", outline: "none", marginBottom: "1.25rem",
                 boxSizing: "border-box",
               }}
             >
@@ -242,7 +242,7 @@ export default function ModeratorAssignments({ data, onToast }) {
                 onClick={addAssignment}
                 disabled={busy || !selectedEventId}
                 style={{
-                  flex: 1, background: NAVY, color: "#fff", border: "none", borderRadius: 8,
+                  flex: 1, background: "#111111", color: "#fff", border: "none", borderRadius: 8,
                   padding: "11px", fontSize: "14px", fontWeight: 700, fontFamily: SANS,
                   cursor: busy || !selectedEventId ? "not-allowed" : "pointer",
                   opacity: busy || !selectedEventId ? 0.6 : 1,
@@ -253,7 +253,7 @@ export default function ModeratorAssignments({ data, onToast }) {
               <button
                 onClick={() => { setAssignModal(null); setSelectedEventId(""); }}
                 style={{
-                  flex: 1, background: "#F3F4F6", color: NAVY, border: "none", borderRadius: 8,
+                  flex: 1, background: "#F3F4F6", color: "#111111", border: "none", borderRadius: 8,
                   padding: "11px", fontSize: "14px", fontWeight: 600, fontFamily: SANS,
                   cursor: "pointer",
                 }}

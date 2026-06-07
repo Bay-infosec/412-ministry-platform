@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, BORDER, BG, SANS, SERIF } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
 import { Avatar, Badge, Modal, SectionLabel } from "../../../components/ui/index.js";
 
 export default function EventDetail({ event, data, onRefresh, onToast, onBack }) {
@@ -159,13 +159,13 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
     <div>
       {/* Event info */}
       <div style={{
-        background: NAVY, borderRadius: 16, padding: "1.25rem",
+        background: "#111111", borderRadius: 16, padding: "1.25rem",
         marginBottom: "1.25rem",
       }}>
         <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: "#EFAB25", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
           {event.status}
         </div>
-        <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: 8 }}>
+        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: 8 }}>
           {event.name}
         </div>
         {[event.dates, event.location].filter(Boolean).map((v, i) => (
@@ -235,7 +235,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
         <button
           onClick={() => setModal("add")}
           style={{
-            background: ORANGE, color: "#fff", border: "none", borderRadius: 8,
+            background: "#FF4D00", color: "#fff", border: "none", borderRadius: 8,
             padding: "6px 14px", fontSize: "13px", fontWeight: 600,
             fontFamily: SANS, cursor: "pointer",
           }}
@@ -307,7 +307,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       {modal === "add" && (
         <div style={overlay}>
           <div style={{ ...sheet, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
-            <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: NAVY, marginBottom: "0.75rem" }}>
+            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#111111", marginBottom: "0.75rem" }}>
               Add Member
             </div>
             {/* Role picker */}
@@ -317,8 +317,8 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                   key={r}
                   onClick={() => setAddRole(r)}
                   style={{
-                    flex: 1, padding: "8px", borderRadius: 8, border: `1.5px solid ${addRole === r ? ORANGE : BORDER}`,
-                    background: addRole === r ? "#FFF5EC" : "#fff", color: addRole === r ? ORANGE : TSEC,
+                    flex: 1, padding: "8px", borderRadius: 8, border: `1.5px solid ${addRole === r ? "#FF4D00" : BORDER}`,
+                    background: addRole === r ? "#FFF5EC" : "#fff", color: addRole === r ? "#FF4D00" : TSEC,
                     fontSize: "13px", fontWeight: 600, fontFamily: SANS, cursor: "pointer", textTransform: "capitalize",
                   }}
                 >
@@ -332,7 +332,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
               placeholder="Search by name or email…"
               style={{
                 width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10,
-                padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: NAVY,
+                padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111",
                 outline: "none", boxSizing: "border-box", marginBottom: "0.75rem",
               }}
             />
@@ -355,10 +355,10 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                   >
                     <Avatar url={p.photo_url} name={p.full_name} size={36} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{p.full_name}</div>
+                      <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{p.full_name}</div>
                       <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{p.email}</div>
                     </div>
-                    <span style={{ fontSize: "12px", color: ORANGE, fontWeight: 600, fontFamily: SANS }}>Add</span>
+                    <span style={{ fontSize: "12px", color: "#FF4D00", fontWeight: 600, fontFamily: SANS }}>Add</span>
                   </button>
                 ))
               )}
@@ -378,7 +378,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       {coordModal && (
         <div style={overlay}>
           <div style={{ ...sheet, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
-            <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: NAVY, marginBottom: 4 }}>
+            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#111111", marginBottom: 4 }}>
               Assign Coordinator
             </div>
             <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginBottom: "1rem" }}>
@@ -405,14 +405,14 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                   >
                     <Avatar url={c.profiles?.photo_url} name={c.profiles?.full_name} size={40} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
+                      <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
                         {c.profiles?.full_name}
                       </div>
                       <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
                         Team {c.team_number} · {c.ministry}
                       </div>
                     </div>
-                    <span style={{ fontSize: "12px", color: ORANGE, fontWeight: 600, fontFamily: SANS }}>
+                    <span style={{ fontSize: "12px", color: "#FF4D00", fontWeight: 600, fontFamily: SANS }}>
                       {assigningCoord ? "…" : "Assign"}
                     </span>
                   </button>
@@ -437,7 +437,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       {editingMessage && (
         <div style={overlay}>
           <div style={{ ...sheet, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
-            <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: NAVY, marginBottom: 4 }}>
+            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#111111", marginBottom: 4 }}>
               Personal Message
             </div>
             <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginBottom: "1rem" }}>
@@ -450,25 +450,25 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
               rows={7}
               style={{
                 width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10,
-                padding: "12px 14px", fontSize: "14px", fontFamily: SANS, color: NAVY,
+                padding: "12px 14px", fontSize: "14px", fontFamily: SANS, color: "#111111",
                 resize: "vertical", outline: "none", boxSizing: "border-box",
                 lineHeight: 1.6, marginBottom: "0.75rem",
               }}
             />
             {messageText.trim() && (
               <div style={{
-                background: NAVY, borderRadius: 12, padding: "1rem 1.25rem",
+                background: "#111111", borderRadius: 12, padding: "1rem 1.25rem",
                 marginBottom: "0.75rem", position: "relative", overflow: "hidden",
               }}>
                 <div style={{
                   position: "absolute", top: 8, left: 14,
-                  fontFamily: SERIF, fontSize: "60px", color: "#EFAB25",
+                  fontFamily: SANS, fontSize: "60px", color: "#EFAB25",
                   opacity: 0.12, lineHeight: 1, userSelect: "none",
                 }}>
                   "
                 </div>
                 <div style={{
-                  fontFamily: SERIF, fontSize: "14px", color: "#fff",
+                  fontFamily: SANS, fontSize: "14px", color: "#fff",
                   lineHeight: 1.75, whiteSpace: "pre-wrap", position: "relative",
                 }}>
                   {messageText.trim()}
@@ -497,7 +497,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                 }}
                 disabled={busy}
                 style={{
-                  flex: 1, background: NAVY, color: "#fff", border: "none",
+                  flex: 1, background: "#111111", color: "#fff", border: "none",
                   borderRadius: 10, padding: "11px", fontSize: "14px",
                   fontWeight: 600, cursor: "pointer", fontFamily: SANS,
                 }}
@@ -606,7 +606,7 @@ function MemberRow({ member, onRemove, onEditMessage }) {
     }}>
       <Avatar url={p.photo_url} name={p.full_name} size={38} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {p.full_name}
         </div>
         <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>

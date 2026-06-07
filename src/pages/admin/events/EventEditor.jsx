@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 import { Card, Field } from "../../../components/ui/index.js";
 import { EVENT_TYPES } from "../../../lib/eventTypes.js";
 
@@ -9,7 +9,7 @@ import { EVENT_TYPES } from "../../../lib/eventTypes.js";
 const baseInputStyle = {
   width: "100%", padding: "12px 14px", borderRadius: 10,
   border: `1px solid ${BORDER}`, fontSize: "14px", fontFamily: SANS,
-  color: NAVY, outline: "none", boxSizing: "border-box", background: "#fff",
+  color: "#111111", outline: "none", boxSizing: "border-box", background: "#fff",
 };
 
 // No appearance:none on selects — kills native picker on iOS/Safari
@@ -53,7 +53,7 @@ function FieldLabel({ children, required }) {
       display: "flex", gap: 4, alignItems: "center",
     }}>
       {children}
-      {required && <span style={{ color: ORANGE, fontSize: "13px", lineHeight: 1 }}>*</span>}
+      {required && <span style={{ color: "#FF4D00", fontSize: "13px", lineHeight: 1 }}>*</span>}
     </div>
   );
 }
@@ -146,7 +146,7 @@ function ToggleRow({ label, sub, value, onChange }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 0", borderBottom: `1px solid ${BORDER}`, marginBottom: "1rem" }}>
       <div>
-        <div style={{ fontSize: "13px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{label}</div>
+        <div style={{ fontSize: "13px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{label}</div>
         {sub && <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>{sub}</div>}
       </div>
       <button
@@ -163,7 +163,7 @@ function ToggleRow({ label, sub, value, onChange }) {
 function RequiredNote() {
   return (
     <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: "1rem" }}>
-      Fields marked <span style={{ color: ORANGE, fontWeight: 700 }}>*</span> are required.
+      Fields marked <span style={{ color: "#FF4D00", fontWeight: 700 }}>*</span> are required.
     </div>
   );
 }
@@ -182,7 +182,7 @@ const TYPE_HINTS = {
 function TypePicker({ onPick }) {
   return (
     <div>
-      <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: NAVY, marginBottom: 6 }}>
+      <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111", marginBottom: 6 }}>
         What kind of event?
       </div>
       <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginBottom: "1.5rem" }}>
@@ -438,7 +438,7 @@ function EventForm({ type, onBack, onSaved, onToast }) {
         onClick={save}
         disabled={busy}
         style={{
-          width: "100%", background: ORANGE, color: "#fff", border: "none",
+          width: "100%", background: "#FF4D00", color: "#fff", border: "none",
           borderRadius: 10, padding: "14px", fontSize: "15px", fontWeight: 700,
           fontFamily: SANS, cursor: busy ? "not-allowed" : "pointer", opacity: busy ? 0.6 : 1,
         }}

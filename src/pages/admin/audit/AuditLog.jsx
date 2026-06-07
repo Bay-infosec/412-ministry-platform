@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, BORDER, BG, SANS, SERIF } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
 
 const ACTION_LABELS = {
   assigned_moderator: "assigned as moderator for",
@@ -97,7 +97,7 @@ export default function AuditLog() {
       <div style={{ display: "flex", justifyContent: "center", padding: "3rem 0" }}>
         <div style={{
           width: 28, height: 28, borderRadius: "50%",
-          border: `3px solid ${BORDER}`, borderTop: `3px solid ${NAVY}`,
+          border: `3px solid ${BORDER}`, borderTop: "3px solid #111111",
           animation: "spin 0.8s linear infinite",
         }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -110,7 +110,7 @@ export default function AuditLog() {
   return (
     <div style={{ fontFamily: SANS }}>
       <div style={{ marginBottom: "1.5rem" }}>
-        <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: NAVY }}>
+        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111" }}>
           Audit Log
         </div>
         <div style={{ fontSize: "13px", color: TSEC, marginTop: 4 }}>
@@ -129,7 +129,7 @@ export default function AuditLog() {
               {/* Day header */}
               <div style={{
                 fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em",
-                color: ORANGE, textTransform: "uppercase", fontFamily: SANS,
+                color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS,
                 marginBottom: "0.625rem",
               }}>
                 {group.label}
@@ -151,7 +151,7 @@ export default function AuditLog() {
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                         <div style={{ flex: 1 }}>
-                          <span style={{ fontSize: "14px", fontWeight: 600, color: NAVY }}>
+                          <span style={{ fontSize: "14px", fontWeight: 600, color: "#111111" }}>
                             {entry.actor_name || "Unknown"}
                           </span>
                           {" "}
@@ -160,7 +160,7 @@ export default function AuditLog() {
                           </span>
                           {" "}
                           {entry.target_name && (
-                            <span style={{ fontSize: "14px", fontWeight: 600, color: NAVY }}>
+                            <span style={{ fontSize: "14px", fontWeight: 600, color: "#111111" }}>
                               {entry.target_name}
                             </span>
                           )}

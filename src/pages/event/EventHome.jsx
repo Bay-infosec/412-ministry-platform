@@ -228,7 +228,7 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
                 <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
                   Leader Zoom Training
                 </div>
-                <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS, fontWeight: 700, marginBottom: zoom.sub ? 2 : 0 }}>
+                <div style={{ fontSize: "14px", fontWeight: 700, color: "#111111", fontFamily: SANS, marginBottom: zoom.sub ? 2 : 0 }}>
                   {zoom.main}
                 </div>
                 {zoom.sub && (

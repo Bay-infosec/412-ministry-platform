@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NAVY, ORANGE, TSEC, BORDER, BG, SANS, SERIF } from "../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Toast } from "../../components/ui/index.js";
 import PeopleList from "./people/PeopleList.jsx";
 import PersonDetail from "./people/PersonDetail.jsx";
@@ -77,7 +77,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
 
   return (
     <div style={{
-      position: "fixed", inset: 0, background: BG, zIndex: 200,
+      position: "fixed", inset: 0, background: "#FAFAFA", zIndex: 200,
       display: "flex", flexDirection: "column",
     }}>
       <div style={{
@@ -92,7 +92,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
           }}
           style={{
             background: "none", border: "none", cursor: "pointer",
-            padding: "4px 6px 4px 0", color: NAVY,
+            padding: "4px 6px 4px 0", color: "#111111",
             display: "flex", alignItems: "center",
           }}
         >
@@ -100,14 +100,14 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
-        <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: NAVY, flex: 1 }}>
+        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#111111", flex: 1, letterSpacing: "-0.02em" }}>
           {titles[screen] || "Admin"}
         </div>
         {screen === "people.list" && isAdmin && (
           <button
             onClick={() => nav("people.invite")}
             style={{
-              background: ORANGE, color: "#fff", border: "none", borderRadius: 8,
+              background: "#FF4D00", color: "#fff", border: "none", borderRadius: 8,
               padding: "7px 14px", fontSize: "13px", fontWeight: 600,
               fontFamily: SANS, cursor: "pointer",
             }}
@@ -119,7 +119,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
           <button
             onClick={() => nav("events.new")}
             style={{
-              background: ORANGE, color: "#fff", border: "none", borderRadius: 8,
+              background: "#FF4D00", color: "#fff", border: "none", borderRadius: 8,
               padding: "7px 14px", fontSize: "13px", fontWeight: 600,
               fontFamily: SANS, cursor: "pointer",
             }}
@@ -131,7 +131,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
           <button
             onClick={() => nav("events.pairing")}
             style={{
-              background: NAVY, color: "#fff", border: "none", borderRadius: 8,
+              background: "#111111", color: "#fff", border: "none", borderRadius: 8,
               padding: "7px 14px", fontSize: "13px", fontWeight: 600,
               fontFamily: SANS, cursor: "pointer",
             }}
@@ -256,10 +256,10 @@ function AdminHome({ data, onNav, isAdmin }) {
   return (
     <div>
       <div style={{ marginBottom: "1.75rem" }}>
-        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
           412 Ministry
         </div>
-        <div style={{ fontFamily: SERIF, fontSize: "28px", fontWeight: 600, color: NAVY, lineHeight: 1.2 }}>
+        <div style={{ fontFamily: SANS, fontSize: "28px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.03em" }}>
           {isAdmin ? "Admin Panel" : "Staff Panel"}
         </div>
         <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, marginTop: 4 }}>
@@ -351,7 +351,7 @@ function EntryCard({ icon, iconBg, label, sub, count, badge, onClick }) {
           {icon}
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: "16px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
+          <div style={{ fontSize: "16px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>
             {label}
           </div>
           <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>

@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF, PROFILE_TAGS } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS, SERIF, PROFILE_TAGS } from "../../../lib/constants.js";
 import { Avatar, Badge, Modal, SectionLabel, ProfileTags } from "../../../components/ui/index.js";
 
 const inputStyle = {
   width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10,
-  padding: "10px 12px", fontSize: "15px", fontFamily: SANS, color: NAVY,
+  padding: "10px 12px", fontSize: "15px", fontFamily: SANS, color: "#111111",
   outline: "none", boxSizing: "border-box", background: "#fff",
 };
 
@@ -181,7 +181,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
       }}>
         <Avatar url={profile.photo_url} name={profile.full_name} size={58} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: NAVY, lineHeight: 1.2 }}>
+          <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#111111", lineHeight: 1.2 }}>
             {profile.full_name}
           </div>
           {profile.nickname && (
@@ -211,7 +211,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
             </div>
           ) : em ? (
             <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden", marginBottom: "1rem" }}>
-              <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.6, padding: "0.875rem 1.25rem", borderBottom: `1px solid ${BORDER}`, background: BG }}>
+              <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.6, padding: "0.875rem 1.25rem", borderBottom: `1px solid ${BORDER}`, background: "#FAFAFA" }}>
                 Specific to {activeEvent.name} — separate from {(profile.full_name || "").split(" ")[0]}'s permanent profile, and resets for each event they join.
               </div>
 
@@ -226,10 +226,10 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
                 </div>
                 {!editTeam ? (
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
+                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
                       Team {em.team_number || "—"} · {em.ministry || "No ministry"}
                     </div>
-                    <button onClick={() => { setTeamNum(em?.team_number?.toString() || ""); setMinistry(em?.ministry || ""); setEditTeam(true); }} style={{ background: "none", border: "none", color: ORANGE, fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: SANS }}>
+                    <button onClick={() => { setTeamNum(em?.team_number?.toString() || ""); setMinistry(em?.ministry || ""); setEditTeam(true); }} style={{ background: "none", border: "none", color: "#FF4D00", fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: SANS }}>
                       Edit
                     </button>
                   </div>
@@ -245,7 +245,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
                     </select>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button onClick={() => setEditTeam(false)} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px", fontSize: "14px", color: TSEC, cursor: "pointer", fontFamily: SANS }}>Cancel</button>
-                      <button onClick={saveTeam} disabled={savingTeam} style={{ flex: 1, background: NAVY, border: "none", borderRadius: 10, padding: "10px", fontSize: "14px", fontWeight: 600, color: "#fff", cursor: savingTeam ? "default" : "pointer", fontFamily: SANS, opacity: savingTeam ? 0.7 : 1 }}>
+                      <button onClick={saveTeam} disabled={savingTeam} style={{ flex: 1, background: "#111111", border: "none", borderRadius: 10, padding: "10px", fontSize: "14px", fontWeight: 600, color: "#fff", cursor: savingTeam ? "default" : "pointer", fontFamily: SANS, opacity: savingTeam ? 0.7 : 1 }}>
                         {savingTeam ? "Saving…" : "Save"}
                       </button>
                     </div>
@@ -261,7 +261,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
                 {!editMsg ? (
                   <>
                     {em.personal_message ? (
-                      <div style={{ fontSize: "14px", color: NAVY, fontFamily: SANS, lineHeight: 1.65, marginBottom: "0.75rem", whiteSpace: "pre-wrap" }}>
+                      <div style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, lineHeight: 1.65, marginBottom: "0.75rem", whiteSpace: "pre-wrap" }}>
                         {em.personal_message}
                       </div>
                     ) : (
@@ -269,7 +269,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
                         No message written yet.
                       </div>
                     )}
-                    <button onClick={() => { setMsg(em.personal_message || ""); setEditMsg(true); }} style={{ background: "none", border: "none", color: ORANGE, fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: SANS, padding: 0 }}>
+                    <button onClick={() => { setMsg(em.personal_message || ""); setEditMsg(true); }} style={{ background: "none", border: "none", color: "#FF4D00", fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: SANS, padding: 0 }}>
                       {em.personal_message ? "Edit →" : "Write a message →"}
                     </button>
                   </>
@@ -280,11 +280,11 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
                       onChange={(e) => setMsg(e.target.value)}
                       rows={5}
                       placeholder="Write a personal message for this leader…"
-                      style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: NAVY, resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: "0.75rem" }}
+                      style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111", resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: "0.75rem" }}
                     />
                     <div style={{ display: "flex", gap: 8 }}>
                       <button onClick={() => setEditMsg(false)} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px", fontSize: "14px", color: TSEC, cursor: "pointer", fontFamily: SANS }}>Cancel</button>
-                      <button onClick={saveMessage} disabled={savingMsg} style={{ flex: 1, background: NAVY, border: "none", borderRadius: 10, padding: "10px", fontSize: "14px", fontWeight: 600, color: "#fff", cursor: savingMsg ? "default" : "pointer", fontFamily: SANS, opacity: savingMsg ? 0.7 : 1 }}>
+                      <button onClick={saveMessage} disabled={savingMsg} style={{ flex: 1, background: "#111111", border: "none", borderRadius: 10, padding: "10px", fontSize: "14px", fontWeight: 600, color: "#fff", cursor: savingMsg ? "default" : "pointer", fontFamily: SANS, opacity: savingMsg ? 0.7 : 1 }}>
                         {savingMsg ? "Saving…" : "Save"}
                       </button>
                     </div>
@@ -306,7 +306,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
           <div style={{ fontSize: "11px", fontWeight: 700, color: "#C2410C", letterSpacing: "0.1em", fontFamily: SANS, textTransform: "uppercase", marginBottom: 8 }}>
             Temporary Password — Share with {profile.full_name} manually
           </div>
-          <div style={{ fontFamily: "monospace", fontSize: "24px", fontWeight: 700, color: NAVY, letterSpacing: "0.06em", padding: "0.75rem 1rem", background: "#fff", borderRadius: 10, border: `1px solid ${BORDER}`, marginBottom: 8 }}>
+          <div style={{ fontFamily: "monospace", fontSize: "24px", fontWeight: 700, color: "#111111", letterSpacing: "0.06em", padding: "0.75rem 1rem", background: "#fff", borderRadius: 10, border: `1px solid ${BORDER}`, marginBottom: 8 }}>
             {tempPw}
           </div>
           <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 10 }}>
@@ -368,7 +368,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
       {modal === "role" && (
         <div style={overlay}>
           <div style={sheet}>
-            <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: NAVY, marginBottom: "0.75rem" }}>Change Platform Role</div>
+            <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111", marginBottom: "0.75rem" }}>Change Platform Role</div>
             <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, lineHeight: 1.6, marginBottom: "1.25rem" }}>Select a new role for {profile.full_name}.</div>
             <select value={newRole} onChange={(e) => setNewRole(e.target.value)} style={{ ...selectStyle, marginBottom: "1.5rem" }}>
               <option value="member">Member</option>
@@ -384,7 +384,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
       {modal === "add" && activeEvent && (
         <div style={overlay}>
           <div style={sheet}>
-            <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: NAVY, marginBottom: "0.75rem" }}>Add to Event</div>
+            <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111", marginBottom: "0.75rem" }}>Add to Event</div>
             <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, lineHeight: 1.6, marginBottom: "1rem" }}>
               Enroll {profile.full_name} in {activeEvent.name}.
             </div>
@@ -442,7 +442,7 @@ function InfoRow({ label, value, last }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.875rem 1.25rem", borderBottom: last ? "none" : `1px solid ${BORDER}` }}>
       <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{label}</span>
-      <span style={{ fontSize: "14px", color: NAVY, fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>{value}</span>
+      <span style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>{value}</span>
     </div>
   );
 }
@@ -455,7 +455,7 @@ function InfoRows({ rows }) {
       {visible.map(([label, val], i) => (
         <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.875rem 1.25rem", borderBottom: i < visible.length - 1 ? `1px solid ${BORDER}` : "none" }}>
           <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{label}</span>
-          <span style={{ fontSize: "14px", color: NAVY, fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>{val}</span>
+          <span style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>{val}</span>
         </div>
       ))}
     </div>
@@ -465,7 +465,7 @@ function InfoRows({ rows }) {
 function ActionRow({ label, sub, onClick, danger }) {
   return (
     <button onClick={onClick} style={{ width: "100%", background: "#fff", border: `1px solid ${danger ? "#FECACA" : BORDER}`, borderRadius: 14, padding: "0.875rem 1.25rem", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 3 }}>
-      <span style={{ fontSize: "14px", fontWeight: 600, color: danger ? "#DC2626" : NAVY, fontFamily: SANS }}>{label}</span>
+      <span style={{ fontSize: "14px", fontWeight: 600, color: danger ? "#DC2626" : "#111111", fontFamily: SANS }}>{label}</span>
       <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{sub}</span>
     </button>
   );
@@ -478,8 +478,8 @@ function FieldLabel({ children }) {
 function ModalButtons({ onCancel, onConfirm, confirmLabel, disabled }) {
   return (
     <div style={{ display: "flex", gap: 8 }}>
-      <button onClick={onCancel} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "12px", fontSize: "15px", fontWeight: 600, color: NAVY, cursor: "pointer", fontFamily: SANS }}>Cancel</button>
-      <button onClick={onConfirm} disabled={disabled} style={{ flex: 1, background: disabled ? "#C9B7A8" : NAVY, border: "none", borderRadius: 10, padding: "12px", fontSize: "15px", fontWeight: 600, color: "#fff", cursor: disabled ? "default" : "pointer", fontFamily: SANS }}>
+      <button onClick={onCancel} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "12px", fontSize: "15px", fontWeight: 600, color: "#111111", cursor: "pointer", fontFamily: SANS }}>Cancel</button>
+      <button onClick={onConfirm} disabled={disabled} style={{ flex: 1, background: disabled ? "#C9B7A8" : "#111111", border: "none", borderRadius: 10, padding: "12px", fontSize: "15px", fontWeight: 600, color: "#fff", cursor: disabled ? "default" : "pointer", fontFamily: SANS }}>
         {confirmLabel}
       </button>
     </div>

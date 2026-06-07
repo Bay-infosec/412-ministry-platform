@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../lib/supabase.js";
-import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 
 export const TYPE_LABELS = {
   conference: "Conference",
@@ -63,7 +63,7 @@ export default function EventsBrowser({ data, onRefresh }) {
       {toast && (
         <div style={{
           position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)",
-          background: toast.type === "error" ? "#DC2626" : NAVY,
+          background: toast.type === "error" ? "#DC2626" : "#111111",
           color: "#fff", borderRadius: 10, padding: "10px 20px",
           fontSize: "13px", fontFamily: SANS, fontWeight: 600, zIndex: 9999,
           boxShadow: "0 4px 20px rgba(0,0,0,0.15)", whiteSpace: "nowrap",
@@ -73,10 +73,10 @@ export default function EventsBrowser({ data, onRefresh }) {
       )}
 
       <div style={{ marginBottom: "1rem" }}>
-        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
+        <div style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "0.16em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
           Ministry Events
         </div>
-        <div style={{ fontFamily: SERIF, fontSize: "24px", fontWeight: 600, color: NAVY, lineHeight: 1.2 }}>
+        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
           Events & Opportunities
         </div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginTop: "0.375rem" }}>
@@ -86,7 +86,7 @@ export default function EventsBrowser({ data, onRefresh }) {
 
       {publicEvents.length === 0 ? (
         <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
-          <div style={{ fontFamily: SERIF, fontSize: "20px", color: NAVY, marginBottom: 8 }}>Nothing upcoming yet</div>
+          <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#111111", marginBottom: 8, letterSpacing: "-0.02em" }}>Nothing upcoming yet</div>
           <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS }}>Check back soon for new events and opportunities.</div>
         </div>
       ) : (
@@ -111,7 +111,7 @@ export default function EventsBrowser({ data, onRefresh }) {
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "0.375rem", flexWrap: "wrap" }}>
-                      <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", color: GOLD, textTransform: "uppercase" }}>
+                      <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.12em", color: "#FF4D00", textTransform: "uppercase" }}>
                         {typeLabel}
                       </span>
                       <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: statusStyle.bg, color: statusStyle.color }}>
@@ -123,7 +123,7 @@ export default function EventsBrowser({ data, onRefresh }) {
                         </span>
                       )}
                     </div>
-                    <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: NAVY, lineHeight: 1.2, marginBottom: "0.25rem" }}>
+                    <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 900, color: "#111111", lineHeight: 1.2, marginBottom: "0.25rem", letterSpacing: "-0.02em" }}>
                       {ev.name}
                     </div>
                     {ev.dates && <div style={{ fontSize: "12px", color: TSEC }}>{ev.dates}</div>}
@@ -146,7 +146,7 @@ export default function EventsBrowser({ data, onRefresh }) {
                     {ev.fee && (
                       <div style={{ fontSize: "13px", fontFamily: SANS, marginBottom: "0.5rem" }}>
                         <span style={{ color: TSEC }}>Registration fee: </span>
-                        <span style={{ fontWeight: 700, color: NAVY }}>{ev.fee}</span>
+                        <span style={{ fontWeight: 700, color: "#111111" }}>{ev.fee}</span>
                       </div>
                     )}
 
@@ -163,7 +163,7 @@ export default function EventsBrowser({ data, onRefresh }) {
                               style={{
                                 width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8,
                                 padding: "0.5rem 0.75rem", fontFamily: SANS, fontSize: "13px",
-                                color: NAVY, background: BG, resize: "none", outline: "none",
+                                color: "#111111", background: "#FAFAFA", resize: "none", outline: "none",
                                 marginBottom: "0.625rem", boxSizing: "border-box",
                               }}
                             />
@@ -171,7 +171,7 @@ export default function EventsBrowser({ data, onRefresh }) {
                               onClick={() => requestJoin(ev)}
                               disabled={requesting === ev.id}
                               style={{
-                                width: "100%", background: requesting === ev.id ? TSEC : ORANGE,
+                                width: "100%", background: requesting === ev.id ? TSEC : "#FF4D00",
                                 color: "#fff", border: "none", borderRadius: 8,
                                 padding: "11px", fontFamily: SANS, fontWeight: 700,
                                 fontSize: "14px", cursor: requesting === ev.id ? "default" : "pointer",
@@ -189,7 +189,7 @@ export default function EventsBrowser({ data, onRefresh }) {
                     )}
 
                     {!isMember && !ev.allow_join_requests && ev.status !== "archived" && (
-                      <div style={{ background: BG, borderRadius: 8, padding: "10px 14px", fontSize: "13px", color: TSEC, fontFamily: SANS, textAlign: "center", marginTop: "0.875rem" }}>
+                      <div style={{ background: "#FAFAFA", borderRadius: 8, padding: "10px 14px", fontSize: "13px", color: TSEC, fontFamily: SANS, textAlign: "center", marginTop: "0.875rem" }}>
                         Contact a coordinator to join this event.
                       </div>
                     )}
@@ -200,7 +200,7 @@ export default function EventsBrowser({ data, onRefresh }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
-                          display: "block", marginTop: "0.75rem", background: NAVY, color: "#fff",
+                          display: "block", marginTop: "0.75rem", background: "#111111", color: "#fff",
                           borderRadius: 8, padding: "11px", textAlign: "center",
                           fontSize: "14px", fontWeight: 700, fontFamily: SANS, textDecoration: "none",
                         }}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 import { Card, SectionLabel, Field, Modal } from "../../../components/ui/index.js";
 
 export default function ChurchList({ onToast }) {
@@ -76,7 +76,7 @@ export default function ChurchList({ onToast }) {
   if (editing !== null) {
     return (
       <div>
-        <div style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: NAVY, marginBottom: "1.25rem" }}>
+        <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 600, color: "#111111", marginBottom: "1.25rem" }}>
           {editing.id ? "Edit Church" : "Add Church"}
         </div>
         <Card style={{ marginBottom: "1rem" }}>
@@ -86,7 +86,7 @@ export default function ChurchList({ onToast }) {
         </Card>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <button onClick={save} disabled={busy} style={{
-            background: ORANGE, color: "#fff", border: "none", borderRadius: 10,
+            background: "#FF4D00", color: "#fff", border: "none", borderRadius: 10,
             padding: "14px", fontSize: "15px", fontWeight: 700, fontFamily: SANS,
             cursor: "pointer", width: "100%",
           }}>
@@ -108,7 +108,7 @@ export default function ChurchList({ onToast }) {
       <button
         onClick={() => setEditing({ name: "", city: "", state: "" })}
         style={{
-          width: "100%", background: ORANGE, color: "#fff", border: "none",
+          width: "100%", background: "#FF4D00", color: "#fff", border: "none",
           borderRadius: 10, padding: "12px", fontFamily: SANS, fontSize: "14px",
           fontWeight: 700, cursor: "pointer", marginBottom: "1.25rem",
         }}
@@ -122,7 +122,7 @@ export default function ChurchList({ onToast }) {
           <SectionLabel>Pending Submissions ({pending.length})</SectionLabel>
           {pending.map((p) => (
             <Card key={p.id} style={{ marginBottom: "0.75rem", padding: "1rem 1.25rem" }}>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: 2 }}>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS, marginBottom: 2 }}>
                 {p.church_name_custom}
               </div>
               <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 10 }}>
@@ -158,7 +158,7 @@ export default function ChurchList({ onToast }) {
             borderBottom: i < churches.length - 1 ? `1px solid ${BORDER}` : "none",
           }}>
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 500, color: NAVY, fontFamily: SANS }}>{c.name}</div>
+              <div style={{ fontSize: "14px", fontWeight: 500, color: "#111111", fontFamily: SANS }}>{c.name}</div>
               {(c.city || c.state) && (
                 <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>
                   {[c.city, c.state].filter(Boolean).join(", ")}
@@ -167,7 +167,7 @@ export default function ChurchList({ onToast }) {
             </div>
             <button
               onClick={() => setEditing({ id: c.id, name: c.name, city: c.city || "", state: c.state || "" })}
-              style={{ background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: NAVY, cursor: "pointer", fontFamily: SANS }}
+              style={{ background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#111111", cursor: "pointer", fontFamily: SANS }}
             >
               Edit
             </button>

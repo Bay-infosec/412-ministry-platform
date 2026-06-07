@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 
 const inputStyle = {
   width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10,
-  padding: "10px 12px", fontSize: "15px", fontFamily: SANS, color: NAVY,
+  padding: "10px 12px", fontSize: "15px", fontFamily: SANS, color: "#111111",
   outline: "none", boxSizing: "border-box", background: "#fff",
 };
 
@@ -51,7 +51,7 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
     return (
       <div style={{ textAlign: "center", paddingTop: "2rem" }}>
         <div style={{ fontSize: "48px", marginBottom: "1rem" }}>✓</div>
-        <div style={{ fontFamily: SERIF, fontSize: "26px", fontWeight: 600, color: NAVY, marginBottom: "0.75rem" }}>
+        <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 600, color: "#111111", marginBottom: "0.75rem" }}>
           {done.name} invited!
         </div>
         {done.emailSent ? (
@@ -74,7 +74,7 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
   return (
     <form onSubmit={submit}>
       <div style={{ marginBottom: "1.5rem" }}>
-        <div style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 600, color: NAVY, marginBottom: 4 }}>
+        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111", marginBottom: 4 }}>
           Invite a new leader
         </div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>
@@ -131,7 +131,7 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
         type="submit"
         disabled={loading || !fullName.trim() || !email.trim()}
         style={{
-          width: "100%", padding: "14px", background: ORANGE,
+          width: "100%", padding: "14px", background: "#FF4D00",
           color: "#fff", border: "none", borderRadius: 12,
           fontSize: "15px", fontWeight: 600, fontFamily: SANS,
           cursor: loading || !fullName.trim() || !email.trim() ? "default" : "pointer",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
 import { Shell } from "../../../components/layout/index.js";
 import { Card, SectionLabel } from "../../../components/ui/index.js";
 import { CHECKLIST_ITEMS } from "../../../lib/checklist.js";
@@ -21,8 +21,8 @@ function PrimaryBtn({ children, onClick, disabled, gold }) {
       disabled={disabled}
       style={{
         width: "100%", padding: "14px", border: "none", borderRadius: 12,
-        background: gold ? ORANGE : NAVY, color: "#fff",
-        fontSize: "15px", fontWeight: 600, fontFamily: SANS,
+        background: gold ? "#FF4D00" : "#111111", color: "#fff",
+        fontSize: "15px", fontWeight: 700, fontFamily: SANS,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.35 : 1,
         marginTop: "1rem",
@@ -37,8 +37,9 @@ function PrimaryBtn({ children, onClick, disabled, gold }) {
 function StepTitle({ children }) {
   return (
     <div style={{
-      fontFamily: SERIF, fontSize: "26px", fontWeight: 600,
-      color: NAVY, lineHeight: 1.2, marginBottom: "0.75rem",
+      fontFamily: SANS, fontSize: "24px", fontWeight: 900,
+      color: "#111111", lineHeight: 1.2, marginBottom: "0.75rem",
+      letterSpacing: "-0.03em",
     }}>
       {children}
     </div>
@@ -64,14 +65,14 @@ function WelcomePage({ profile, activeEvent, onNext }) {
     <>
       {/* Hero card */}
       <div style={{
-        background: NAVY, borderRadius: 24, padding: "1.5rem 1.75rem 1.75rem",
+        background: "#111111", borderRadius: 24, padding: "1.5rem 1.75rem 1.75rem",
         marginBottom: "1.5rem",
       }}>
         {/* Top row: event name left, logo right */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <div style={{
-            fontSize: "10px", fontWeight: 700, letterSpacing: "0.22em",
-            color: GOLD, textTransform: "uppercase", fontFamily: SANS,
+            fontSize: "10px", fontWeight: 800, letterSpacing: "0.22em",
+            color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS,
           }}>
             {activeEvent?.name || "Set Apart 2026"}
           </div>
@@ -80,21 +81,22 @@ function WelcomePage({ profile, activeEvent, onNext }) {
 
         <div style={{ textAlign: "center" }}>
           <div style={{
-            fontFamily: SERIF, fontSize: "46px", fontWeight: 600,
+            fontFamily: SANS, fontSize: "46px", fontWeight: 900,
             color: "#fff", lineHeight: 1.05, marginBottom: "0.25rem",
+            letterSpacing: "-0.03em",
           }}>
             {fullName}.
           </div>
           <div style={{
-            fontFamily: SERIF, fontSize: "22px", fontWeight: 400,
-            color: GOLD, fontStyle: "italic", marginBottom: "1.5rem",
+            fontFamily: SANS, fontSize: "22px", fontWeight: 500,
+            color: "#FF4D00", fontStyle: "italic", marginBottom: "1.5rem",
           }}>
             Welcome.
           </div>
           <div style={{
             borderTop: "1px solid rgba(255,255,255,0.12)",
             paddingTop: "1.25rem",
-            fontFamily: SERIF, fontSize: "14px", fontStyle: "italic",
+            fontFamily: SANS, fontSize: "14px", fontStyle: "italic",
             color: "#B8C0D0", lineHeight: 1.75,
           }}>
             {activeEvent?.verse
@@ -126,19 +128,19 @@ function PersonalMessagePage({ eventMember, onNext }) {
       <StepTitle>A word for you.</StepTitle>
       {message ? (
         <div style={{
-          background: NAVY, borderRadius: 20, padding: "1.75rem",
+          background: "#111111", borderRadius: 20, padding: "1.75rem",
           marginBottom: "1.25rem", position: "relative", overflow: "hidden",
         }}>
           {/* Decorative quote mark */}
           <div style={{
             position: "absolute", top: 12, left: 18,
-            fontFamily: SERIF, fontSize: "80px", color: GOLD,
+            fontFamily: SANS, fontSize: "80px", color: "#FF4D00",
             opacity: 0.15, lineHeight: 1, userSelect: "none",
           }}>
             "
           </div>
           <div style={{
-            fontFamily: SERIF, fontSize: "17px", color: "#fff",
+            fontFamily: SANS, fontSize: "17px", color: "#fff",
             lineHeight: 1.8, whiteSpace: "pre-wrap", position: "relative",
             marginBottom: "1.25rem",
           }}>
@@ -149,11 +151,11 @@ function PersonalMessagePage({ eventMember, onNext }) {
             paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.15)",
           }}>
             <div style={{
-              width: 28, height: 2, borderRadius: 1, background: GOLD,
+              width: 28, height: 2, borderRadius: 1, background: "#FF4D00",
             }} />
             <div style={{
               fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em",
-              textTransform: "uppercase", color: GOLD, fontFamily: SANS,
+              textTransform: "uppercase", color: "#FF4D00", fontFamily: SANS,
             }}>
               412 Ministry Leadership
             </div>
@@ -165,12 +167,12 @@ function PersonalMessagePage({ eventMember, onNext }) {
           padding: "2rem 1.5rem", textAlign: "center", marginBottom: "1.25rem",
         }}>
           <div style={{
-            fontFamily: SERIF, fontSize: "32px", color: BORDER, marginBottom: "0.75rem",
+            fontFamily: SANS, fontSize: "32px", color: BORDER, marginBottom: "0.75rem",
           }}>
             ✦
           </div>
           <div style={{
-            fontFamily: SERIF, fontSize: "16px", color: TSEC, lineHeight: 1.7,
+            fontFamily: SANS, fontSize: "16px", color: TSEC, lineHeight: 1.7,
           }}>
             A personal note from the 412 leadership team is on its way.
           </div>
@@ -207,7 +209,7 @@ function EventInfoPage({ activeEvent, eventMember, onNext }) {
             <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, flexShrink: 0 }}>
               {row.label}
             </span>
-            <span style={{ fontSize: "13px", color: NAVY, fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>
+            <span style={{ fontSize: "13px", color: "#111111", fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>
               {row.value}
             </span>
           </div>
@@ -249,10 +251,10 @@ function RequirementsPage({ onNext }) {
         {REQUIREMENTS.map((req, i) => (
           <Card key={req.id} style={{ padding: "1rem 1.25rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: "11px", fontWeight: 700, color: ORANGE, fontFamily: SANS }}>
+              <span style={{ fontSize: "11px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS }}>
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <span style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
+              <span style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
                 {req.title}
               </span>
             </div>
@@ -272,8 +274,8 @@ function RequirementsPage({ onNext }) {
       >
         <div style={{
           width: 20, height: 20, borderRadius: 4, flexShrink: 0, marginTop: 1,
-          border: `2px solid ${acknowledged ? NAVY : BORDER}`,
-          background: acknowledged ? NAVY : "transparent",
+          border: `2px solid ${acknowledged ? "#111111" : BORDER}`,
+          background: acknowledged ? "#111111" : "transparent",
           display: "flex", alignItems: "center", justifyContent: "center",
           transition: "all 0.15s",
         }}>
@@ -287,7 +289,7 @@ function RequirementsPage({ onNext }) {
         onClick={handleEmail}
         style={{
           width: "100%", padding: "12px", background: "transparent",
-          color: NAVY, border: `1px solid ${BORDER}`, borderRadius: 12,
+          color: "#111111", border: `1px solid ${BORDER}`, borderRadius: 12,
           fontSize: "14px", fontFamily: SANS, cursor: "pointer",
         }}
       >
@@ -333,8 +335,8 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
           100%{ opacity: 1; transform: scale(1); }
         }
         @keyframes pulse-orb {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(239,171,37,0.3); }
-          50%       { box-shadow: 0 0 0 14px rgba(239,171,37,0); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255,77,0,0.25); }
+          50%       { box-shadow: 0 0 0 14px rgba(255,77,0,0); }
         }
         .reveal-card { animation: revealIn 0.65s cubic-bezier(0.34,1.2,0.64,1) forwards; }
         .pulse-orb   { animation: pulse-orb 2s ease-in-out infinite; }
@@ -345,13 +347,13 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
 
       {/* Team number card */}
       <div style={{
-        background: NAVY, borderRadius: 20, padding: "1.5rem",
+        background: "#111111", borderRadius: 20, padding: "1.5rem",
         marginBottom: "0.75rem", textAlign: "center",
       }}>
-        <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.22em", color: GOLD, textTransform: "uppercase", marginBottom: 8, fontFamily: SANS }}>
+        <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.22em", color: "#FF4D00", textTransform: "uppercase", marginBottom: 8, fontFamily: SANS }}>
           Team
         </div>
-        <div style={{ fontFamily: SERIF, fontSize: "72px", color: GOLD, lineHeight: 1, marginBottom: 6 }}>
+        <div style={{ fontFamily: SANS, fontSize: "72px", fontWeight: 900, color: "#FF4D00", lineHeight: 1, marginBottom: 6 }}>
           {teamNumber || "—"}
         </div>
         {ministry && (
@@ -365,13 +367,13 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
       {!revealed ? (
         /* ── Mystery card ── */
         <div style={{
-          background: NAVY, borderRadius: 20, padding: "2rem 1.75rem",
+          background: "#111111", borderRadius: 20, padding: "2rem 1.75rem",
           marginBottom: "1rem", textAlign: "center",
           opacity: transitioning ? 0 : 1,
           transform: transitioning ? "scale(0.92)" : "scale(1)",
           transition: "opacity 0.45s ease, transform 0.45s ease",
         }}>
-          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.2em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.5rem" }}>
+          <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.2em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.5rem" }}>
             Your Co-Leader
           </div>
 
@@ -379,20 +381,20 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
           <div className="pulse-orb" style={{
             width: 90, height: 90, borderRadius: "50%",
             margin: "0 auto 1.5rem",
-            background: "radial-gradient(circle at 40% 35%, rgba(239,171,37,0.25), rgba(22,32,56,0.6))",
-            border: "2px solid rgba(239,171,37,0.35)",
+            background: "radial-gradient(circle at 40% 35%, rgba(255,77,0,0.15), rgba(17,17,17,0.6))",
+            border: "2px solid rgba(255,77,0,0.3)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <span style={{ fontFamily: SERIF, fontSize: "44px", color: "rgba(239,171,37,0.55)", lineHeight: 1 }}>?</span>
+            <span style={{ fontFamily: SANS, fontSize: "44px", fontWeight: 900, color: "rgba(255,77,0,0.5)", lineHeight: 1 }}>?</span>
           </div>
 
           <div style={{
-            fontFamily: SERIF, fontSize: "15px", color: "#B8C0D0",
+            fontFamily: SANS, fontSize: "15px", color: "#B8C0D0",
             fontStyle: "italic", lineHeight: 1.75, marginBottom: "0.5rem",
           }}>
             "Two are better than one, because they have a good return for their labor."
           </div>
-          <div style={{ fontSize: "11px", fontWeight: 700, color: "rgba(239,171,37,0.6)", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.75rem" }}>
+          <div style={{ fontSize: "11px", fontWeight: 700, color: "#FF4D00", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.75rem" }}>
             Ecclesiastes 4:9
           </div>
 
@@ -401,7 +403,7 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
             disabled={transitioning}
             style={{
               width: "100%", padding: "15px", border: "none", borderRadius: 14,
-              background: transitioning ? "rgba(232,98,26,0.5)" : ORANGE,
+              background: transitioning ? "rgba(255,77,0,0.5)" : "#FF4D00",
               color: "#fff", fontSize: "15px", fontWeight: 700, fontFamily: SANS,
               cursor: transitioning ? "wait" : "pointer",
               letterSpacing: "0.02em",
@@ -414,37 +416,37 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
       ) : coLeader ? (
         /* ── Revealed card ── */
         <div className="reveal-card" style={{
-          background: NAVY, borderRadius: 20, padding: "2rem 1.75rem",
+          background: "#111111", borderRadius: 20, padding: "2rem 1.75rem",
           marginBottom: "1rem", textAlign: "center",
         }}>
-          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.2em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.5rem" }}>
+          <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.2em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.5rem" }}>
             Your Co-Leader
           </div>
 
-          {/* Avatar with gold ring */}
+          {/* Avatar with orange ring */}
           <div style={{
             width: 96, height: 96, borderRadius: "50%",
             margin: "0 auto 1.25rem",
-            border: `3px solid ${GOLD}`,
+            border: "3px solid #FF4D00",
             padding: 3,
-            background: NAVY,
+            background: "#111111",
           }}>
             <div style={{
               width: "100%", height: "100%", borderRadius: "50%",
-              overflow: "hidden", background: BG,
+              overflow: "hidden", background: "#FAFAFA",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               {coLeader.photo_url ? (
                 <img src={coLeader.photo_url} alt={coLeader.full_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
-                <span style={{ fontFamily: SERIF, fontSize: 36, color: TSEC }}>
+                <span style={{ fontFamily: SANS, fontSize: 36, fontWeight: 900, color: "#FF4D00" }}>
                   {coLeader.full_name?.charAt(0)}
                 </span>
               )}
             </div>
           </div>
 
-          <div style={{ fontFamily: SERIF, fontSize: "28px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: 4 }}>
+          <div style={{ fontFamily: SANS, fontSize: "28px", fontWeight: 900, color: "#fff", lineHeight: 1.2, marginBottom: 4, letterSpacing: "-0.02em" }}>
             {coLeader.full_name}
           </div>
           {coLeader.ministry_role && (
@@ -489,7 +491,7 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
           </div>
 
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: "1.25rem" }}>
-            <div style={{ fontFamily: SERIF, fontSize: "16px", color: GOLD, fontStyle: "italic", lineHeight: 1.65 }}>
+            <div style={{ fontFamily: SANS, fontSize: "16px", fontWeight: 500, color: "#FF4D00", fontStyle: "italic", lineHeight: 1.65 }}>
               You and {firstName} will lead Team {teamNumber} together.
             </div>
           </div>
@@ -535,11 +537,11 @@ function PrayerTopicsPage({ onNext }) {
           }}>
             <div style={{
               width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
-              background: NAVY, display: "flex", alignItems: "center", justifyContent: "center",
+              background: "#111111", display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <span style={{ fontSize: "11px", fontWeight: 700, color: GOLD, fontFamily: SANS }}>{topic.num}</span>
+              <span style={{ fontSize: "11px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS }}>{topic.num}</span>
             </div>
-            <p style={{ fontSize: "13px", color: NAVY, fontFamily: SANS, lineHeight: 1.65, margin: 0 }}>
+            <p style={{ fontSize: "13px", color: "#111111", fontFamily: SANS, lineHeight: 1.65, margin: 0 }}>
               {topic.text}
             </p>
           </div>
@@ -572,8 +574,8 @@ function ChecklistPage({ onFinish, activeEvent }) {
       {activeEvent?.zoom_training_dates && (() => {
         const { main, sub } = splitZoomDisplay(activeEvent.zoom_training_dates);
         return (
-          <div style={{ background: NAVY, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
-            <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+          <div style={{ background: "#111111", borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
+            <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
               Leader Zoom Training
             </div>
             <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", fontFamily: SANS, marginBottom: sub ? 2 : 4 }}>
@@ -601,8 +603,8 @@ function ChecklistPage({ onFinish, activeEvent }) {
           >
             <div style={{
               width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
-              border: `2px solid ${checked[item.id] ? ORANGE : BORDER}`,
-              background: checked[item.id] ? ORANGE : "transparent",
+              border: `2px solid ${checked[item.id] ? "#FF4D00" : BORDER}`,
+              background: checked[item.id] ? "#FF4D00" : "transparent",
               display: "flex", alignItems: "center", justifyContent: "center",
               transition: "all 0.15s",
             }}>
@@ -610,7 +612,7 @@ function ChecklistPage({ onFinish, activeEvent }) {
             </div>
             <span style={{
               fontSize: "14px", fontFamily: SANS,
-              color: checked[item.id] ? TSEC : NAVY,
+              color: checked[item.id] ? TSEC : "#111111",
               textDecoration: checked[item.id] ? "line-through" : "none",
               transition: "color 0.15s",
             }}>
@@ -645,7 +647,7 @@ function ProgressDots({ step, total }) {
             height: 8,
             width: isCurrent ? 24 : 8,
             borderRadius: 4,
-            background: isCurrent ? ORANGE : isPast ? NAVY : BORDER,
+            background: isCurrent ? "#FF4D00" : isPast ? "#111111" : BORDER,
             transition: "all 0.3s ease",
           }} />
         );
