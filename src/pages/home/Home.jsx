@@ -18,6 +18,7 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenO
   const othersOnline = (onlineUsers || []).filter((u) => u.user_id !== profile.id);
   const [showContact, setShowContact] = useState(false);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const [dismissedAnnIds, setDismissedAnnIds] = useState(() => new Set());
 
   const displayName = profile.nickname || (profile.full_name || "").split(" ")[0];
   const latestAnn = (announcements || []).find(() => true);
@@ -171,24 +172,38 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenO
       )}
 
       {/* Latest announcement */}
-      {latestAnn && (
-        <button
-          onClick={() => onNavigate("updates")}
-          style={{ width: "100%", textAlign: "left", background: "#EEF2FC", borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem", border: "none", cursor: "pointer", fontFamily: SANS }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", color: "#1A4FBF" }}>ANNOUNCEMENT</div>
-            {unreadCount > 0 && (
-              <div style={{ background: "#E53E3E", color: "#fff", fontSize: "10px", fontWeight: 700, borderRadius: 99, padding: "2px 7px" }}>
-                {unreadCount} new
-              </div>
-            )}
-          </div>
-          <div style={{ fontSize: "14px", fontWeight: 600, color: "#1A3080", marginBottom: 2 }}>{latestAnn.title}</div>
-          <div style={{ fontSize: "13px", color: "#1A3080", lineHeight: 1.5, opacity: 0.85, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-            {latestAnn.body}
-          </div>
-        </button>
+      {latestAnn && !dismissedAnnIds.has(latestAnn.id) && (
+        <div style={{ position: "relative", marginBottom: "1rem" }}>
+          <button
+            onClick={() => onNavigate("updates")}
+            style={{ width: "100%", textAlign: "left", background: "#EEF2FC", borderRadius: 14, padding: "1rem 1.25rem", paddingRight: "2.5rem", border: "none", cursor: "pointer", fontFamily: SANS }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", color: "#1A4FBF" }}>ANNOUNCEMENT</div>
+              {unreadCount > 0 && (
+                <div style={{ background: "#E53E3E", color: "#fff", fontSize: "10px", fontWeight: 700, borderRadius: 99, padding: "2px 7px" }}>
+                  {unreadCount} new
+                </div>
+              )}
+            </div>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#1A3080", marginBottom: 2 }}>{latestAnn.title}</div>
+            <div style={{ fontSize: "13px", color: "#1A3080", lineHeight: 1.5, opacity: 0.85, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+              {latestAnn.body}
+            </div>
+          </button>
+          <button
+            onClick={() => setDismissedAnnIds((prev) => new Set([...prev, latestAnn.id]))}
+            style={{
+              position: "absolute", top: 8, right: 10,
+              background: "rgba(26,79,191,0.1)", border: "none", borderRadius: "50%",
+              width: 22, height: 22, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#1A4FBF", fontSize: "15px", lineHeight: 1, fontFamily: SANS,
+            }}
+          >
+            ×
+          </button>
+        </div>
       )}
 
       {/* Daily verse */}
