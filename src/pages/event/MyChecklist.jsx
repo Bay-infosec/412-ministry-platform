@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, BORDER, BG, SANS, SERIF } from "../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card } from "../../components/ui/index.js";
 import { CHECKLIST_ITEMS } from "../../lib/checklist.js";
@@ -35,10 +35,10 @@ export default function MyChecklist({ data, onBack }) {
       </button>
 
       <div style={{ marginBottom: "1.25rem" }}>
-        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
+        <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
           Pre-Conference
         </div>
-        <div style={{ fontFamily: SERIF, fontSize: "24px", fontWeight: 600, color: NAVY, lineHeight: 1.2 }}>
+        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
           My Checklist
         </div>
       </div>
@@ -58,7 +58,7 @@ export default function MyChecklist({ data, onBack }) {
         <div style={{ height: 6, borderRadius: 3, background: BORDER, overflow: "hidden" }}>
           <div style={{
             height: "100%", borderRadius: 3,
-            background: allDone ? "#059669" : ORANGE,
+            background: allDone ? "#059669" : "#FF4D00",
             width: `${(doneCount / CHECKLIST_ITEMS.length) * 100}%`,
             transition: "width 0.3s ease, background 0.3s ease",
           }} />
@@ -96,7 +96,7 @@ export default function MyChecklist({ data, onBack }) {
               <div style={{ flex: 1 }}>
                 <div style={{
                   fontSize: "14px", fontWeight: 600, fontFamily: SANS,
-                  color: done ? "#059669" : NAVY,
+                  color: done ? "#059669" : "#111111",
                   textDecoration: done ? "line-through" : "none",
                   transition: "color 0.15s",
                   marginBottom: 3,

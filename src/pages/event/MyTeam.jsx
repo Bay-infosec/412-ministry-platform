@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../lib/supabase.js";
-import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel, Avatar } from "../../components/ui/index.js";
 import { CHECKLIST_ITEMS } from "../../lib/checklist.js";
@@ -64,12 +64,12 @@ export default function MyTeam({ data, onBack }) {
       <BackBtn onBack={onBack} />
 
       {/* Team header */}
-      <div style={{ background: NAVY, borderRadius: 16, padding: "1.5rem", marginBottom: "1rem" }}>
-        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", marginBottom: "0.25rem", fontFamily: SANS }}>
+      <div style={{ background: "#111111", borderRadius: 16, padding: "1.5rem", marginBottom: "1rem" }}>
+        <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.25rem", fontFamily: SANS }}>
           Your Team
         </div>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-          <div style={{ fontFamily: SERIF, fontSize: "52px", fontWeight: 600, color: GOLD, lineHeight: 1 }}>
+          <div style={{ fontFamily: SANS, fontSize: "52px", fontWeight: 900, color: "#FF4D00", lineHeight: 1 }}>
             {eventMember.team_number || "—"}
           </div>
           {!editingName && (
@@ -101,7 +101,7 @@ export default function MyTeam({ data, onBack }) {
             <button
               onClick={saveTeamName}
               disabled={nameSaving}
-              style={{ background: ORANGE, border: "none", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontFamily: SANS, fontSize: "13px", fontWeight: 700, color: "#fff" }}
+              style={{ background: "#FF4D00", border: "none", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontFamily: SANS, fontSize: "13px", fontWeight: 700, color: "#fff" }}
             >
               {nameSaving ? "…" : "Save"}
             </button>
@@ -113,7 +113,7 @@ export default function MyTeam({ data, onBack }) {
             </button>
           </div>
         ) : teamName ? (
-          <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: "#fff", marginBottom: "0.25rem" }}>
+          <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "0.25rem" }}>
             {teamName}
           </div>
         ) : null}
@@ -133,7 +133,7 @@ export default function MyTeam({ data, onBack }) {
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.875rem" }}>
             <Avatar url={coLeader.photo_url} name={coLeader.full_name} size={48} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{coLeader.full_name}</div>
+              <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{coLeader.full_name}</div>
               {coLeader.churches?.name && (
                 <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>{coLeader.churches.name}</div>
               )}
@@ -155,7 +155,7 @@ export default function MyTeam({ data, onBack }) {
                   <span style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>{coLeaderDone} / {CHECKLIST_ITEMS.length} done</span>
                 </div>
                 <div style={{ height: 5, borderRadius: 3, background: BORDER, overflow: "hidden", marginBottom: 10 }}>
-                  <div style={{ height: "100%", borderRadius: 3, background: ORANGE, width: `${(coLeaderDone / CHECKLIST_ITEMS.length) * 100}%`, transition: "width 0.3s ease" }} />
+                  <div style={{ height: "100%", borderRadius: 3, background: "#FF4D00", width: `${(coLeaderDone / CHECKLIST_ITEMS.length) * 100}%`, transition: "width 0.3s ease" }} />
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {CHECKLIST_ITEMS.map((item) => {
@@ -164,13 +164,13 @@ export default function MyTeam({ data, onBack }) {
                       <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <div style={{
                           width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
-                          border: `2px solid ${done ? ORANGE : BORDER}`,
-                          background: done ? ORANGE : "transparent",
+                          border: `2px solid ${done ? "#FF4D00" : BORDER}`,
+                          background: done ? "#FF4D00" : "transparent",
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}>
                           {done && <span style={{ color: "#fff", fontSize: 8, lineHeight: 1 }}>✓</span>}
                         </div>
-                        <span style={{ fontSize: "12px", fontFamily: SANS, color: done ? ORANGE : TSEC, textDecoration: done ? "line-through" : "none" }}>
+                        <span style={{ fontSize: "12px", fontFamily: SANS, color: done ? "#FF4D00" : "#999999", textDecoration: done ? "line-through" : "none" }}>
                           {item.label}
                         </span>
                       </div>
@@ -184,14 +184,14 @@ export default function MyTeam({ data, onBack }) {
           {/* Contact buttons */}
           <div style={{ display: "flex", gap: 8, borderTop: `1px solid ${BORDER}`, paddingTop: "0.875rem" }}>
             {coLeader.phone && (
-              <a href={`tel:${coLeader.phone}`} style={contactBtnStyle(ORANGE)}>
+              <a href={`tel:${coLeader.phone}`} style={contactBtnStyle("#FF4D00")}>
                 <PhoneIcon color="#fff" />
                 Call {coLeader.full_name?.split(" ")[0]}
               </a>
             )}
             {coLeader.email && (
-              <a href={`mailto:${coLeader.email}`} style={contactBtnStyle("transparent", NAVY, BORDER)}>
-                <MailIcon color={NAVY} />
+              <a href={`mailto:${coLeader.email}`} style={contactBtnStyle("transparent", "#111111", BORDER)}>
+                <MailIcon color="#111111" />
                 Email
               </a>
             )}
@@ -211,20 +211,20 @@ export default function MyTeam({ data, onBack }) {
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.875rem" }}>
               <Avatar url={coordinator.photo_url} name={coordinator.full_name} size={48} />
               <div>
-                <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{coordinator.full_name}</div>
+                <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{coordinator.full_name}</div>
                 <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>Team Coordinator</div>
               </div>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               {coordinator.phone && (
-                <a href={`tel:${coordinator.phone}`} style={contactBtnStyle(NAVY)}>
+                <a href={`tel:${coordinator.phone}`} style={contactBtnStyle("#111111")}>
                   <PhoneIcon color="#fff" />
                   Call
                 </a>
               )}
               {coordinator.email && (
-                <a href={`mailto:${coordinator.email}`} style={contactBtnStyle("transparent", NAVY, BORDER)}>
-                  <MailIcon color={NAVY} />
+                <a href={`mailto:${coordinator.email}`} style={contactBtnStyle("transparent", "#111111", BORDER)}>
+                  <MailIcon color="#111111" />
                   Email
                 </a>
               )}
@@ -245,7 +245,7 @@ export default function MyTeam({ data, onBack }) {
         <div style={{ height: 6, borderRadius: 3, background: BORDER, overflow: "hidden" }}>
           <div style={{
             height: "100%", borderRadius: 3,
-            background: allDone ? "#059669" : ORANGE,
+            background: allDone ? "#059669" : "#FF4D00",
             width: `${(doneCount / CHECKLIST_ITEMS.length) * 100}%`,
             transition: "width 0.3s ease, background 0.3s ease",
           }} />
@@ -281,7 +281,7 @@ export default function MyTeam({ data, onBack }) {
                 {isSaving && <span style={{ color: TSEC, fontSize: 9 }}>…</span>}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: "14px", fontWeight: 600, fontFamily: SANS, color: done ? "#059669" : NAVY, textDecoration: done ? "line-through" : "none", transition: "color 0.15s", marginBottom: 3 }}>
+                <div style={{ fontSize: "14px", fontWeight: 600, fontFamily: SANS, color: done ? "#059669" : "#111111", textDecoration: done ? "line-through" : "none", transition: "color 0.15s", marginBottom: 3 }}>
                   {item.label}
                 </div>
                 <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.5 }}>

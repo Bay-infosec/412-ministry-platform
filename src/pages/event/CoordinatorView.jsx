@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, BORDER, SERIF, SANS, GOLD } from "../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel, Avatar, ProfileTags } from "../../components/ui/index.js";
 
@@ -43,10 +43,10 @@ export default function CoordinatorView({ data, onBack }) {
       </button>
 
       <div style={{ marginBottom: "1.25rem" }}>
-        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
+        <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
           Coordinator
         </div>
-        <div style={{ fontFamily: SERIF, fontSize: "24px", fontWeight: 600, color: NAVY, lineHeight: 1.2 }}>
+        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
           My Teams
         </div>
         {teamNums.length > 0 && (
@@ -97,7 +97,7 @@ export default function CoordinatorView({ data, onBack }) {
                     }}>
                       <Avatar url={photoUrl} name={name} size={40} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: "14px", fontWeight: 500, color: NAVY, fontFamily: SANS }}>{name}</div>
+                        <div style={{ fontSize: "14px", fontWeight: 500, color: "#111111", fontFamily: SANS }}>{name}</div>
                         <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>{roleLabel}</div>
                         <ProfileTags profile={m.profiles} showRole={false} />
                       </div>
