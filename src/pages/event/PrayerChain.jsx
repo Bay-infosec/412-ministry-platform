@@ -4,6 +4,16 @@ import { NAVY, ORANGE, GOLD, TSEC, BORDER, SERIF, SANS } from "../../lib/constan
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel, Avatar } from "../../components/ui/index.js";
 
+const PRAYER_TOPICS = [
+  "Pray for the young people you have not met yet. Ask God to prepare their hearts before you even arrive.",
+  "Pray for your partner leader. Ask God for unity, wisdom, and the ability to cover for each other.",
+  "Pray for the conference. Ask that what happens in those days would stay with people for years.",
+  "Pray for your fellow leaders. Ask that each one feels supported and not alone in this.",
+  "Pray for the organizing team. Ask that every detail they carry is done in His strength.",
+  "Pray that God would show you what He already sees in each person on your team.",
+  "Pray for yourself. Ask that you lead from the Spirit and not just your own effort.",
+];
+
 // Prayer chain: July 10 – Aug 2 (24 days, teams 1–12 each pray twice 12 days apart)
 // Aug 3: all teams pray together
 const CHAIN_START = new Date("2026-07-10");
@@ -89,6 +99,32 @@ export default function PrayerChain({ data, onBack }) {
           James 5:16
         </div>
       </Card>
+
+      {/* What to pray for */}
+      <div style={{ marginBottom: "1.25rem" }}>
+        <SectionLabel>What to pray for</SectionLabel>
+        <Card style={{ padding: 0, overflow: "hidden" }}>
+          {PRAYER_TOPICS.map((topic, i) => (
+            <div key={i} style={{
+              display: "flex", alignItems: "flex-start", gap: 12,
+              padding: "0.875rem 1.25rem",
+              borderBottom: i < PRAYER_TOPICS.length - 1 ? `1px solid ${BORDER}` : "none",
+            }}>
+              <div style={{
+                width: 22, height: 22, borderRadius: "50%", background: "#FFF5EC",
+                border: `1.5px solid ${ORANGE}`, display: "flex", alignItems: "center",
+                justifyContent: "center", flexShrink: 0, marginTop: 1,
+                fontSize: "11px", fontWeight: 700, color: ORANGE, fontFamily: SANS,
+              }}>
+                {i + 1}
+              </div>
+              <div style={{ fontSize: "13px", color: NAVY, fontFamily: SANS, lineHeight: 1.6 }}>
+                {topic}
+              </div>
+            </div>
+          ))}
+        </Card>
+      </div>
 
       {/* Today's focus banner */}
       {focus === "all" && (
