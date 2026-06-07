@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
-import { Avatar, Badge, Modal, SectionLabel } from "../../../components/ui/index.js";
+import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF, PROFILE_TAGS } from "../../../lib/constants.js";
+import { Avatar, Badge, Modal, SectionLabel, ProfileTags } from "../../../components/ui/index.js";
 
 const inputStyle = {
   width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10,
@@ -54,6 +54,18 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
   const [addTeam, setAddTeam] = useState("");
   const [addMinistry, setAddMinistry] = useState("");
   const [addingToEvent, setAddingToEvent] = useState(false);
+
+  const [tags, setTags] = useState(profile.tags || []);
+  const [savingTag, setSavingTag] = useState(null);
+
+  async function toggleTag(key) {
+    setSavingTag(key);
+    const next = tags.includes(key) ? tags.filter((t) => t !== key) : [...tags, key];
+    await supabase.from("profiles").update({ tags: next }).eq("id", profile.id);
+    setTags(next);
+    setSavingTag(null);
+    onRefresh();
+  }
 
   // Sync editable fields when em loads
   useEffect(() => {
@@ -178,9 +190,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
           <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
             {profile.email}
           </div>
-          <div style={{ marginTop: 6 }}>
-            <Badge variant={profile.platform_role} />
-          </div>
+          <ProfileTags profile={{ ...profile, tags }} eventMember={em} />
         </div>
       </div>
 
@@ -312,6 +322,48 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
           </div>
         </>
       )}
+
+      {/* Profile Tags */}
+      <SectionLabel>Profile Tags</SectionLabel>
+      <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
+        <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: "0.875rem", lineHeight: 1.5 }}>
+          Tags appear on this person's profile and in team views. Role tags (Admin, Moderator, Team Leader) are automatic.
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {Object.entries(PROFILE_TAGS).map(([key, cfg]) => {
+            const active = tags.includes(key);
+            const isSaving = savingTag === key;
+            return (
+              <button
+                key={key}
+                onClick={() => toggleTag(key)}
+                disabled={isSaving}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "0.75rem 1rem", borderRadius: 12, cursor: isSaving ? "default" : "pointer",
+                  border: `1.5px solid ${active ? cfg.bg : BORDER}`,
+                  background: active ? cfg.bg + "18" : "#fff",
+                  opacity: isSaving ? 0.6 : 1,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: active ? cfg.bg : BORDER, flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{cfg.label}</div>
+                  </div>
+                </div>
+                <span style={{
+                  fontSize: "10px", fontWeight: 700, padding: "3px 10px", borderRadius: 99,
+                  background: active ? cfg.bg : "#F0EDE8", color: active ? cfg.color : TSEC,
+                  fontFamily: SANS, letterSpacing: "0.06em",
+                }}>
+                  {isSaving ? "…" : active ? "ON" : "OFF"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Admin Actions */}
       <SectionLabel>Admin Actions</SectionLabel>

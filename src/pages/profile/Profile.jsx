@@ -3,7 +3,7 @@ import { supabase } from "../../lib/supabase.js";
 import { formatPhoneInput, validatePassword } from "../../lib/utils.js";
 import { NAVY, ORANGE, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
-import { Card, Field, Button, Avatar, SectionLabel, Badge } from "../../components/ui/index.js";
+import { Card, Field, Button, Avatar, SectionLabel, Badge, ProfileTags } from "../../components/ui/index.js";
 
 const CROP_SIZE = 270;
 
@@ -291,8 +291,8 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               "{profile.nickname}"
             </div>
           )}
-          <div style={{ marginTop: "0.5rem" }}>
-            <Badge variant={profile.platform_role} />
+          <div style={{ marginTop: "0.625rem", display: "flex", justifyContent: "center" }}>
+            <ProfileTags profile={profile} />
           </div>
         </div>
 

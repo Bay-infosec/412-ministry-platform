@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
 import { NAVY, ORANGE, TSEC, BORDER, SERIF, SANS, GOLD } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
-import { Card, SectionLabel, Avatar } from "../../components/ui/index.js";
+import { Card, SectionLabel, Avatar, ProfileTags } from "../../components/ui/index.js";
 
 export default function CoordinatorView({ data, onBack }) {
   const { profile, activeEvent } = data;
@@ -12,7 +12,7 @@ export default function CoordinatorView({ data, onBack }) {
     if (!activeEvent?.id || !profile?.id) return;
     supabase
       .from("event_members")
-      .select("id, team_number, ministry, event_role, onboarding_visited, onboarding_completed, profiles!event_members_profile_id_fkey(full_name, photo_url)")
+      .select("id, team_number, ministry, event_role, onboarding_visited, onboarding_completed, profiles!event_members_profile_id_fkey(full_name, photo_url, tags, platform_role)")
       .eq("event_id", activeEvent.id)
       .eq("coordinator_id", profile.id)
       .neq("event_role", "coordinator")
@@ -99,6 +99,7 @@ export default function CoordinatorView({ data, onBack }) {
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: "14px", fontWeight: 500, color: NAVY, fontFamily: SANS }}>{name}</div>
                         <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>{roleLabel}</div>
+                        <ProfileTags profile={m.profiles} showRole={false} />
                       </div>
                       <div style={{ background: obStyle.bg, borderRadius: 20, padding: "3px 10px", fontSize: "11px", fontWeight: 600, color: obStyle.color, fontFamily: SANS, flexShrink: 0 }}>
                         {obStyle.label}

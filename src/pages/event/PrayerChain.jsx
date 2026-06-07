@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
-import { SectionLabel, Avatar } from "../../components/ui/index.js";
+import { SectionLabel } from "../../components/ui/index.js";
 
 const PRAYER_TOPICS = [
   "Pray for the young people you have not met yet. Ask God to prepare their hearts before you even arrive.",
@@ -75,19 +75,8 @@ export default function PrayerChain({ data, onBack }) {
   const { activeEvent, eventMember } = data;
   const myTeam = eventMember?.team_number;
 
-  const [members, setMembers] = useState(null);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [topicsOpen, setTopicsOpen] = useState(false);
-
-  useEffect(() => {
-    if (!activeEvent?.id) return;
-    supabase
-      .from("event_members")
-      .select("id, team_number, ministry, event_role, profiles(full_name, photo_url)")
-      .eq("event_id", activeEvent.id)
-      .order("team_number")
-      .then(({ data: rows }) => setMembers(rows || []));
-  }, [activeEvent?.id]);
 
   const myDates = myTeam ? getPrayerDates(myTeam) : null;
   const schedule = getFullSchedule();

@@ -8,3 +8,4 @@ export { default as Chip } from "./Chip.jsx";
 export { default as TabBar } from "./TabBar.jsx";
 export { default as SectionLabel } from "./SectionLabel.jsx";
 export { default as Badge } from "./Badge.jsx";
+export { default as ProfileTags } from "./ProfileTags.jsx";
