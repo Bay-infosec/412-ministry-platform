@@ -4,6 +4,19 @@ import { NAVY, ORANGE, TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.
 import { Card, Field } from "../../../components/ui/index.js";
 import { EVENT_TYPES } from "../../../lib/eventTypes.js";
 
+// ── Shared styles ─────────────────────────────────────────────────────────────
+
+const baseInputStyle = {
+  width: "100%", padding: "12px 14px", borderRadius: 10,
+  border: `1px solid ${BORDER}`, fontSize: "14px", fontFamily: SANS,
+  color: NAVY, outline: "none", boxSizing: "border-box", background: "#fff",
+};
+
+// NOTE: no appearance:none on selects — that kills the native picker on iOS
+const selectStyle = {
+  ...baseInputStyle, cursor: "pointer",
+};
+
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
 function formatDateRange(start, end) {
@@ -35,14 +48,7 @@ function needsDateTime(key) {
   return key === "zoom_meeting" || key === "board_meeting";
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-const dateInputStyle = {
-  width: "100%", padding: "12px 14px", borderRadius: 10,
-  border: `1px solid ${BORDER}`, fontSize: "14px", fontFamily: SANS,
-  color: NAVY, outline: "none", boxSizing: "border-box", background: "#fff",
-  appearance: "none",
-};
+// ── Field components ──────────────────────────────────────────────────────────
 
 function FieldLabel({ children }) {
   return (
@@ -62,22 +68,11 @@ function DateRangePicker({ startValue, endValue, onStartChange, onEndChange }) {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         <div>
           <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginBottom: 4 }}>Start</div>
-          <input
-            type="date"
-            value={startValue}
-            onChange={(e) => onStartChange(e.target.value)}
-            style={dateInputStyle}
-          />
+          <input type="date" value={startValue} onChange={(e) => onStartChange(e.target.value)} style={baseInputStyle} />
         </div>
         <div>
           <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginBottom: 4 }}>End</div>
-          <input
-            type="date"
-            value={endValue}
-            min={startValue || undefined}
-            onChange={(e) => onEndChange(e.target.value)}
-            style={dateInputStyle}
-          />
+          <input type="date" value={endValue} min={startValue || undefined} onChange={(e) => onEndChange(e.target.value)} style={baseInputStyle} />
         </div>
       </div>
     </div>
@@ -88,12 +83,7 @@ function SingleDatePicker({ label = "DATE", value, onChange }) {
   return (
     <div style={{ marginBottom: "1rem" }}>
       <FieldLabel>{label}</FieldLabel>
-      <input
-        type="date"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={dateInputStyle}
-      />
+      <input type="date" value={value} onChange={(e) => onChange(e.target.value)} style={baseInputStyle} />
     </div>
   );
 }
@@ -102,36 +92,27 @@ function DateTimePicker({ value, onChange }) {
   return (
     <div style={{ marginBottom: "1rem" }}>
       <FieldLabel>DATE &amp; TIME</FieldLabel>
-      <input
-        type="datetime-local"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={dateInputStyle}
-      />
+      <input type="datetime-local" value={value} onChange={(e) => onChange(e.target.value)} style={baseInputStyle} />
     </div>
   );
 }
 
 const AUDIENCE_OPTIONS = [
-  { value: "All Members", label: "All Members" },
-  { value: "All Leaders", label: "All Leaders" },
-  { value: "EM Leaders", label: "EM Leaders" },
-  { value: "MM Leaders", label: "MM Leaders" },
-  { value: "Coordinators", label: "Coordinators" },
-  { value: "EM Ministry", label: "EM Ministry (all)" },
-  { value: "MM Ministry", label: "MM Ministry (all)" },
-  { value: "Board Members", label: "Board Members" },
+  { value: "all",          label: "All Members" },
+  { value: "leaders",      label: "Leaders only" },
+  { value: "em_leaders",   label: "EM Leaders" },
+  { value: "mm_leaders",   label: "MM Leaders" },
+  { value: "coordinators", label: "Coordinators" },
+  { value: "em",           label: "English Ministry (all)" },
+  { value: "mm",           label: "Mongolian Ministry (all)" },
+  { value: "board",        label: "Board Members" },
 ];
 
 function AudienceSelect({ value, onChange }) {
   return (
     <div style={{ marginBottom: "1rem" }}>
-      <FieldLabel>TARGET AUDIENCE</FieldLabel>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={{ ...dateInputStyle, cursor: "pointer" }}
-      >
+      <FieldLabel>AUDIENCE</FieldLabel>
+      <select value={value} onChange={(e) => onChange(e.target.value)} style={selectStyle}>
         {AUDIENCE_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>{o.label}</option>
         ))}
@@ -149,11 +130,7 @@ function TextareaField({ label, value, onChange, placeholder, rows = 4 }) {
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        style={{
-          width: "100%", padding: "12px 14px", borderRadius: 10,
-          border: `1px solid ${BORDER}`, fontSize: "14px", fontFamily: SANS,
-          color: NAVY, resize: "vertical", outline: "none", boxSizing: "border-box", lineHeight: 1.55,
-        }}
+        style={{ ...baseInputStyle, resize: "vertical", lineHeight: 1.55 }}
       />
     </div>
   );
@@ -168,16 +145,9 @@ function ToggleRow({ label, sub, value, onChange }) {
       </div>
       <button
         onClick={() => onChange(!value)}
-        style={{
-          width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer",
-          background: value ? "#059669" : "#D1D5DB", position: "relative", flexShrink: 0,
-        }}
+        style={{ width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer", background: value ? "#059669" : "#D1D5DB", position: "relative", flexShrink: 0 }}
       >
-        <span style={{
-          position: "absolute", top: 2, left: value ? 22 : 2,
-          width: 20, height: 20, borderRadius: "50%", background: "#fff",
-          transition: "left 0.2s",
-        }} />
+        <span style={{ position: "absolute", top: 2, left: value ? 22 : 2, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
       </button>
     </div>
   );
@@ -208,18 +178,10 @@ function TypePicker({ onPick }) {
           <button
             key={t.key}
             onClick={() => onPick(t)}
-            style={{
-              background: t.bg, border: `1.5px solid ${t.color}22`,
-              borderRadius: 16, padding: "1.25rem 1rem",
-              cursor: "pointer", textAlign: "left",
-            }}
+            style={{ background: t.bg, border: `1.5px solid ${t.color}22`, borderRadius: 16, padding: "1.25rem 1rem", cursor: "pointer", textAlign: "left" }}
           >
-            <div style={{ fontSize: "13px", fontWeight: 700, color: t.color, fontFamily: SANS, lineHeight: 1.3 }}>
-              {t.label}
-            </div>
-            <div style={{ fontSize: "11px", color: t.color, opacity: 0.7, fontFamily: SANS, marginTop: 3 }}>
-              {TYPE_HINTS[t.key]}
-            </div>
+            <div style={{ fontSize: "13px", fontWeight: 700, color: t.color, fontFamily: SANS, lineHeight: 1.3 }}>{t.label}</div>
+            <div style={{ fontSize: "11px", color: t.color, opacity: 0.7, fontFamily: SANS, marginTop: 3 }}>{TYPE_HINTS[t.key]}</div>
           </button>
         ))}
       </div>
@@ -246,9 +208,10 @@ function EventForm({ type, onBack, onSaved, onToast }) {
   const [fields, setFields] = useState({
     name: "",
     startDate: "", endDate: "", dateTime: "",
-    location: "", audience: "All Members",
+    location: "",
     fee: "", verse: "", verse_text: "", team_count: "",
     registration_url: "", zoom_url: "", description: "",
+    audience: "all",
     has_teams: type.key === "youth_conference",
   });
   const [busy, setBusy] = useState(false);
@@ -276,7 +239,7 @@ function EventForm({ type, onBack, onSaved, onToast }) {
       status: "inactive",
       name: fields.name.trim() || null,
       dates: datesStr,
-      location: type.key === "zoom_meeting" ? (fields.audience || null) : (fields.location.trim() || null),
+      location: fields.location.trim() || null,
       fee: fields.fee.trim() || null,
       verse: fields.verse.trim() || null,
       verse_text: fields.verse_text.trim() || null,
@@ -284,6 +247,7 @@ function EventForm({ type, onBack, onSaved, onToast }) {
       registration_url: fields.registration_url.trim() || null,
       zoom_url: fields.zoom_url.trim() || null,
       description: fields.description.trim() || null,
+      audience: fields.audience || "all",
     };
     const { error } = await supabase.from("events").insert(payload);
     setBusy(false);
@@ -294,7 +258,6 @@ function EventForm({ type, onBack, onSaved, onToast }) {
 
   return (
     <div>
-      {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.25rem" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", color: TSEC, fontFamily: SANS, fontSize: "14px", padding: 0 }}>
           ← Types
@@ -307,25 +270,14 @@ function EventForm({ type, onBack, onSaved, onToast }) {
       <Card style={{ marginBottom: "1rem" }}>
         <Field label="NAME" value={fields.name} onChange={set("name")} placeholder={NAME_PLACEHOLDERS[type.key]} />
 
-        {/* Conference fields */}
         {isConference(type.key) && <>
-          <DateRangePicker
-            startValue={fields.startDate}
-            endValue={fields.endDate}
-            onStartChange={set("startDate")}
-            onEndChange={set("endDate")}
-          />
+          <DateRangePicker startValue={fields.startDate} endValue={fields.endDate} onStartChange={set("startDate")} onEndChange={set("endDate")} />
           <Field label="LOCATION" value={fields.location} onChange={set("location")} placeholder="e.g. Rhodes Grove Camp, PA" />
           <Field label="REGISTRATION FEE" value={fields.fee} onChange={set("fee")} placeholder="e.g. $150" />
           <Field label="VERSE REFERENCE" value={fields.verse} onChange={set("verse")} placeholder="e.g. Ephesians 4:12" />
           <TextareaField label="VERSE TEXT" value={fields.verse_text} onChange={set("verse_text")} placeholder="Full verse text…" rows={3} />
           {type.key === "annual_conference" && (
-            <ToggleRow
-              label="Has team system"
-              sub="Teams, co-leaders, coordinators"
-              value={fields.has_teams}
-              onChange={(v) => setFields((f) => ({ ...f, has_teams: v }))}
-            />
+            <ToggleRow label="Has team system" sub="Teams, co-leaders, coordinators" value={fields.has_teams} onChange={(v) => setFields((f) => ({ ...f, has_teams: v }))} />
           )}
           {fields.has_teams && (
             <Field label="NUMBER OF TEAMS" value={fields.team_count} onChange={(v) => set("team_count")(v.replace(/\D/g, ""))} placeholder="e.g. 12" />
@@ -333,7 +285,6 @@ function EventForm({ type, onBack, onSaved, onToast }) {
           <Field label="REGISTRATION URL" value={fields.registration_url} onChange={set("registration_url")} placeholder="https://…" />
         </>}
 
-        {/* Open Mic */}
         {type.key === "open_mic" && <>
           <SingleDatePicker label="DATE" value={fields.startDate} onChange={set("startDate")} />
           <Field label="LOCATION" value={fields.location} onChange={set("location")} placeholder="Venue or address" />
@@ -342,37 +293,28 @@ function EventForm({ type, onBack, onSaved, onToast }) {
           <TextareaField label="DESCRIPTION" value={fields.description} onChange={set("description")} placeholder="What to expect, theme, etc." rows={4} />
         </>}
 
-        {/* Mission */}
         {type.key === "mission" && <>
           <Field label="DESTINATION" value={fields.location} onChange={set("location")} placeholder="e.g. Manila, Philippines" />
-          <DateRangePicker
-            startValue={fields.startDate}
-            endValue={fields.endDate}
-            onStartChange={set("startDate")}
-            onEndChange={set("endDate")}
-          />
+          <DateRangePicker startValue={fields.startDate} endValue={fields.endDate} onStartChange={set("startDate")} onEndChange={set("endDate")} />
           <Field label="FEE / COST" value={fields.fee} onChange={set("fee")} placeholder="e.g. $1,200 (flights incl.)" />
           <TextareaField label="DESCRIPTION" value={fields.description} onChange={set("description")} placeholder="Mission purpose, activities, what to bring…" rows={5} />
-          <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, padding: "0.5rem 0" }}>
-            Participant availability submissions can be collected after publishing.
-          </div>
         </>}
 
-        {/* Zoom Meeting */}
         {type.key === "zoom_meeting" && <>
           <DateTimePicker value={fields.dateTime} onChange={set("dateTime")} />
           <Field label="ZOOM LINK" value={fields.zoom_url} onChange={set("zoom_url")} placeholder="https://zoom.us/j/…" />
-          <AudienceSelect value={fields.audience} onChange={set("audience")} />
           <TextareaField label="AGENDA / DESCRIPTION" value={fields.description} onChange={set("description")} placeholder="Topics, agenda items…" rows={4} />
         </>}
 
-        {/* Board Meeting */}
         {type.key === "board_meeting" && <>
           <DateTimePicker value={fields.dateTime} onChange={set("dateTime")} />
           <Field label="LOCATION" value={fields.location} onChange={set("location")} placeholder="Address or room" />
           <Field label="FEE" value={fields.fee} onChange={set("fee")} placeholder="Optional" />
           <TextareaField label="AGENDA / NOTES" value={fields.description} onChange={set("description")} placeholder="Agenda items, preparation notes…" rows={5} />
         </>}
+
+        {/* Audience — applies to all event types */}
+        <AudienceSelect value={fields.audience} onChange={set("audience")} />
       </Card>
 
       <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, textAlign: "center", marginBottom: "1rem" }}>
