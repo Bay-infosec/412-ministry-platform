@@ -12,7 +12,7 @@ export default function CoordinatorView({ data, onBack }) {
     if (!activeEvent?.id || !profile?.id) return;
     supabase
       .from("event_members")
-      .select("id, team_number, ministry, event_role, profiles(full_name, photo_url)")
+      .select("id, team_number, ministry, event_role, profiles!event_members_profile_id_fkey(full_name, photo_url)")
       .eq("event_id", activeEvent.id)
       .eq("coordinator_id", profile.id)
       .order("team_number")

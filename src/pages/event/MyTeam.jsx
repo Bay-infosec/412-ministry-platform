@@ -43,9 +43,9 @@ export default function MyTeam({ data, onBack }) {
             <Avatar url={coLeader.photo_url} name={coLeader.full_name} size={48} />
             <div>
               <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{coLeader.full_name}</div>
-              {coLeader.church_id && (
+              {coLeader.churches?.name && (
                 <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
-                  {coLeader.church_id}
+                  {coLeader.churches.name}
                 </div>
               )}
             </div>
