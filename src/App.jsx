@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "./lib/supabase.js";
 import { matchesAudience } from "./lib/utils.js";
 import { Login, ChangePassword } from "./pages/auth/index.js";
@@ -106,6 +106,8 @@ export default function App() {
   const [chatUnread, setChatUnread] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [profileReturnTo, setProfileReturnTo] = useState(null);
+
+  const lastRefreshRef = useRef(0);
 
   const hardReset = async () => {
     try { await supabase.auth.signOut(); } catch {}
@@ -420,6 +422,15 @@ export default function App() {
     );
     loadData().finally(() => clearTimeout(timer));
 
+    const handleVisibility = () => {
+      if (document.visibilityState !== "visible") return;
+      const now = Date.now();
+      if (now - lastRefreshRef.current < 30000) return;
+      lastRefreshRef.current = now;
+      loadData();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (!session) {
         setData(null);
@@ -429,6 +440,7 @@ export default function App() {
 
     return () => {
       clearTimeout(timer);
+      document.removeEventListener("visibilitychange", handleVisibility);
       sub.subscription.unsubscribe();
     };
   }, []);

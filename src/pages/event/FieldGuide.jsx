@@ -3,7 +3,9 @@ import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/con
 import { Shell } from "../../components/layout/index.js";
 import { Card } from "../../components/ui/index.js";
 
-const FIELD_GUIDE_URL = "https://drive.google.com/file/d/1VVARCRm2Rl9NkH7i0wzDot5KwJbN-dF7/preview";
+const FILE_ID = "1VVARCRm2Rl9NkH7i0wzDot5KwJbN-dF7";
+const FIELD_GUIDE_URL = `https://drive.google.com/file/d/${FILE_ID}/preview`;
+const FIELD_GUIDE_DOWNLOAD = `https://drive.google.com/uc?export=download&id=${FILE_ID}`;
 
 export default function FieldGuide({ data, onBack }) {
   const [loaded, setLoaded] = useState(false);
@@ -55,23 +57,37 @@ export default function FieldGuide({ data, onBack }) {
         />
       </div>
 
-      {/* Open in Drive link */}
+      {/* Open in Drive / Download */}
       <Card style={{ padding: "1rem 1.25rem", marginBottom: "1.5rem" }}>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6, marginBottom: "0.75rem" }}>
-          Having trouble viewing? Open the Field Guide directly in Google Drive.
+          Save a copy to read offline anytime, even without internet.
         </div>
-        <a
-          href={FIELD_GUIDE_URL.replace("/preview", "/view")}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "block", padding: "11px", textAlign: "center",
-            background: NAVY, color: "#fff", borderRadius: 8,
-            textDecoration: "none", fontSize: "14px", fontWeight: 600, fontFamily: SANS,
-          }}
-        >
-          Open in Google Drive
-        </a>
+        <div style={{ display: "flex", gap: "0.625rem" }}>
+          <a
+            href={FIELD_GUIDE_DOWNLOAD}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              flex: 1, display: "block", padding: "11px", textAlign: "center",
+              background: ORANGE, color: "#fff", borderRadius: 8,
+              textDecoration: "none", fontSize: "14px", fontWeight: 600, fontFamily: SANS,
+            }}
+          >
+            Download PDF
+          </a>
+          <a
+            href={FIELD_GUIDE_URL.replace("/preview", "/view")}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              flex: 1, display: "block", padding: "11px", textAlign: "center",
+              background: NAVY, color: "#fff", borderRadius: 8,
+              textDecoration: "none", fontSize: "14px", fontWeight: 600, fontFamily: SANS,
+            }}
+          >
+            Open in Drive
+          </a>
+        </div>
       </Card>
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

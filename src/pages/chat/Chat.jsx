@@ -96,6 +96,16 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
 
   useEffect(() => { loadConversations(); loadMembers(); }, []);
 
+  useEffect(() => {
+    const ch = supabase
+      .channel("home-dm-refresh")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "dm_messages" }, () => {
+        loadConversations();
+      })
+      .subscribe();
+    return () => supabase.removeChannel(ch);
+  }, []);
+
   async function loadConversations() {
     // Fetch DM conversations
     const { data: dmRows } = await supabase
