@@ -164,6 +164,7 @@ export default function App() {
       let eventChecklist = {};
       let coLeader = null;
       let coordinator = null;
+      let coLeaderChecklist = null;
 
       if (activeEvent) {
         const { data: em } = await supabase
@@ -199,6 +200,24 @@ export default function App() {
               .eq("id", eventMember.coordinator_id)
               .single();
             coordinator = coord || null;
+          }
+
+          // Co-leader's checklist (for MyTeam progress view)
+          if (eventMember.co_leader_id) {
+            const { data: clEm } = await supabase
+              .from("event_members")
+              .select("id")
+              .eq("profile_id", eventMember.co_leader_id)
+              .eq("event_id", activeEvent.id)
+              .maybeSingle();
+            if (clEm) {
+              const { data: clCl } = await supabase
+                .from("event_checklist")
+                .select("items")
+                .eq("event_member_id", clEm.id)
+                .maybeSingle();
+              coLeaderChecklist = clCl || null;
+            }
           }
         }
       }
@@ -309,6 +328,7 @@ export default function App() {
         eventMember,
         eventChecklist,
         coLeader,
+        coLeaderChecklist,
         coordinator,
         announcements,
         unreadCount,

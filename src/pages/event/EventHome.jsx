@@ -1,7 +1,6 @@
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel } from "../../components/ui/index.js";
-import { CHECKLIST_ITEMS } from "../../lib/checklist.js";
 
 function daysUntil(dateStr) {
   if (!dateStr) return null;
@@ -13,9 +12,7 @@ function daysUntil(dateStr) {
 }
 
 export default function EventHome({ data, onOpenPage, onNavigate }) {
-  const { activeEvent, eventMember, eventChecklist, profile, isAdmin } = data;
-  const checklistItems = eventChecklist?.items || {};
-  const checklistDone = CHECKLIST_ITEMS.filter((i) => checklistItems[i.id]).length;
+  const { activeEvent, eventMember, profile, isAdmin } = data;
 
   if (!activeEvent) {
     return (
@@ -32,11 +29,10 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
 
   const sections = [
     ...(eventMember ? [{ id: "onboarding", label: "Onboarding", desc: eventMember.onboarding_completed ? "Review your setup" : "Complete your setup" }] : []),
-    { id: "myteam", label: "My Team", desc: eventMember?.team_number ? `Team ${eventMember.team_number}` : "Team assignment" },
+    { id: "myteam", label: "My Team", desc: eventMember?.team_number ? `Team ${eventMember.team_number} · checklist inside` : "Team assignment & checklist" },
     { id: "prayer_chain", label: "Prayer Chain", desc: "Pray for one another" },
     { id: "the_four", label: "The Four", desc: "Your four essentials" },
     { id: "field_guide", label: "Field Guide", desc: "Resources and references" },
-    ...(eventMember ? [{ id: "checklist", label: "My Checklist", desc: `${checklistDone} of ${CHECKLIST_ITEMS.length} tasks complete` }] : []),
   ];
 
   if (isCoordinator) {

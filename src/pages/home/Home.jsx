@@ -3,6 +3,7 @@ import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/con
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel } from "../../components/ui/index.js";
 import { DailyVerse, ContactForm } from "../../components/shared/index.js";
+import { CHECKLIST_ITEMS } from "../../lib/checklist.js";
 
 function daysUntil(dateStr) {
   if (!dateStr) return null;
@@ -14,17 +15,21 @@ function daysUntil(dateStr) {
 }
 
 export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenOnboarding, chatUnread, onlineUsers }) {
-  const { profile, eventMember, announcements, unreadCount, activeEvent, trainingMaterials } = data;
+  const { profile, eventMember, eventChecklist, announcements, unreadCount, activeEvent, trainingMaterials } = data;
   const othersOnline = (onlineUsers || []).filter((u) => u.user_id !== profile.id);
   const [showContact, setShowContact] = useState(false);
-  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const [progressDismissed, setProgressDismissed] = useState(false);
   const [dismissedAnnIds, setDismissedAnnIds] = useState(() => new Set());
 
   const displayName = profile.nickname || (profile.full_name || "").split(" ")[0];
   const latestAnn = (announcements || []).find(() => true);
   const days = daysUntil(activeEvent?.dates);
 
-  const showOnboardingBanner = eventMember && !eventMember.onboarding_completed && !onboardingDismissed;
+  const checklistItems = eventChecklist?.items || {};
+  const doneCount = CHECKLIST_ITEMS.filter((i) => checklistItems[i.id]).length;
+  const checklistPct = Math.round((doneCount / CHECKLIST_ITEMS.length) * 100);
+
+  const showProgressCard = eventMember && !progressDismissed;
 
   return (
     <Shell withNav>
@@ -58,33 +63,89 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenO
         </button>
       </div>
 
-      {/* Onboarding banner — dismissible */}
-      {showOnboardingBanner && (
+      {/* Leader progress card — always visible for event members */}
+      {showProgressCard && (
         <div style={{
-          background: ORANGE, borderRadius: 14, padding: "1rem 1.25rem",
-          marginBottom: "1rem", display: "flex", alignItems: "center",
-          justifyContent: "space-between", gap: 12,
+          background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16,
+          padding: "1rem 1.25rem", marginBottom: "1rem", position: "relative",
         }}>
+          {/* Dismiss */}
           <button
-            onClick={onOpenOnboarding}
-            style={{ flex: 1, textAlign: "left", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-          >
-            <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: "rgba(255,255,255,0.8)", marginBottom: 3, textTransform: "uppercase" }}>
-              Action required
-            </div>
-            <div style={{ fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: 2 }}>
-              Complete your onboarding
-            </div>
-            <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>
-              A few steps to get you set up for {activeEvent?.name || "the conference"}
-            </div>
-          </button>
-          <button
-            onClick={() => setOnboardingDismissed(true)}
-            style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, cursor: "pointer", color: "#fff", padding: "6px 10px", flexShrink: 0, fontSize: "16px", lineHeight: 1 }}
-            title="Dismiss"
+            onClick={() => setProgressDismissed(true)}
+            style={{ position: "absolute", top: 10, right: 10, background: "none", border: "none", cursor: "pointer", color: TSEC, fontSize: "18px", lineHeight: 1, padding: "2px 6px" }}
           >
             ×
+          </button>
+
+          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: 8 }}>
+            Your Progress
+          </div>
+
+          {/* Onboarding row */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{
+                width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
+                background: eventMember.onboarding_completed ? "#059669" : ORANGE,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                {eventMember.onboarding_completed
+                  ? <span style={{ color: "#fff", fontSize: 10 }}>✓</span>
+                  : <span style={{ color: "#fff", fontSize: 10, fontWeight: 700 }}>!</span>}
+              </div>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>Onboarding</span>
+            </div>
+            {eventMember.onboarding_completed ? (
+              <span style={{ fontSize: "12px", color: "#059669", fontFamily: SANS, fontWeight: 600 }}>Complete</span>
+            ) : (
+              <button
+                onClick={onOpenOnboarding}
+                style={{ background: "none", border: "none", color: ORANGE, fontSize: "12px", fontWeight: 700, cursor: "pointer", fontFamily: SANS, padding: 0 }}
+              >
+                Continue →
+              </button>
+            )}
+          </div>
+
+          {/* Checklist row */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{
+                width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
+                background: doneCount === CHECKLIST_ITEMS.length ? "#059669" : BORDER,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                {doneCount === CHECKLIST_ITEMS.length
+                  ? <span style={{ color: "#fff", fontSize: 10 }}>✓</span>
+                  : <span style={{ fontSize: "10px", fontWeight: 700, color: TSEC }}>{doneCount}</span>}
+              </div>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>Checklist</span>
+            </div>
+            <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
+              {doneCount} / {CHECKLIST_ITEMS.length}
+            </span>
+          </div>
+
+          {/* Progress bar */}
+          <div style={{ height: 5, borderRadius: 3, background: BORDER, overflow: "hidden" }}>
+            <div style={{
+              height: "100%", borderRadius: 3,
+              background: doneCount === CHECKLIST_ITEMS.length ? "#059669" : ORANGE,
+              width: `${checklistPct}%`,
+              transition: "width 0.4s ease",
+            }} />
+          </div>
+
+          {/* CTA */}
+          <button
+            onClick={() => onOpenPage("myteam")}
+            style={{
+              marginTop: 12, width: "100%", background: NAVY, color: "#fff",
+              border: "none", borderRadius: 10, padding: "10px",
+              fontSize: "13px", fontWeight: 600, fontFamily: SANS, cursor: "pointer",
+            }}
+          >
+            View checklist in My Team →
           </button>
         </div>
       )}
