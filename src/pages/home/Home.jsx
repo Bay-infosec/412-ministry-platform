@@ -30,6 +30,26 @@ function daysUntil(d) {
   return Math.ceil((d - today) / 86400000);
 }
 
+// Multi-timezone display for zoom meetings stored as PT time
+// e.g. start_date="2026-06-27" + start_time="18:00" → "6:00 PM PT · 7:00 PM MT · 8:00 PM CT · 9:00 PM ET"
+function formatZoomTimezones(startDate, startTime) {
+  if (!startDate || !startTime) return null;
+  const [year, month, day] = startDate.split("-").map(Number);
+  const [hour, min] = startTime.split(":").map(Number);
+  // June–August in Los Angeles = PDT = UTC−7
+  const utcDate = new Date(Date.UTC(year, month - 1, day, hour + 7, min));
+  const zones = [
+    { tz: "America/Los_Angeles", label: "PT" },
+    { tz: "America/Denver",      label: "MT" },
+    { tz: "America/Chicago",     label: "CT" },
+    { tz: "America/New_York",    label: "ET" },
+  ];
+  return zones.map(({ tz, label }) => {
+    const t = utcDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: tz });
+    return `${t} ${label}`;
+  }).join(" · ");
+}
+
 // Parse event.dates string (e.g. "August 5–9, 2026") → days until start
 function daysUntilEvent(dateStr) {
   if (!dateStr) return null;
@@ -54,15 +74,15 @@ export default function Home({
   const [annDismissed, setAnnDismissed] = useState(false);
   const [showContact, setShowContact] = useState(false);
 
-  // Upcoming zoom/board meetings
+  // Standalone zoom/board meetings (not part of a conference)
   const [meetings, setMeetings] = useState([]);
   useEffect(() => {
     supabase
       .from("events")
-      .select("id, name, type, dates, location, audience")
+      .select("id, name, type, dates, start_date, start_time, location, audience")
       .in("type", ["zoom_meeting", "board_meeting"])
       .neq("status", "archived")
-      .order("created_at", { ascending: true })
+      .order("start_date", { ascending: true, nullsFirst: false })
       .then(({ data: rows }) => setMeetings(rows || []));
   }, []);
 
@@ -179,8 +199,11 @@ export default function Home({
           background: NAVY, borderRadius: 16, padding: "1.25rem 1.5rem",
           marginBottom: "1rem",
         }}>
-          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.18em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 6 }}>
+          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.18em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
             Onboarding Invitation
+          </div>
+          <div style={{ fontFamily: SERIF, fontSize: "15px", fontStyle: "italic", color: "#B8C0D0", lineHeight: 1.5, marginBottom: 12 }}>
+            Walk through your orientation steps and complete your pre-conference checklist before {activeEvent?.name || "the conference"}.
           </div>
 
           {/* Onboarding step progress */}
@@ -233,7 +256,7 @@ export default function Home({
                 fontFamily: SANS, cursor: "pointer",
               }}
             >
-              {onboardingComplete ? "Review →" : onboardingStep === 0 ? "Start →" : "Continue →"}
+              {onboardingStep > 0 && !onboardingComplete ? "Continue →" : "Start →"}
             </button>
             <button
               onClick={onOpenMyTeam}
@@ -282,6 +305,19 @@ export default function Home({
           {activeEvent.fee && (
             <div style={{ fontSize: "13px", color: "#B8C0D0", marginBottom: "0.75rem" }}>
               Registration fee: <span style={{ color: GOLD, fontWeight: 600 }}>{activeEvent.fee}</span>
+            </div>
+          )}
+          {activeEvent.zoom_training_dates && (
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem", marginBottom: "0.5rem" }}>
+              <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+                Leader Zoom Training
+              </div>
+              <div style={{ fontSize: "13px", color: "#fff", fontFamily: SANS, fontWeight: 600, marginBottom: 2 }}>
+                {activeEvent.zoom_training_dates}
+              </div>
+              <div style={{ fontSize: "11px", color: "#B8C0D0", fontFamily: SANS }}>
+                Mandatory for all team leaders
+              </div>
             </div>
           )}
           {activeEvent.verse_text && (
