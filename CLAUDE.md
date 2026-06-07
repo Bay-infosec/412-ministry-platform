@@ -241,16 +241,17 @@ src/
 
 | Date | Account | What was done |
 |------|---------|---------------|
-| 2026-06-06 | Account 1 | Set up Claude Code. Cloned repo. Created .env. Connected Supabase + Vercel MCP. Fixed double EventHome import. Created CLAUDE.md. Read full v2 (LeaderOnboarding) codebase. Read Claude.pdf conversation — captured complete architecture decisions. Updated CLAUDE.md with full context. Added EmailJS vars to .env. Fixed FieldGuide URL. |
+| 2026-06-06 | Account 1 | Set up Claude Code. Cloned repo. Created .env. Connected Supabase + Vercel MCP. Fixed double EventHome import. Created CLAUDE.md. Read full v2 (LeaderOnboarding) codebase. Read Claude.pdf — captured complete architecture decisions. Updated CLAUDE.md. Added EmailJS vars to .env. Fixed FieldGuide URL. Fixed OnboardingFlow checklist table bug. |
+| 2026-06-07 | Account 1 | Built complete admin panel: AdminShell, PeopleList, PersonDetail, InviteFlow, EventList, EventDetail, CoLeaderPairing. Fixed Modal.jsx useState bug. Wired AdminShell into App.jsx. Deployed `reset-password` edge function. Build passes clean (118 modules). |
 
 ---
 
 ## Next Up
 
-1. **Fix OnboardingFlow** — write checklist to `event_checklist` table correctly
-2. **Fix FieldGuide** — wire in real Google Drive URL
-3. **Build admin panel** — starting with `AdminShell` → `InviteFlow` → `PeopleList` → `PersonDetail`
-4. **Verify Edge Function** — check if `create-user` is deployed in Supabase
+1. **Home improvements** — countdown to conference date, dismissible announcements
+2. **PrayerChain from DB** — currently hardcoded, needs `event_members` join `profiles`
+3. **Admin: Announcements** — AnnouncementEditor + ApprovalQueue (moderator posts need admin approval)
+4. **Admin: Settings** — ChurchList, TrainingMaterials management pages
 
 ---
 
