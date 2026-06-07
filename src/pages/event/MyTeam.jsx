@@ -54,7 +54,7 @@ export default function MyTeam({ data, onBack }) {
             <a
               href={`tel:${coLeader.phone}`}
               style={{
-                display: "block", width: "100%", padding: "10px", textAlign: "center",
+                display: "block", padding: "10px", textAlign: "center",
                 background: ORANGE, color: "#fff", borderRadius: 8, textDecoration: "none",
                 fontSize: "14px", fontWeight: 600, fontFamily: SANS,
               }}
