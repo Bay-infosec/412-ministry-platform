@@ -434,7 +434,7 @@ export default function Home({
           <SectionLabel>Coordinator Dashboard</SectionLabel>
           <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden" }}>
             {teamProgress.map((m, i) => {
-              const opened = m.onboarding_visited || (m.onboarding_step ?? 0) > 0;
+              const opened = m.onboarding_visited === true || m.onboarding_completed === true;
               const clItems = m.event_checklist?.[0]?.items || {};
               const checkedCount = CHECKLIST_ITEMS.filter((item) => !!clItems[item.id]).length;
               return (
