@@ -382,38 +382,28 @@ export default function App() {
     return () => { ch.untrack(); supabase.removeChannel(ch); };
   }, [data?.profile?.id, data?.activeEvent?.id]);
 
-  // Chat unread badge — check on load + subscribe for new messages
+  // Chat unread badge — listen for new DMs addressed to me
   useEffect(() => {
-    if (!data?.activeEvent || !data?.profile) return;
-    const eventId = data.activeEvent.id;
+    if (!data?.profile) return;
     const profileId = data.profile.id;
-    const lastRead = localStorage.getItem(`chat_last_read_${eventId}`);
 
-    let q = supabase
-      .from("chat_messages")
+    supabase
+      .from("messages")
       .select("id", { count: "exact", head: true })
-      .eq("event_id", eventId)
-      .neq("profile_id", profileId);
-    if (lastRead) q = q.gt("created_at", lastRead);
-    q.then(({ count }) => { if (count > 0) setChatUnread(true); });
+      .eq("receiver_id", profileId)
+      .is("read_at", null)
+      .then(({ count }) => { if (count > 0) setChatUnread(true); });
 
     const ch = supabase
-      .channel(`app-unreads-${eventId}`)
-      .on("postgres_changes", {
-        event: "INSERT", schema: "public",
-        table: "chat_messages",
-        filter: `event_id=eq.${eventId}`,
-      }, (payload) => {
-        if (payload.new.profile_id !== profileId) setChatUnread(true);
+      .channel("app-dm-unreads")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${profileId}` }, () => {
+        setChatUnread(true);
       })
       .subscribe();
     return () => supabase.removeChannel(ch);
-  }, [data?.activeEvent?.id, data?.profile?.id]);
+  }, [data?.profile?.id]);
 
   const openChat = () => {
-    if (data?.activeEvent) {
-      localStorage.setItem(`chat_last_read_${data.activeEvent.id}`, new Date().toISOString());
-    }
     setChatUnread(false);
     setPage("chat");
   };
@@ -513,7 +503,12 @@ export default function App() {
           />
         )}
         {page === "chat" && (
-          <Chat data={data} onClose={() => setPage(null)} onlineUsers={onlineUsers} />
+          <Chat
+            data={data}
+            onClose={() => setPage(null)}
+            onlineUsers={onlineUsers}
+            onOpenProfile={() => { setPage(null); setTab("profile"); }}
+          />
         )}
       </>
     );
