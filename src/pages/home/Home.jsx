@@ -13,8 +13,9 @@ function daysUntil(dateStr) {
   return Math.ceil((parsed - new Date()) / 86400000);
 }
 
-export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenOnboarding }) {
+export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenOnboarding, chatUnread, onlineUsers }) {
   const { profile, eventMember, announcements, unreadCount, activeEvent, trainingMaterials } = data;
+  const othersOnline = (onlineUsers || []).filter((u) => u.user_id !== profile.id);
   const [showContact, setShowContact] = useState(false);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
@@ -38,12 +39,21 @@ export default function Home({ data, onNavigate, onOpenPage, onOpenChat, onOpenO
         </div>
         <button
           onClick={onOpenChat}
-          style={{ background: "none", border: "none", cursor: "pointer", padding: 6, color: NAVY, display: "flex", alignItems: "center" }}
-          title="Chat"
+          style={{
+            background: NAVY, border: "none", borderRadius: 20,
+            cursor: "pointer", padding: "8px 14px",
+            display: "flex", alignItems: "center", gap: 6,
+          }}
         >
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
+          <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", fontFamily: SANS }}>Chat</span>
+          {chatUnread ? (
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#E53E3E" }} />
+          ) : othersOnline.length > 0 ? (
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22C55E" }} />
+          ) : null}
         </button>
       </div>
 

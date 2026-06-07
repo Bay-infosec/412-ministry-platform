@@ -103,6 +103,8 @@ export default function App() {
   const [data, setData] = useState(null);
   const [errMsg, setErrMsg] = useState("");
   const [readIds, setReadIds] = useState([]);
+  const [chatUnread, setChatUnread] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState([]);
 
   const hardReset = async () => {
     try { await supabase.auth.signOut(); } catch {}
@@ -338,6 +340,64 @@ export default function App() {
     }));
   };
 
+  // App-wide presence — tracks current user as online whenever platform is open
+  useEffect(() => {
+    if (!data?.profile || !data?.activeEvent) return;
+    const ch = supabase.channel(`presence-${data.activeEvent.id}`, {
+      config: { presence: { key: data.profile.id } },
+    });
+    ch
+      .on("presence", { event: "sync" }, () => {
+        setOnlineUsers(Object.values(ch.presenceState()).flat());
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await ch.track({
+            user_id: data.profile.id,
+            full_name: data.profile.full_name,
+            photo_url: data.profile.photo_url || null,
+          });
+        }
+      });
+    return () => { ch.untrack(); supabase.removeChannel(ch); };
+  }, [data?.profile?.id, data?.activeEvent?.id]);
+
+  // Chat unread badge — check on load + subscribe for new messages
+  useEffect(() => {
+    if (!data?.activeEvent || !data?.profile) return;
+    const eventId = data.activeEvent.id;
+    const profileId = data.profile.id;
+    const lastRead = localStorage.getItem(`chat_last_read_${eventId}`);
+
+    let q = supabase
+      .from("chat_messages")
+      .select("id", { count: "exact", head: true })
+      .eq("event_id", eventId)
+      .neq("profile_id", profileId);
+    if (lastRead) q = q.gt("created_at", lastRead);
+    q.then(({ count }) => { if (count > 0) setChatUnread(true); });
+
+    const ch = supabase
+      .channel(`app-unreads-${eventId}`)
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public",
+        table: "chat_messages",
+        filter: `event_id=eq.${eventId}`,
+      }, (payload) => {
+        if (payload.new.profile_id !== profileId) setChatUnread(true);
+      })
+      .subscribe();
+    return () => supabase.removeChannel(ch);
+  }, [data?.activeEvent?.id, data?.profile?.id]);
+
+  const openChat = () => {
+    if (data?.activeEvent) {
+      localStorage.setItem(`chat_last_read_${data.activeEvent.id}`, new Date().toISOString());
+    }
+    setChatUnread(false);
+    setPage("chat");
+  };
+
   useEffect(() => {
     const timer = setTimeout(
       () => setPhase((p) => (p === "loading" ? "login" : p)),
@@ -374,8 +434,10 @@ export default function App() {
             data={data}
             onNavigate={navigate}
             onOpenPage={setPage}
-            onOpenChat={() => setPage("chat")}
+            onOpenChat={openChat}
             onOpenOnboarding={() => { setTab("event"); setPage("onboarding"); }}
+            chatUnread={chatUnread}
+            onlineUsers={onlineUsers}
           />
         )}
         {tab === "event" && !page && (
@@ -430,7 +492,7 @@ export default function App() {
           />
         )}
         {page === "chat" && (
-          <Chat data={data} onClose={() => setPage(null)} />
+          <Chat data={data} onClose={() => setPage(null)} onlineUsers={onlineUsers} />
         )}
       </>
     );

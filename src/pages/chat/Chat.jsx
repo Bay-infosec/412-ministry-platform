@@ -3,16 +3,14 @@ import { supabase } from "../../lib/supabase.js";
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SANS, SERIF } from "../../lib/constants.js";
 import { Avatar } from "../../components/ui/index.js";
 
-export default function Chat({ data, onClose }) {
+export default function Chat({ data, onClose, onlineUsers = [] }) {
   const { profile, activeEvent, eventMember } = data;
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState([]);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
-  const channelRef = useRef(null);
 
   const profileMap = useMemo(() => {
     const map = {};
@@ -29,13 +27,7 @@ export default function Chat({ data, onClose }) {
 
     fetchMessages();
 
-    const channel = supabase.channel(`chat-${activeEvent.id}`, {
-      config: { presence: { key: profile.id } },
-    });
-
-    channelRef.current = channel;
-
-    channel
+    const channel = supabase.channel(`chat-msgs-${activeEvent.id}`)
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
@@ -48,36 +40,9 @@ export default function Chat({ data, onClose }) {
         });
         setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
       })
-      .on("presence", { event: "sync" }, () => {
-        const state = channel.presenceState();
-        const users = Object.values(state).flat();
-        setOnlineUsers(users);
-      })
-      .on("presence", { event: "join" }, ({ newPresences }) => {
-        setOnlineUsers((prev) => {
-          const ids = new Set(prev.map((u) => u.user_id));
-          const fresh = newPresences.filter((u) => !ids.has(u.user_id));
-          return [...prev, ...fresh];
-        });
-      })
-      .on("presence", { event: "leave" }, ({ leftPresences }) => {
-        const leftIds = new Set(leftPresences.map((u) => u.user_id));
-        setOnlineUsers((prev) => prev.filter((u) => !leftIds.has(u.user_id)));
-      })
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
-          await channel.track({
-            user_id: profile.id,
-            full_name: profile.full_name,
-            photo_url: profile.photo_url || null,
-          });
-        }
-      });
+      .subscribe();
 
-    return () => {
-      channel.untrack();
-      supabase.removeChannel(channel);
-    };
+    return () => supabase.removeChannel(channel);
   }, [activeEvent?.id, profile?.id]);
 
   useEffect(() => {
