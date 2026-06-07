@@ -9,8 +9,10 @@ export default function Chat({ data, onClose }) {
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+  const channelRef = useRef(null);
 
   const profileMap = useMemo(() => {
     const map = {};
@@ -20,35 +22,63 @@ export default function Chat({ data, onClose }) {
     return map;
   }, [messages]);
 
+  const onlineIds = useMemo(() => new Set(onlineUsers.map((u) => u.user_id)), [onlineUsers]);
+
   useEffect(() => {
-    if (!activeEvent) return;
+    if (!activeEvent || !profile) return;
 
     fetchMessages();
 
-    const channel = supabase
-      .channel(`chat-${activeEvent.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "chat_messages",
-          filter: `event_id=eq.${activeEvent.id}`,
-        },
-        (payload) => {
-          setMessages((prev) => {
-            if (prev.find((m) => m.id === payload.new.id)) return prev;
-            return [...prev, payload.new];
+    const channel = supabase.channel(`chat-${activeEvent.id}`, {
+      config: { presence: { key: profile.id } },
+    });
+
+    channelRef.current = channel;
+
+    channel
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "chat_messages",
+        filter: `event_id=eq.${activeEvent.id}`,
+      }, (payload) => {
+        setMessages((prev) => {
+          if (prev.find((m) => m.id === payload.new.id)) return prev;
+          return [...prev, payload.new];
+        });
+        setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+      })
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState();
+        const users = Object.values(state).flat();
+        setOnlineUsers(users);
+      })
+      .on("presence", { event: "join" }, ({ newPresences }) => {
+        setOnlineUsers((prev) => {
+          const ids = new Set(prev.map((u) => u.user_id));
+          const fresh = newPresences.filter((u) => !ids.has(u.user_id));
+          return [...prev, ...fresh];
+        });
+      })
+      .on("presence", { event: "leave" }, ({ leftPresences }) => {
+        const leftIds = new Set(leftPresences.map((u) => u.user_id));
+        setOnlineUsers((prev) => prev.filter((u) => !leftIds.has(u.user_id)));
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await channel.track({
+            user_id: profile.id,
+            full_name: profile.full_name,
+            photo_url: profile.photo_url || null,
           });
-          setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
         }
-      )
-      .subscribe();
+      });
 
     return () => {
+      channel.untrack();
       supabase.removeChannel(channel);
     };
-  }, [activeEvent?.id]);
+  }, [activeEvent?.id, profile?.id]);
 
   useEffect(() => {
     if (!loading) {
@@ -109,8 +139,8 @@ export default function Chat({ data, onClose }) {
     );
   }
 
-  // Group consecutive messages from same person
   const grouped = groupMessages(messages);
+  const othersOnline = onlineUsers.filter((u) => u.user_id !== profile.id);
 
   return (
     <div style={overlay}>
@@ -119,7 +149,7 @@ export default function Chat({ data, onClose }) {
         <button onClick={onClose} style={backBtn}>
           <ChevronLeft />
         </button>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: NAVY, lineHeight: 1.2 }}>
             Team Chat
           </div>
@@ -127,11 +157,36 @@ export default function Chat({ data, onClose }) {
             {activeEvent.name}
           </div>
         </div>
-        <div style={{
-          width: 8, height: 8, borderRadius: "50%", background: "#22C55E",
-          flexShrink: 0,
-        }} title="Live" />
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22C55E" }} />
+          <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
+            {onlineUsers.length} online
+          </span>
+        </div>
       </div>
+
+      {/* Online presence strip */}
+      {othersOnline.length > 0 && (
+        <div style={{
+          background: "#fff", borderBottom: `1px solid ${BORDER}`,
+          padding: "0.5rem 1.25rem", display: "flex", alignItems: "center", gap: 8,
+          overflowX: "auto", flexShrink: 0,
+        }}>
+          <span style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, flexShrink: 0 }}>
+            Also here:
+          </span>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            {othersOnline.slice(0, 12).map((u) => (
+              <OnlineAvatar key={u.user_id} user={u} />
+            ))}
+            {othersOnline.length > 12 && (
+              <span style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>
+                +{othersOnline.length - 12}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <div style={{
@@ -156,11 +211,11 @@ export default function Chat({ data, onClose }) {
             const isOwn = group.profile_id === profile.id;
             const sender = profileMap[group.profile_id];
             const firstName = sender?.full_name?.split(" ")[0] || "Someone";
-            const showSender = !isOwn;
+            const isOnline = onlineIds.has(group.profile_id);
 
             return (
               <div key={gi} style={{ marginBottom: "1rem" }}>
-                {showSender && (
+                {!isOwn && (
                   <div style={{
                     display: "flex", alignItems: "center", gap: 6,
                     marginBottom: "0.375rem", marginLeft: 44,
@@ -178,7 +233,16 @@ export default function Chat({ data, onClose }) {
                   flexDirection: isOwn ? "row-reverse" : "row",
                 }}>
                   {!isOwn && (
-                    <Avatar url={sender?.photo_url} name={sender?.full_name} size={32} />
+                    <div style={{ position: "relative", flexShrink: 0 }}>
+                      <Avatar url={sender?.photo_url} name={sender?.full_name} size={32} />
+                      {isOnline && (
+                        <div style={{
+                          position: "absolute", bottom: 0, right: 0,
+                          width: 9, height: 9, borderRadius: "50%",
+                          background: "#22C55E", border: "2px solid #fff",
+                        }} />
+                      )}
+                    </div>
                   )}
                   <div style={{ display: "flex", flexDirection: "column", gap: 3, maxWidth: "75%", alignItems: isOwn ? "flex-end" : "flex-start" }}>
                     {group.messages.map((msg) => (
@@ -255,6 +319,19 @@ export default function Chat({ data, onClose }) {
           </svg>
         </button>
       </div>
+    </div>
+  );
+}
+
+function OnlineAvatar({ user }) {
+  return (
+    <div style={{ position: "relative", flexShrink: 0 }} title={user.full_name}>
+      <Avatar url={user.photo_url} name={user.full_name} size={26} />
+      <div style={{
+        position: "absolute", bottom: 0, right: 0,
+        width: 8, height: 8, borderRadius: "50%",
+        background: "#22C55E", border: "2px solid #fff",
+      }} />
     </div>
   );
 }
