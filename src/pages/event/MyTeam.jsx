@@ -62,6 +62,7 @@ export default function MyTeam({ data, onBack }) {
       <SectionLabel>Co-Leader</SectionLabel>
       {coLeader ? (
         <Card style={{ padding: "1rem 1.25rem", marginBottom: "1rem" }}>
+          {/* Name + avatar */}
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.875rem" }}>
             <Avatar url={coLeader.photo_url} name={coLeader.full_name} size={48} />
             <div style={{ flex: 1 }}>
@@ -71,7 +72,49 @@ export default function MyTeam({ data, onBack }) {
               )}
             </div>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+
+          {/* Co-leader checklist progress */}
+          <div style={{ marginBottom: "0.875rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", color: TSEC, textTransform: "uppercase", fontFamily: SANS }}>
+                Checklist
+              </span>
+              <span style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>
+                {coLeaderDone} / {CHECKLIST_ITEMS.length}
+              </span>
+            </div>
+            <div style={{ height: 5, borderRadius: 3, background: BORDER, overflow: "hidden", marginBottom: 10 }}>
+              <div style={{
+                height: "100%", borderRadius: 3, background: ORANGE,
+                width: `${(coLeaderDone / CHECKLIST_ITEMS.length) * 100}%`,
+                transition: "width 0.3s ease",
+              }} />
+            </div>
+            {/* Item dots */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {CHECKLIST_ITEMS.map((item) => {
+                const done = !!coLeaderItems[item.id];
+                return (
+                  <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{
+                      width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
+                      border: `2px solid ${done ? ORANGE : BORDER}`,
+                      background: done ? ORANGE : "transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      {done && <span style={{ color: "#fff", fontSize: 8, lineHeight: 1 }}>✓</span>}
+                    </div>
+                    <span style={{ fontSize: "12px", fontFamily: SANS, color: done ? ORANGE : TSEC, textDecoration: done ? "line-through" : "none" }}>
+                      {item.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Contact buttons */}
+          <div style={{ display: "flex", gap: 8, borderTop: `1px solid ${BORDER}`, paddingTop: "0.875rem" }}>
             {coLeader.phone && (
               <a href={`tel:${coLeader.phone}`} style={contactBtnStyle(ORANGE)}>
                 <PhoneIcon color="#fff" />
@@ -182,59 +225,6 @@ export default function MyTeam({ data, onBack }) {
         })}
       </Card>
 
-      {/* Co-leader's progress */}
-      {coLeader && (
-        <>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS }}>
-              {coLeader.full_name?.split(" ")[0]}'s Progress
-            </div>
-            <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
-              {coLeaderDone} / {CHECKLIST_ITEMS.length}
-            </span>
-          </div>
-
-          {/* Co-leader progress bar */}
-          <div style={{ height: 5, borderRadius: 3, background: BORDER, overflow: "hidden", marginBottom: "0.75rem" }}>
-            <div style={{
-              height: "100%", borderRadius: 3,
-              background: coLeaderDone === CHECKLIST_ITEMS.length ? "#059669" : NAVY,
-              width: `${(coLeaderDone / CHECKLIST_ITEMS.length) * 100}%`,
-              transition: "width 0.3s ease",
-            }} />
-          </div>
-
-          {/* Co-leader item status */}
-          <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden", marginBottom: "1.5rem" }}>
-            {CHECKLIST_ITEMS.map((item, i) => {
-              const done = !!coLeaderItems[item.id];
-              return (
-                <div
-                  key={item.id}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 12,
-                    padding: "0.875rem 1.25rem",
-                    borderBottom: i < CHECKLIST_ITEMS.length - 1 ? `1px solid ${BORDER}` : "none",
-                    background: done ? "#F0FDF4" : "none",
-                  }}
-                >
-                  <div style={{
-                    width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
-                    border: `2px solid ${done ? "#059669" : BORDER}`,
-                    background: done ? "#059669" : "transparent",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    {done && <span style={{ color: "#fff", fontSize: 9, lineHeight: 1 }}>✓</span>}
-                  </div>
-                  <span style={{ fontSize: "13px", fontFamily: SANS, color: done ? "#059669" : TSEC, textDecoration: done ? "line-through" : "none" }}>
-                    {item.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
 
       <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, textAlign: "center", fontStyle: "italic", marginBottom: "1rem" }}>
         Your progress saves automatically.
