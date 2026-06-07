@@ -502,6 +502,48 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
 }
 
 
+const PRAYER_TOPICS = [
+  { num: 1, text: "Pray for the young people you have not met yet. Ask God to prepare their hearts before you even arrive." },
+  { num: 2, text: "Pray for your co-leader. Ask God for unity, wisdom, and the ability to cover for each other." },
+  { num: 3, text: "Pray for the conference. Ask that what happens in those days would stay with people for years." },
+  { num: 4, text: "Pray for your fellow leaders. Ask that each one feels supported and not alone in this." },
+  { num: 5, text: "Pray for the organizing team. Ask that every detail they carry is done in His strength." },
+  { num: 6, text: "Pray that God would show you what He already sees in each person on your team." },
+  { num: 7, text: "Pray for yourself. Ask that you lead from the Spirit and not just your own effort." },
+];
+
+function PrayerTopicsPage({ onNext }) {
+  return (
+    <>
+      <StepTitle>Pray together.</StepTitle>
+      <StepBody>
+        Before the conference, connect with your co-leader and pray through each of these topics together.
+        This is part of your pre-conference preparation.
+      </StepBody>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem", marginBottom: "1rem" }}>
+        {PRAYER_TOPICS.map((topic) => (
+          <div key={topic.num} style={{
+            background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
+            padding: "1rem 1.25rem", display: "flex", gap: 14, alignItems: "flex-start",
+          }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
+              background: NAVY, display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <span style={{ fontSize: "11px", fontWeight: 700, color: GOLD, fontFamily: SANS }}>{topic.num}</span>
+            </div>
+            <p style={{ fontSize: "13px", color: NAVY, fontFamily: SANS, lineHeight: 1.65, margin: 0 }}>
+              {topic.text}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div style={{ flex: 1 }} />
+      <PrimaryBtn onClick={onNext}>Continue</PrimaryBtn>
+    </>
+  );
+}
+
 function ChecklistPage({ onFinish }) {
   const [checked, setChecked] = useState({});
   const [saving, setSaving] = useState(false);
@@ -605,7 +647,7 @@ export default function OnboardingFlow({ data, onDone, onExit }) {
     onExit();
   }
 
-  const next = () => setStep((s) => Math.min(s + 1, 4));
+  const next = () => setStep((s) => Math.min(s + 1, 5));
 
   async function handleFinish(checklistData) {
     try {
@@ -630,6 +672,7 @@ export default function OnboardingFlow({ data, onDone, onExit }) {
     <PersonalMessagePage key="message" eventMember={eventMember} onNext={next} />,
     <RequirementsPage key="req" onNext={next} />,
     <TeamRevealPage key="team" eventMember={eventMember} coLeader={coLeader} onNext={next} />,
+    <PrayerTopicsPage key="prayer" onNext={next} />,
     <ChecklistPage key="checklist" onFinish={handleFinish} />,
   ];
 
@@ -651,7 +694,7 @@ export default function OnboardingFlow({ data, onDone, onExit }) {
           Save & exit
         </button>
       </div>
-      <ProgressDots step={step} total={5} />
+      <ProgressDots step={step} total={6} />
       <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: "70vh" }}>
         {steps[step]}
       </div>

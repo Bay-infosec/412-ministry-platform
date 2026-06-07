@@ -66,14 +66,14 @@ export default function Home({
       .then(({ data: rows }) => setMeetings(rows || []));
   }, []);
 
-  // Coordinator: fetch team leaders' onboarding progress
+  // Coordinator: fetch team leaders' onboarding + checklist progress
   const isCoordinator = eventMember?.event_role === "coordinator";
   const [teamProgress, setTeamProgress] = useState([]);
   useEffect(() => {
     if (!isCoordinator || !activeEvent || !profile?.id) return;
     supabase
       .from("event_members")
-      .select("id, team_number, onboarding_completed, onboarding_visited, onboarding_step, event_role, profiles!event_members_profile_id_fkey(full_name, photo_url)")
+      .select("id, team_number, onboarding_completed, onboarding_visited, onboarding_step, event_role, profiles!event_members_profile_id_fkey(full_name, photo_url), event_checklist(items)")
       .eq("event_id", activeEvent.id)
       .eq("coordinator_id", profile.id)
       .neq("event_role", "coordinator")
@@ -348,13 +348,8 @@ export default function Home({
           <SectionLabel>Coordinator Dashboard</SectionLabel>
           <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden" }}>
             {teamProgress.map((m, i) => {
-              // dot color: orange = done, light yellow = opened/in-progress, gray = not started
-              const done = m.onboarding_completed;
-              const opened = !done && (m.onboarding_visited || (m.onboarding_step ?? 0) > 0);
-              const dotColor = done ? ORANGE : opened ? "#FEF08A" : "#D1D5DB";
-              const dotBorder = done ? ORANGE : opened ? "#EAB308" : "#9CA3AF";
-              const statusLabel = done ? "Complete" : opened ? "In progress" : "Not started";
-              const statusColor = done ? ORANGE : opened ? "#92400E" : TSEC;
+              const opened = m.onboarding_visited || (m.onboarding_step ?? 0) > 0;
+              const clItems = m.event_checklist?.[0]?.items || {};
               return (
                 <div
                   key={m.id}
@@ -364,12 +359,6 @@ export default function Home({
                     borderBottom: i < teamProgress.length - 1 ? `1px solid ${BORDER}` : "none",
                   }}
                 >
-                  {/* Status dot */}
-                  <div style={{
-                    width: 12, height: 12, borderRadius: "50%", flexShrink: 0,
-                    background: dotColor, border: `2px solid ${dotBorder}`,
-                  }} />
-
                   {/* Avatar */}
                   <div style={{
                     width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
@@ -383,20 +372,30 @@ export default function Home({
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "13px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: 1 }}>
+                    <div style={{ fontSize: "13px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: 4 }}>
                       {m.profiles?.full_name}
                     </div>
-                    <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>
-                      Team {m.team_number}
+                    {/* 4 checklist dots */}
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {CHECKLIST_ITEMS.map((item) => {
+                        const checked = !!clItems[item.id];
+                        // gray = never opened, light yellow = opened not checked, orange = checked
+                        const bg = checked ? ORANGE : opened ? "#FEF08A" : "#D1D5DB";
+                        const border = checked ? ORANGE : opened ? "#EAB308" : "#9CA3AF";
+                        return (
+                          <div key={item.id} style={{
+                            width: 11, height: 11, borderRadius: "50%",
+                            background: bg, border: `2px solid ${border}`,
+                            flexShrink: 0,
+                          }} />
+                        );
+                      })}
                     </div>
                   </div>
 
-                  <span style={{
-                    fontSize: "11px", fontWeight: 600, fontFamily: SANS,
-                    color: statusColor, flexShrink: 0,
-                  }}>
-                    {statusLabel}
-                  </span>
+                  <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, flexShrink: 0 }}>
+                    Team {m.team_number}
+                  </div>
                 </div>
               );
             })}
