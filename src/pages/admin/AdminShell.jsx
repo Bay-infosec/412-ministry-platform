@@ -8,7 +8,7 @@ import EventList from "./events/EventList.jsx";
 import EventDetail from "./events/EventDetail.jsx";
 import CoLeaderPairing from "./events/CoLeaderPairing.jsx";
 
-export default function AdminShell({ data, onClose, onRefresh }) {
+export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }) {
   const [screen, setScreen] = useState("home");
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -71,7 +71,7 @@ export default function AdminShell({ data, onClose, onRefresh }) {
         <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: NAVY, flex: 1 }}>
           {titles[screen] || "Admin"}
         </div>
-        {screen === "people.list" && (
+        {screen === "people.list" && isAdmin && (
           <button
             onClick={() => nav("people.invite")}
             style={{
@@ -83,7 +83,7 @@ export default function AdminShell({ data, onClose, onRefresh }) {
             + Invite
           </button>
         )}
-        {screen === "events.detail" && selectedEvent && (
+        {screen === "events.detail" && selectedEvent && isAdmin && (
           <button
             onClick={() => nav("events.pairing")}
             style={{
@@ -100,7 +100,7 @@ export default function AdminShell({ data, onClose, onRefresh }) {
       <div style={{ flex: 1, overflowY: "auto" }}>
         <div style={{ padding: "1.25rem", maxWidth: 600, margin: "0 auto" }}>
           {screen === "home" && (
-            <AdminHome data={data} onNav={nav} />
+            <AdminHome data={data} onNav={nav} isAdmin={isAdmin} />
           )}
           {screen === "people.list" && (
             <PeopleList
@@ -158,7 +158,7 @@ export default function AdminShell({ data, onClose, onRefresh }) {
   );
 }
 
-function AdminHome({ data, onNav }) {
+function AdminHome({ data, onNav, isAdmin }) {
   const { allProfiles, allEvents, pendingAnnouncements } = data;
   const activeEvent = (allEvents || []).find((e) => e.status === "active");
   const pendingCount = (pendingAnnouncements || []).length;
@@ -173,7 +173,7 @@ function AdminHome({ data, onNav }) {
           412 Ministry
         </div>
         <div style={{ fontFamily: SERIF, fontSize: "28px", fontWeight: 600, color: NAVY, lineHeight: 1.2 }}>
-          Admin Panel
+          {isAdmin ? "Admin Panel" : "Staff Panel"}
         </div>
         <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, marginTop: 4 }}>
           Manage your team and events.

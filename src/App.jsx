@@ -418,11 +418,12 @@ export default function App() {
           unreadCount={data.unreadCount}
           profilePhotoUrl={data.profile.photo_url}
         />
-        {page === "admin" && data.isAdmin && (
+        {page === "admin" && data.isModerator && (
           <AdminShell
             data={data}
             onClose={() => setPage(null)}
             onRefresh={loadData}
+            isAdmin={data.isAdmin}
           />
         )}
         {page === "chat" && (
