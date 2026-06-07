@@ -12,15 +12,13 @@ const baseInputStyle = {
   color: NAVY, outline: "none", boxSizing: "border-box", background: "#fff",
 };
 
-// NOTE: no appearance:none on selects — that kills the native picker on iOS
-const selectStyle = {
-  ...baseInputStyle, cursor: "pointer",
-};
+// No appearance:none on selects — kills native picker on iOS/Safari
+const selectStyle = { ...baseInputStyle, cursor: "pointer" };
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
 function formatDateRange(start, end) {
-  if (!start) return "";
+  if (!start) return null;
   const s = new Date(start + "T12:00:00");
   if (!end || end === start) {
     return s.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
@@ -37,62 +35,70 @@ function formatDateRange(start, end) {
   return `${s.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} – ${e.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
 }
 
-function formatDateTime(dt) {
-  if (!dt) return "";
-  const d = new Date(dt);
-  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) +
-    " at " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-}
-
-function needsDateTime(key) {
-  return key === "zoom_meeting" || key === "board_meeting";
+function formatTimeLabel(timeStr) {
+  if (!timeStr) return "";
+  const [h, m] = timeStr.split(":").map(Number);
+  const period = h >= 12 ? "PM" : "AM";
+  const hour = h % 12 || 12;
+  return `${hour}:${String(m).padStart(2, "0")} ${period}`;
 }
 
 // ── Field components ──────────────────────────────────────────────────────────
 
-function FieldLabel({ children }) {
+function FieldLabel({ children, required }) {
   return (
     <div style={{
       fontSize: "12px", fontWeight: 600, color: TSEC,
       letterSpacing: "0.04em", fontFamily: SANS, marginBottom: 6,
+      display: "flex", gap: 4, alignItems: "center",
     }}>
       {children}
+      {required && <span style={{ color: ORANGE, fontSize: "13px", lineHeight: 1 }}>*</span>}
     </div>
   );
 }
 
-function DateRangePicker({ startValue, endValue, onStartChange, onEndChange }) {
+// Universal date range — used by every event type
+function DateRangePicker({ startValue, endValue, onStartChange, onEndChange, required }) {
   return (
     <div style={{ marginBottom: "1rem" }}>
-      <FieldLabel>DATES</FieldLabel>
+      <FieldLabel required={required}>DATES</FieldLabel>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         <div>
           <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginBottom: 4 }}>Start</div>
-          <input type="date" value={startValue} onChange={(e) => onStartChange(e.target.value)} style={baseInputStyle} />
+          <input
+            type="date"
+            value={startValue}
+            onChange={(e) => onStartChange(e.target.value)}
+            style={baseInputStyle}
+          />
         </div>
         <div>
           <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginBottom: 4 }}>End</div>
-          <input type="date" value={endValue} min={startValue || undefined} onChange={(e) => onEndChange(e.target.value)} style={baseInputStyle} />
+          <input
+            type="date"
+            value={endValue}
+            min={startValue || undefined}
+            onChange={(e) => onEndChange(e.target.value)}
+            style={baseInputStyle}
+          />
         </div>
       </div>
     </div>
   );
 }
 
-function SingleDatePicker({ label = "DATE", value, onChange }) {
+// Optional time field — for meetings that have a specific start time
+function TimePicker({ value, onChange }) {
   return (
     <div style={{ marginBottom: "1rem" }}>
-      <FieldLabel>{label}</FieldLabel>
-      <input type="date" value={value} onChange={(e) => onChange(e.target.value)} style={baseInputStyle} />
-    </div>
-  );
-}
-
-function DateTimePicker({ value, onChange }) {
-  return (
-    <div style={{ marginBottom: "1rem" }}>
-      <FieldLabel>DATE &amp; TIME</FieldLabel>
-      <input type="datetime-local" value={value} onChange={(e) => onChange(e.target.value)} style={baseInputStyle} />
+      <FieldLabel>START TIME</FieldLabel>
+      <input
+        type="time"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={baseInputStyle}
+      />
     </div>
   );
 }
@@ -121,10 +127,10 @@ function AudienceSelect({ value, onChange }) {
   );
 }
 
-function TextareaField({ label, value, onChange, placeholder, rows = 4 }) {
+function TextareaField({ label, value, onChange, placeholder, rows = 4, required }) {
   return (
     <div style={{ marginBottom: "1rem" }}>
-      <FieldLabel>{label}</FieldLabel>
+      <FieldLabel required={required}>{label}</FieldLabel>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -153,15 +159,24 @@ function ToggleRow({ label, sub, value, onChange }) {
   );
 }
 
+// Required-fields legend shown at top of form
+function RequiredNote() {
+  return (
+    <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: "1rem" }}>
+      Fields marked <span style={{ color: ORANGE, fontWeight: 700 }}>*</span> are required.
+    </div>
+  );
+}
+
 // ── TypePicker ────────────────────────────────────────────────────────────────
 
 const TYPE_HINTS = {
-  youth_conference:  "Teams, verse, co-leaders",
-  annual_conference: "Like youth conf, teams optional",
-  open_mic:          "Info + registration link",
-  mission:           "Destination, dates, details",
-  zoom_meeting:      "Link, audience, agenda",
-  board_meeting:     "Location, date, agenda",
+  youth_conference:  "Multi-day · teams, verse, co-leaders",
+  annual_conference: "Multi-day · team system optional",
+  open_mic:          "Date range · info + registration",
+  mission:           "Multi-day · destination, details",
+  zoom_meeting:      "Date + time · link, audience",
+  board_meeting:     "Date + time · location, agenda",
 };
 
 function TypePicker({ onPick }) {
@@ -204,10 +219,30 @@ function isConference(key) {
   return key === "youth_conference" || key === "annual_conference";
 }
 
+function isMeeting(key) {
+  return key === "zoom_meeting" || key === "board_meeting";
+}
+
+function RequiredField({ label, value, onChange, placeholder, required }) {
+  return (
+    <div style={{ marginBottom: "1rem" }}>
+      <FieldLabel required={required}>{label}</FieldLabel>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={baseInputStyle}
+      />
+    </div>
+  );
+}
+
 function EventForm({ type, onBack, onSaved, onToast }) {
   const [fields, setFields] = useState({
     name: "",
-    startDate: "", endDate: "", dateTime: "",
+    startDate: "", endDate: "",
+    startTime: "",
     location: "",
     fee: "", verse: "", verse_text: "", team_count: "",
     registration_url: "", zoom_url: "", description: "",
@@ -219,18 +254,21 @@ function EventForm({ type, onBack, onSaved, onToast }) {
   const set = (k) => (v) => setFields((f) => ({ ...f, [k]: v }));
 
   async function save() {
-    if (!fields.name.trim()) { onToast("Event name is required.", "error"); return; }
+    if (!fields.name.trim()) {
+      onToast("Event name is required.", "error"); return;
+    }
+    if (!fields.startDate) {
+      onToast("Start date is required.", "error"); return;
+    }
     if (type.key === "zoom_meeting" && !fields.zoom_url.trim()) {
       onToast("Zoom link is required.", "error"); return;
     }
 
-    let datesStr = null;
-    if (needsDateTime(type.key)) {
-      datesStr = formatDateTime(fields.dateTime) || null;
-    } else if (type.key === "open_mic") {
-      datesStr = formatDateRange(fields.startDate, "") || null;
-    } else {
-      datesStr = formatDateRange(fields.startDate, fields.endDate) || null;
+    // Build human-readable dates string
+    let datesStr = formatDateRange(fields.startDate, fields.endDate);
+    if (isMeeting(type.key) && fields.startTime) {
+      const dayStr = datesStr || "";
+      datesStr = dayStr ? `${dayStr} at ${formatTimeLabel(fields.startTime)}` : formatTimeLabel(fields.startTime);
     }
 
     setBusy(true);
@@ -238,7 +276,10 @@ function EventForm({ type, onBack, onSaved, onToast }) {
       type: type.key,
       status: "inactive",
       name: fields.name.trim() || null,
-      dates: datesStr,
+      dates: datesStr || null,
+      start_date: fields.startDate || null,
+      end_date: fields.endDate || fields.startDate || null,
+      start_time: fields.startTime || null,
       location: fields.location.trim() || null,
       fee: fields.fee.trim() || null,
       verse: fields.verse.trim() || null,
@@ -251,7 +292,11 @@ function EventForm({ type, onBack, onSaved, onToast }) {
     };
     const { error } = await supabase.from("events").insert(payload);
     setBusy(false);
-    if (error) { onToast("Could not create event.", "error"); return; }
+    if (error) {
+      console.error(error);
+      onToast("Could not create event: " + (error.message || "unknown error"), "error");
+      return;
+    }
     onToast(`"${payload.name}" created as inactive.`);
     onSaved();
   }
@@ -267,11 +312,29 @@ function EventForm({ type, onBack, onSaved, onToast }) {
         </span>
       </div>
 
-      <Card style={{ marginBottom: "1rem" }}>
-        <Field label="NAME" value={fields.name} onChange={set("name")} placeholder={NAME_PLACEHOLDERS[type.key]} />
+      <RequiredNote />
 
+      <Card style={{ marginBottom: "1rem" }}>
+
+        {/* Name — required for all */}
+        <div style={{ marginBottom: "1rem" }}>
+          <FieldLabel required>NAME</FieldLabel>
+          <input
+            type="text"
+            value={fields.name}
+            onChange={(e) => set("name")(e.target.value)}
+            placeholder={NAME_PLACEHOLDERS[type.key]}
+            style={baseInputStyle}
+          />
+        </div>
+
+        {/* ── Conferences ─────────────────────────────────── */}
         {isConference(type.key) && <>
-          <DateRangePicker startValue={fields.startDate} endValue={fields.endDate} onStartChange={set("startDate")} onEndChange={set("endDate")} />
+          <DateRangePicker
+            required
+            startValue={fields.startDate} endValue={fields.endDate}
+            onStartChange={set("startDate")} onEndChange={set("endDate")}
+          />
           <Field label="LOCATION" value={fields.location} onChange={set("location")} placeholder="e.g. Rhodes Grove Camp, PA" />
           <Field label="REGISTRATION FEE" value={fields.fee} onChange={set("fee")} placeholder="e.g. $150" />
           <Field label="VERSE REFERENCE" value={fields.verse} onChange={set("verse")} placeholder="e.g. Ephesians 4:12" />
@@ -285,40 +348,71 @@ function EventForm({ type, onBack, onSaved, onToast }) {
           <Field label="REGISTRATION URL" value={fields.registration_url} onChange={set("registration_url")} placeholder="https://…" />
         </>}
 
+        {/* ── Open Mic ─────────────────────────────────────── */}
         {type.key === "open_mic" && <>
-          <SingleDatePicker label="DATE" value={fields.startDate} onChange={set("startDate")} />
+          <DateRangePicker
+            required
+            startValue={fields.startDate} endValue={fields.endDate}
+            onStartChange={set("startDate")} onEndChange={set("endDate")}
+          />
           <Field label="LOCATION" value={fields.location} onChange={set("location")} placeholder="Venue or address" />
-          <Field label="ENTRY FEE" value={fields.fee} onChange={set("fee")} placeholder="e.g. Free / $10 (optional)" />
+          <Field label="ENTRY FEE" value={fields.fee} onChange={set("fee")} placeholder="e.g. Free / $10" />
           <Field label="REGISTRATION URL" value={fields.registration_url} onChange={set("registration_url")} placeholder="https://…" />
           <TextareaField label="DESCRIPTION" value={fields.description} onChange={set("description")} placeholder="What to expect, theme, etc." rows={4} />
         </>}
 
+        {/* ── Mission ──────────────────────────────────────── */}
         {type.key === "mission" && <>
           <Field label="DESTINATION" value={fields.location} onChange={set("location")} placeholder="e.g. Manila, Philippines" />
-          <DateRangePicker startValue={fields.startDate} endValue={fields.endDate} onStartChange={set("startDate")} onEndChange={set("endDate")} />
+          <DateRangePicker
+            required
+            startValue={fields.startDate} endValue={fields.endDate}
+            onStartChange={set("startDate")} onEndChange={set("endDate")}
+          />
           <Field label="FEE / COST" value={fields.fee} onChange={set("fee")} placeholder="e.g. $1,200 (flights incl.)" />
           <TextareaField label="DESCRIPTION" value={fields.description} onChange={set("description")} placeholder="Mission purpose, activities, what to bring…" rows={5} />
         </>}
 
+        {/* ── Zoom Meeting ─────────────────────────────────── */}
         {type.key === "zoom_meeting" && <>
-          <DateTimePicker value={fields.dateTime} onChange={set("dateTime")} />
-          <Field label="ZOOM LINK" value={fields.zoom_url} onChange={set("zoom_url")} placeholder="https://zoom.us/j/…" />
+          <DateRangePicker
+            required
+            startValue={fields.startDate} endValue={fields.endDate}
+            onStartChange={set("startDate")} onEndChange={set("endDate")}
+          />
+          <TimePicker value={fields.startTime} onChange={set("startTime")} />
+          <div style={{ marginBottom: "1rem" }}>
+            <FieldLabel required>ZOOM LINK</FieldLabel>
+            <input
+              type="url"
+              value={fields.zoom_url}
+              onChange={(e) => set("zoom_url")(e.target.value)}
+              placeholder="https://zoom.us/j/…"
+              style={baseInputStyle}
+            />
+          </div>
           <TextareaField label="AGENDA / DESCRIPTION" value={fields.description} onChange={set("description")} placeholder="Topics, agenda items…" rows={4} />
         </>}
 
+        {/* ── Board Meeting ─────────────────────────────────── */}
         {type.key === "board_meeting" && <>
-          <DateTimePicker value={fields.dateTime} onChange={set("dateTime")} />
+          <DateRangePicker
+            required
+            startValue={fields.startDate} endValue={fields.endDate}
+            onStartChange={set("startDate")} onEndChange={set("endDate")}
+          />
+          <TimePicker value={fields.startTime} onChange={set("startTime")} />
           <Field label="LOCATION" value={fields.location} onChange={set("location")} placeholder="Address or room" />
-          <Field label="FEE" value={fields.fee} onChange={set("fee")} placeholder="Optional" />
           <TextareaField label="AGENDA / NOTES" value={fields.description} onChange={set("description")} placeholder="Agenda items, preparation notes…" rows={5} />
         </>}
 
         {/* Audience — applies to all event types */}
         <AudienceSelect value={fields.audience} onChange={set("audience")} />
+
       </Card>
 
       <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, textAlign: "center", marginBottom: "1rem" }}>
-        Saved as <strong>inactive</strong> — publish when ready to go live.
+        Saved as <strong>inactive</strong> — publish when ready.
       </div>
       <button
         onClick={save}
