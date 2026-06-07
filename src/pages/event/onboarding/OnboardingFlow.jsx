@@ -1,54 +1,118 @@
 import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import "./OnboardingFlow.css";
+import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../../lib/constants.js";
+import { Shell } from "../../../components/layout/index.js";
+import { Card, SectionLabel } from "../../../components/ui/index.js";
 
-// Step components inline to keep navigation self-contained
+// ── Shared primitives ─────────────────────────────────────────────────────────
+
+function PrimaryBtn({ children, onClick, disabled, gold }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        width: "100%", padding: "14px", border: "none", borderRadius: 12,
+        background: gold ? ORANGE : NAVY, color: "#fff",
+        fontSize: "15px", fontWeight: 600, fontFamily: SANS,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.35 : 1,
+        marginTop: "1rem",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function StepTag({ current, total }) {
+  return (
+    <div style={{
+      fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em",
+      color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.5rem",
+    }}>
+      Step {current} of {total}
+    </div>
+  );
+}
+
+function StepTitle({ children }) {
+  return (
+    <div style={{
+      fontFamily: SERIF, fontSize: "26px", fontWeight: 600,
+      color: NAVY, lineHeight: 1.2, marginBottom: "0.75rem",
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function StepBody({ children }) {
+  return (
+    <div style={{
+      fontSize: "14px", color: TSEC, lineHeight: 1.65,
+      fontFamily: SANS, marginBottom: "1rem",
+    }}>
+      {children}
+    </div>
+  );
+}
+
+// ── Steps ─────────────────────────────────────────────────────────────────────
 
 function WelcomePage({ profile, onNext }) {
   const firstName = profile?.full_name?.split(" ")[0] || "Friend";
   return (
-    <div className="ob-step">
-      <span className="ob-step-tag">Step 1 of 6</span>
-      <div className="ob-welcome-icon">✦</div>
-      <h1 className="ob-step-title">Welcome,<br />{firstName}.</h1>
-      <p className="ob-step-body">
+    <>
+      <StepTag current={1} total={6} />
+      <StepTitle>Welcome,<br />{firstName}.</StepTitle>
+      <StepBody>
         We are glad you are here. This onboarding will take just a few minutes
         and will introduce you to your team, your co-leader, and what to expect
         at Set Apart 2026.
-      </p>
-      <p className="ob-step-body">
-        Take your time with each step. When you are ready, press continue.
-      </p>
-      <div className="ob-spacer" />
-      <button className="ob-btn" onClick={onNext}>Continue</button>
-    </div>
+      </StepBody>
+      <StepBody>Take your time with each step. When you are ready, press continue.</StepBody>
+      <div style={{ flex: 1 }} />
+      <PrimaryBtn onClick={onNext}>Continue</PrimaryBtn>
+    </>
   );
 }
 
 function PersonalMessagePage({ eventMember, onNext }) {
   const message = eventMember?.personal_message;
   return (
-    <div className="ob-step">
-      <span className="ob-step-tag">Step 2 of 6</span>
-      <h1 className="ob-step-title">A word for you.</h1>
+    <>
+      <StepTag current={2} total={6} />
+      <StepTitle>A word for you.</StepTitle>
       {message ? (
-        <div className="ob-message-card">
-          <p className="ob-message-text">{message}</p>
-          <div className="ob-message-from">412 Ministry Leadership</div>
-        </div>
+        <Card style={{ padding: "1.25rem", marginBottom: "1rem" }}>
+          <div style={{
+            fontFamily: SERIF, fontSize: "16px", color: NAVY,
+            lineHeight: 1.75, marginBottom: "1rem", whiteSpace: "pre-wrap",
+          }}>
+            {message}
+          </div>
+          <div style={{
+            fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em",
+            textTransform: "uppercase", color: ORANGE, fontFamily: SANS,
+            paddingTop: "0.75rem", borderTop: `1px solid ${BORDER}`,
+          }}>
+            412 Ministry Leadership
+          </div>
+        </Card>
       ) : (
-        <p className="ob-step-body">No personal message yet. Check back later.</p>
+        <StepBody>No personal message yet. Check back later.</StepBody>
       )}
-      <div className="ob-spacer" />
-      <button className="ob-btn" onClick={onNext}>Continue</button>
-    </div>
+      <div style={{ flex: 1 }} />
+      <PrimaryBtn onClick={onNext}>Continue</PrimaryBtn>
+    </>
   );
 }
 
 function EventInfoPage({ activeEvent, eventMember, onNext }) {
   const rows = [
     { label: "Conference", value: activeEvent?.name },
-    { label: "Dates", value: formatDateRange(activeEvent?.start_date, activeEvent?.end_date) },
+    { label: "Dates", value: activeEvent?.dates },
     { label: "Location", value: activeEvent?.location },
     { label: "Verse", value: activeEvent?.verse },
     { label: "Teams", value: activeEvent?.team_count ? `${activeEvent.team_count} teams` : null },
@@ -57,21 +121,29 @@ function EventInfoPage({ activeEvent, eventMember, onNext }) {
   ].filter((r) => r.value);
 
   return (
-    <div className="ob-step">
-      <span className="ob-step-tag">Step 3 of 6</span>
-      <h1 className="ob-step-title">Event overview.</h1>
-      <p className="ob-step-body">Here is everything you need to know about Set Apart 2026.</p>
-      <div className="ob-info-card">
-        {rows.map((row) => (
-          <div key={row.label} className="ob-info-row">
-            <span className="ob-info-label">{row.label}</span>
-            <span className="ob-info-value">{row.value}</span>
+    <>
+      <StepTag current={3} total={6} />
+      <StepTitle>Event overview.</StepTitle>
+      <StepBody>Here is everything you need to know about Set Apart 2026.</StepBody>
+      <Card style={{ padding: 0, overflow: "hidden", marginBottom: "1rem" }}>
+        {rows.map((row, i) => (
+          <div key={row.label} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+            padding: "0.75rem 1.25rem", gap: 16,
+            borderBottom: i < rows.length - 1 ? `1px solid ${BORDER}` : "none",
+          }}>
+            <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, flexShrink: 0 }}>
+              {row.label}
+            </span>
+            <span style={{ fontSize: "13px", color: NAVY, fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>
+              {row.value}
+            </span>
           </div>
         ))}
-      </div>
-      <div className="ob-spacer" />
-      <button className="ob-btn" onClick={onNext}>Continue</button>
-    </div>
+      </Card>
+      <div style={{ flex: 1 }} />
+      <PrimaryBtn onClick={onNext}>Continue</PrimaryBtn>
+    </>
   );
 }
 
@@ -98,94 +170,128 @@ function RequirementsPage({ onNext }) {
   }
 
   return (
-    <div className="ob-step">
-      <span className="ob-step-tag">Step 4 of 6</span>
-      <h1 className="ob-step-title">Requirements.</h1>
-      <p className="ob-step-body">
-        Please read and acknowledge the following before continuing.
-      </p>
-      <div className="ob-req-list">
+    <>
+      <StepTag current={4} total={6} />
+      <StepTitle>Requirements.</StepTitle>
+      <StepBody>Please read and acknowledge the following before continuing.</StepBody>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1rem" }}>
         {REQUIREMENTS.map((req, i) => (
-          <div key={req.id} className="ob-req-card">
-            <div className="ob-req-header">
-              <span className="ob-req-num">{String(i + 1).padStart(2, "0")}</span>
-              <span className="ob-req-title">{req.title}</span>
+          <Card key={req.id} style={{ padding: "1rem 1.25rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: "11px", fontWeight: 700, color: ORANGE, fontFamily: SANS }}>
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
+                {req.title}
+              </span>
             </div>
-            <p className="ob-req-body">{req.body}</p>
-          </div>
+            <p style={{ fontSize: "13px", color: TSEC, lineHeight: 1.6, margin: 0, fontFamily: SANS }}>
+              {req.body}
+            </p>
+          </Card>
         ))}
       </div>
       <button
-        className="ob-acknowledge"
         onClick={() => setAcknowledged((a) => !a)}
+        style={{
+          display: "flex", alignItems: "flex-start", gap: 12,
+          background: "none", border: "none", cursor: "pointer",
+          padding: 0, marginBottom: "0.75rem", textAlign: "left", width: "100%",
+        }}
       >
-        <div className={`ob-checkbox ${acknowledged ? "ob-checked" : ""}`}>
-          {acknowledged && <span className="ob-checkmark">✓</span>}
+        <div style={{
+          width: 20, height: 20, borderRadius: 4, flexShrink: 0, marginTop: 1,
+          border: `2px solid ${acknowledged ? NAVY : BORDER}`,
+          background: acknowledged ? NAVY : "transparent",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "all 0.15s",
+        }}>
+          {acknowledged && <span style={{ color: "#fff", fontSize: 11 }}>✓</span>}
         </div>
-        <span className="ob-acknowledge-text">
+        <span style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.5 }}>
           I have read and understood the requirements for Set Apart 2026.
         </span>
       </button>
-      <button className="ob-outline-btn" onClick={handleEmail}>
+      <button
+        onClick={handleEmail}
+        style={{
+          width: "100%", padding: "12px", background: "transparent",
+          color: NAVY, border: `1px solid ${BORDER}`, borderRadius: 12,
+          fontSize: "14px", fontFamily: SANS, cursor: "pointer",
+        }}
+      >
         Email us with questions
       </button>
-      <div className="ob-spacer" />
-      <button
-        className="ob-btn"
-        onClick={onNext}
-        disabled={!acknowledged}
-        style={{ opacity: acknowledged ? 1 : 0.35 }}
-      >
+      <div style={{ flex: 1 }} />
+      <PrimaryBtn onClick={onNext} disabled={!acknowledged}>
         I acknowledge and continue
-      </button>
-    </div>
+      </PrimaryBtn>
+    </>
   );
 }
 
 function TeamRevealPage({ eventMember, onNext }) {
-  const coLeader = eventMember?.co_leader_profile || null;
+  const coLeader = eventMember?.co_leader || null;
   const teamNumber = eventMember?.team_number;
   const ministry = eventMember?.ministry;
 
   return (
-    <div className="ob-step">
-      <span className="ob-step-tag">Step 5 of 6</span>
-      <h1 className="ob-step-title">Your team.</h1>
-      <p className="ob-step-body">
-        Here is your team assignment and the person you will be leading alongside.
-      </p>
-      <div className="ob-team-card">
-        <span className="ob-team-label">Team</span>
-        <span className="ob-team-number">{teamNumber || "—"}</span>
-        {ministry && <span className="ob-team-ministry">{ministry}</span>}
+    <>
+      <StepTag current={5} total={6} />
+      <StepTitle>Your team.</StepTitle>
+      <StepBody>Here is your team assignment and the person you will be leading alongside.</StepBody>
+      <div style={{
+        background: NAVY, borderRadius: 16, padding: "1.5rem",
+        marginBottom: "0.75rem", textAlign: "center",
+      }}>
+        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", marginBottom: 8, fontFamily: SANS }}>
+          Team
+        </div>
+        <div style={{ fontFamily: SERIF, fontSize: "64px", color: GOLD, lineHeight: 1, marginBottom: 8 }}>
+          {teamNumber || "—"}
+        </div>
+        {ministry && (
+          <div style={{ fontSize: "12px", color: "#B8C0D0", fontFamily: SANS, letterSpacing: "0.1em" }}>
+            {ministry}
+          </div>
+        )}
       </div>
       {coLeader ? (
-        <div className="ob-coleader-card">
-          <div className="ob-coleader-avatar">
+        <Card style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: 14, marginBottom: "1rem" }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: "50%", overflow: "hidden",
+            background: BG, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
             {coLeader.photo_url ? (
-              <img src={coLeader.photo_url} alt={coLeader.full_name} />
+              <img src={coLeader.photo_url} alt={coLeader.full_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             ) : (
-              <span className="ob-avatar-initial">
+              <span style={{ fontFamily: SERIF, fontSize: 20, color: TSEC }}>
                 {coLeader.full_name?.charAt(0)}
               </span>
             )}
           </div>
-          <div className="ob-coleader-info">
-            <span className="ob-coleader-tag">Your co-leader</span>
-            <span className="ob-coleader-name">{coLeader.full_name}</span>
+          <div>
+            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: 3 }}>
+              Your co-leader
+            </div>
+            <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>
+              {coLeader.full_name}
+            </div>
             {coLeader.ministry_role && (
-              <span className="ob-coleader-role">{coLeader.ministry_role}</span>
+              <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{coLeader.ministry_role}</div>
             )}
           </div>
-        </div>
+        </Card>
       ) : (
-        <div className="ob-coleader-card ob-coleader-empty">
-          <p>Co-leader assignment coming soon.</p>
-        </div>
+        <Card style={{ padding: "1rem 1.25rem", marginBottom: "1rem", textAlign: "center" }}>
+          <span style={{ fontSize: "13px", color: TSEC, fontFamily: SANS }}>
+            Co-leader assignment coming soon.
+          </span>
+        </Card>
       )}
-      <div className="ob-spacer" />
-      <button className="ob-btn" onClick={onNext}>Continue</button>
-    </div>
+      <div style={{ flex: 1 }} />
+      <PrimaryBtn onClick={onNext}>Continue</PrimaryBtn>
+    </>
   );
 }
 
@@ -201,67 +307,81 @@ function ChecklistPage({ onFinish }) {
   const [saving, setSaving] = useState(false);
   const allChecked = CHECKLIST_ITEMS.every((item) => checked[item.id]);
 
-  function toggle(id) {
-    setChecked((c) => ({ ...c, [id]: !c[id] }));
-  }
-
   async function handleFinish() {
     setSaving(true);
     await onFinish(checked);
   }
 
   return (
-    <div className="ob-step">
-      <span className="ob-step-tag">Step 6 of 6</span>
-      <h1 className="ob-step-title">Before you go.</h1>
-      <p className="ob-step-body">
-        Complete these four items before the conference. You can return to this
-        list anytime from the Event tab.
-      </p>
-      <div className="ob-checklist">
+    <>
+      <StepTag current={6} total={6} />
+      <StepTitle>Before you go.</StepTitle>
+      <StepBody>
+        Complete these four items before the conference. You can return to this list anytime from the Event tab.
+      </StepBody>
+      <Card style={{ padding: 0, overflow: "hidden", marginBottom: "0.75rem" }}>
         {CHECKLIST_ITEMS.map((item, i) => (
           <button
             key={item.id}
-            className="ob-checklist-row"
-            onClick={() => toggle(item.id)}
+            onClick={() => setChecked((c) => ({ ...c, [item.id]: !c[item.id] }))}
             style={{
-              borderBottom:
-                i < CHECKLIST_ITEMS.length - 1 ? "1px solid #f0ece4" : "none",
+              display: "flex", alignItems: "center", gap: 14,
+              width: "100%", background: "none", border: "none",
+              borderBottom: i < CHECKLIST_ITEMS.length - 1 ? `1px solid ${BORDER}` : "none",
+              padding: "1rem 1.25rem", cursor: "pointer", textAlign: "left",
             }}
           >
-            <div className={`ob-circle ${checked[item.id] ? "ob-circle-done" : ""}`}>
-              {checked[item.id] && <span className="ob-checkmark">✓</span>}
+            <div style={{
+              width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
+              border: `2px solid ${checked[item.id] ? ORANGE : BORDER}`,
+              background: checked[item.id] ? ORANGE : "transparent",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.15s",
+            }}>
+              {checked[item.id] && <span style={{ color: "#fff", fontSize: 11 }}>✓</span>}
             </div>
-            <span
-              className="ob-checklist-label"
-              style={{
-                color: checked[item.id] ? "#9a9488" : "#1a1a1a",
-                textDecoration: checked[item.id] ? "line-through" : "none",
-              }}
-            >
+            <span style={{
+              fontSize: "14px", fontFamily: SANS,
+              color: checked[item.id] ? TSEC : NAVY,
+              textDecoration: checked[item.id] ? "line-through" : "none",
+              transition: "color 0.15s",
+            }}>
               {item.label}
             </span>
           </button>
         ))}
-      </div>
+      </Card>
       {!allChecked && (
-        <p className="ob-skip-note">
+        <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, textAlign: "center", fontStyle: "italic", marginBottom: 8 }}>
           You can finish these later. Press Done to complete onboarding.
-        </p>
+        </div>
       )}
-      <div className="ob-spacer" />
-      <button
-        className={`ob-btn ${allChecked ? "ob-btn-gold" : ""}`}
-        onClick={handleFinish}
-        disabled={saving}
-      >
+      <div style={{ flex: 1 }} />
+      <PrimaryBtn onClick={handleFinish} disabled={saving} gold={allChecked}>
         {saving ? "Saving..." : allChecked ? "All done — finish" : "Done"}
-      </button>
+      </PrimaryBtn>
+    </>
+  );
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+
+function ProgressBar({ step, total }) {
+  return (
+    <div style={{ display: "flex", gap: 6, marginBottom: "1.5rem" }}>
+      {Array.from({ length: total }).map((_, i) => (
+        <div key={i} style={{
+          flex: 1, height: 3, borderRadius: 2,
+          background: i <= step ? NAVY : BORDER,
+          transition: "background 0.3s",
+        }} />
+      ))}
     </div>
   );
 }
 
-// Main shell
+// ── Main shell ────────────────────────────────────────────────────────────────
+
 export default function OnboardingFlow({ data, onDone }) {
   const { profile, activeEvent, eventMember } = data;
   const [step, setStep] = useState(0);
@@ -272,13 +392,9 @@ export default function OnboardingFlow({ data, onDone }) {
     try {
       await supabase
         .from("event_members")
-        .update({
-          onboarding_completed: true,
-          checklist: checklistData,
-        })
+        .update({ onboarding_completed: true, checklist: checklistData })
         .eq("id", eventMember.id);
-
-      onDone(); // triggers App.loadData() to refresh and remove banner
+      onDone();
     } catch (err) {
       console.error("Finish onboarding error:", err);
     }
@@ -294,33 +410,23 @@ export default function OnboardingFlow({ data, onDone }) {
   ];
 
   return (
-    <div className="ob-root">
-      <div className="ob-progress-bar">
-        {[0, 1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className={`ob-progress-dot ${i <= step ? "ob-dot-active" : ""}`}
-          />
-        ))}
-      </div>
+    <Shell>
+      <ProgressBar step={step} total={6} />
       {step > 0 && (
-        <button className="ob-back" onClick={() => setStep((s) => s - 1)}>
+        <button
+          onClick={() => setStep((s) => s - 1)}
+          style={{
+            background: "none", border: "none", color: TSEC,
+            fontSize: "14px", cursor: "pointer", padding: 0,
+            fontFamily: SANS, marginBottom: "1rem", display: "block",
+          }}
+        >
           ‹ Back
         </button>
       )}
-      <div className="ob-step-wrap">{steps[step]}</div>
-    </div>
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: "70vh" }}>
+        {steps[step]}
+      </div>
+    </Shell>
   );
-}
-
-function formatDateRange(start, end) {
-  if (!start) return "";
-  const s = new Date(start);
-  const e = end ? new Date(end) : null;
-  const opts = { month: "long", day: "numeric", year: "numeric" };
-  if (!e) return s.toLocaleDateString("en-US", opts);
-  if (s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear()) {
-    return `${s.toLocaleDateString("en-US", { month: "long", day: "numeric" })} – ${e.getDate()}, ${e.getFullYear()}`;
-  }
-  return `${s.toLocaleDateString("en-US", opts)} – ${e.toLocaleDateString("en-US", opts)}`;
 }
