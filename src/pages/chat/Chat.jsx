@@ -129,7 +129,7 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
 
     // Fetch last messages
     const { data: msgs } = await supabase
-      .from("messages")
+      .from("dm_messages")
       .select("conversation_id, body, created_at, profile_id, read_at, receiver_id")
       .in("conversation_id", allIds)
       .order("created_at", { ascending: false })
@@ -378,7 +378,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
 
     const channel = supabase
       .channel(`conv-${cid}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${cid}` }, async (payload) => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "dm_messages", filter: `conversation_id=eq.${cid}` }, async (payload) => {
         const msg = payload.new;
         if (msg.profile_id !== myId) {
           const { data: p } = await supabase.from("profiles").select("id, full_name, photo_url").eq("id", msg.profile_id).single();
@@ -394,7 +394,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
 
   async function loadMessages(cid) {
     const { data: rows } = await supabase
-      .from("messages")
+      .from("dm_messages")
       .select("id, body, profile_id, created_at, read_at")
       .eq("conversation_id", cid)
       .order("created_at");
@@ -409,7 +409,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
   }
 
   async function markRead(cid) {
-    await supabase.from("messages").update({ read_at: new Date().toISOString() })
+    await supabase.from("dm_messages").update({ read_at: new Date().toISOString() })
       .eq("conversation_id", cid).eq("receiver_id", myId).is("read_at", null);
   }
 
@@ -418,7 +418,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
     if (!body || !convId || sending) return;
     setSending(true);
     setInput("");
-    await supabase.from("messages").insert({
+    await supabase.from("dm_messages").insert({
       conversation_id: convId,
       profile_id: myId,
       receiver_id: isGroup ? null : conv.other?.id,

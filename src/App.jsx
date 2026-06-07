@@ -392,7 +392,7 @@ export default function App() {
     const profileId = data.profile.id;
 
     supabase
-      .from("messages")
+      .from("dm_messages")
       .select("id", { count: "exact", head: true })
       .eq("receiver_id", profileId)
       .is("read_at", null)
@@ -400,7 +400,7 @@ export default function App() {
 
     const ch = supabase
       .channel("app-dm-unreads")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${profileId}` }, () => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "dm_messages", filter: `receiver_id=eq.${profileId}` }, () => {
         setChatUnread(true);
       })
       .subscribe();
