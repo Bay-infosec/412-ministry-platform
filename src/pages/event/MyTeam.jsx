@@ -11,6 +11,26 @@ export default function MyTeam({ data, onBack }) {
   const [items, setItems] = useState(eventChecklist?.items || {});
   const [saving, setSaving] = useState(null);
 
+  // Team name
+  const [teamName, setTeamName] = useState(eventMember?.team_name || "");
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState(eventMember?.team_name || "");
+  const [nameSaving, setNameSaving] = useState(false);
+
+  async function saveTeamName() {
+    const trimmed = nameDraft.trim();
+    setNameSaving(true);
+    // Update all members on this team so co-leader sees the same name
+    await supabase
+      .from("event_members")
+      .update({ team_name: trimmed || null })
+      .eq("event_id", eventMember.event_id)
+      .eq("team_number", eventMember.team_number);
+    setTeamName(trimmed);
+    setNameSaving(false);
+    setEditingName(false);
+  }
+
   const doneCount = CHECKLIST_ITEMS.filter((i) => items[i.id]).length;
   const allDone = doneCount === CHECKLIST_ITEMS.length;
 
@@ -48,9 +68,56 @@ export default function MyTeam({ data, onBack }) {
         <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", marginBottom: "0.25rem", fontFamily: SANS }}>
           Your Team
         </div>
-        <div style={{ fontFamily: SERIF, fontSize: "52px", fontWeight: 600, color: GOLD, lineHeight: 1, marginBottom: "0.5rem" }}>
-          {eventMember.team_number || "—"}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+          <div style={{ fontFamily: SERIF, fontSize: "52px", fontWeight: 600, color: GOLD, lineHeight: 1 }}>
+            {eventMember.team_number || "—"}
+          </div>
+          {!editingName && (
+            <button
+              onClick={() => { setNameDraft(teamName); setEditingName(true); }}
+              style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: SANS, fontSize: "12px", fontWeight: 600, color: "#fff" }}
+            >
+              {teamName ? "Rename" : "Set team name"}
+            </button>
+          )}
         </div>
+
+        {/* Team name display or edit */}
+        {editingName ? (
+          <div style={{ display: "flex", gap: 8, marginBottom: "0.5rem" }}>
+            <input
+              autoFocus
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") saveTeamName(); if (e.key === "Escape") setEditingName(false); }}
+              placeholder="e.g. Team Courage"
+              maxLength={40}
+              style={{
+                flex: 1, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)",
+                borderRadius: 8, padding: "8px 12px", color: "#fff", fontFamily: SANS, fontSize: "14px",
+                outline: "none",
+              }}
+            />
+            <button
+              onClick={saveTeamName}
+              disabled={nameSaving}
+              style={{ background: ORANGE, border: "none", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontFamily: SANS, fontSize: "13px", fontWeight: 700, color: "#fff" }}
+            >
+              {nameSaving ? "…" : "Save"}
+            </button>
+            <button
+              onClick={() => setEditingName(false)}
+              style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, padding: "8px 12px", cursor: "pointer", fontFamily: SANS, fontSize: "13px", color: "#fff" }}
+            >
+              ✕
+            </button>
+          </div>
+        ) : teamName ? (
+          <div style={{ fontFamily: SERIF, fontSize: "20px", fontWeight: 600, color: "#fff", marginBottom: "0.25rem" }}>
+            {teamName}
+          </div>
+        ) : null}
+
         {eventMember.ministry && (
           <div style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS, letterSpacing: "0.06em" }}>
             {eventMember.ministry}
