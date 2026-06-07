@@ -3,9 +3,7 @@ import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/con
 import { Shell } from "../../components/layout/index.js";
 import { Card } from "../../components/ui/index.js";
 
-// Replace this with the actual Google Drive embed URL for the Field Guide PDF
-// Format: https://drive.google.com/file/d/FILE_ID/preview
-const FIELD_GUIDE_URL = "https://drive.google.com/file/d/YOUR_FIELD_GUIDE_FILE_ID/preview";
+const FIELD_GUIDE_URL = "https://drive.google.com/file/d/1VVARCRm2Rl9NkH7i0wzDot5KwJbN-dF7/preview";
 
 export default function FieldGuide({ data, onBack }) {
   const [loaded, setLoaded] = useState(false);

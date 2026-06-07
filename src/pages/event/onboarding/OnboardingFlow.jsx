@@ -390,10 +390,16 @@ export default function OnboardingFlow({ data, onDone }) {
 
   async function handleFinish(checklistData) {
     try {
-      await supabase
-        .from("event_members")
-        .update({ onboarding_completed: true, checklist: checklistData })
-        .eq("id", eventMember.id);
+      await Promise.all([
+        supabase
+          .from("event_members")
+          .update({ onboarding_completed: true })
+          .eq("id", eventMember.id),
+        supabase
+          .from("event_checklist")
+          .update({ items: checklistData })
+          .eq("event_member_id", eventMember.id),
+      ]);
       onDone();
     } catch (err) {
       console.error("Finish onboarding error:", err);
