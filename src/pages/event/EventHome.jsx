@@ -1,4 +1,11 @@
 import { NAVY, ORANGE, GOLD, TSEC, BORDER, BG, SERIF, SANS } from "../../lib/constants.js";
+
+function splitZoomDisplay(zoomStr) {
+  if (!zoomStr) return { main: zoomStr, sub: null };
+  const parts = zoomStr.split("·").map((s) => s.trim());
+  if (parts.length <= 1) return { main: zoomStr, sub: null };
+  return { main: parts[0], sub: parts.slice(1).join(" · ") };
+}
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel } from "../../components/ui/index.js";
 
@@ -99,16 +106,17 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
       </div>
 
       {/* Zoom training row */}
-      {activeEvent.zoom_training_dates && (
-        <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "0.875rem 1.25rem", marginBottom: "1rem", display: "flex", alignItems: "flex-start", gap: 12 }}>
-          <span style={{ fontSize: "18px", flexShrink: 0, marginTop: 1 }}>💻</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 2 }}>Leader Zoom Training</div>
-            <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS }}>{activeEvent.zoom_training_dates}</div>
-            <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>Mandatory for all team leaders</div>
+      {activeEvent.zoom_training_dates && (() => {
+        const { main, sub } = splitZoomDisplay(activeEvent.zoom_training_dates);
+        return (
+          <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "0.875rem 1.25rem", marginBottom: "1rem" }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>Leader Zoom Training</div>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: sub ? 2 : 3 }}>{main}</div>
+            {sub && <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 3 }}>{sub}</div>}
+            <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>Mandatory for all team leaders</div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Onboarding banner */}
       {eventMember && !eventMember.onboarding_completed && (

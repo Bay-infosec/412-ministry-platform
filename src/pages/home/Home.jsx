@@ -60,6 +60,15 @@ function daysUntilEvent(dateStr) {
   return Math.ceil((parsed - new Date()) / 86400000);
 }
 
+// Split "June 27 — 6:00 PM PT · 7:00 PM MT · 8:00 PM CT · 9:00 PM ET"
+// into main = "June 27 — 6:00 PM PT" and sub = "7:00 PM MT · 8:00 PM CT · 9:00 PM ET"
+function splitZoomDisplay(zoomStr) {
+  if (!zoomStr) return { main: zoomStr, sub: null };
+  const parts = zoomStr.split("·").map((s) => s.trim());
+  if (parts.length <= 1) return { main: zoomStr, sub: null };
+  return { main: parts[0], sub: parts.slice(1).join(" · ") };
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function Home({
@@ -375,22 +384,26 @@ export default function Home({
             })()}
 
             {/* Zoom training */}
-            {activeEvent?.zoom_training_dates && (
-              <div style={{
-                background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
-                padding: "1rem 1.25rem",
-              }}>
-                <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-                  Leader Zoom Training
+            {activeEvent?.zoom_training_dates && (() => {
+              const { main, sub } = splitZoomDisplay(activeEvent.zoom_training_dates);
+              return (
+                <div style={{
+                  background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
+                  padding: "1rem 1.25rem",
+                }}>
+                  <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+                    Leader Zoom Training
+                  </div>
+                  <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: 2 }}>
+                    {main}
+                  </div>
+                  {sub && <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 2 }}>{sub}</div>}
+                  <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
+                    Mandatory for all team leaders
+                  </div>
                 </div>
-                <div style={{ fontSize: "15px", fontWeight: 600, color: NAVY, fontFamily: SANS, marginBottom: 2 }}>
-                  {activeEvent.zoom_training_dates}
-                </div>
-                <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
-                  Mandatory for all team leaders
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Standalone meeting */}
             {nextMeeting && (
@@ -460,22 +473,23 @@ export default function Home({
                     {!opened ? (
                       <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>Not started</div>
                     ) : (
-                      <div style={{ fontSize: "11px", color: checkedCount === CHECKLIST_ITEMS.length ? ORANGE : TSEC, fontFamily: SANS, fontWeight: checkedCount === CHECKLIST_ITEMS.length ? 600 : 400 }}>
-                        {checkedCount === CHECKLIST_ITEMS.length ? "Complete ✓" : `${checkedCount} / ${CHECKLIST_ITEMS.length} done`}
-                      </div>
+                      <>
+                        <div style={{ fontSize: "11px", color: checkedCount === CHECKLIST_ITEMS.length ? ORANGE : TSEC, fontFamily: SANS, fontWeight: checkedCount === CHECKLIST_ITEMS.length ? 600 : 400 }}>
+                          {checkedCount === CHECKLIST_ITEMS.length ? "Complete ✓" : `${checkedCount} / ${CHECKLIST_ITEMS.length} done`}
+                        </div>
+                        <div style={{ display: "flex", gap: 5 }}>
+                          {CHECKLIST_ITEMS.map((item) => {
+                            const checked = !!clItems[item.id];
+                            return (
+                              <div key={item.id} style={{
+                                width: 10, height: 10, borderRadius: "50%",
+                                background: checked ? ORANGE : "#F5C97A", flexShrink: 0,
+                              }} />
+                            );
+                          })}
+                        </div>
+                      </>
                     )}
-                    <div style={{ display: "flex", gap: 5 }}>
-                      {CHECKLIST_ITEMS.map((item) => {
-                        const checked = !!clItems[item.id];
-                        const bg = checked ? ORANGE : opened ? "#F5C97A" : "#D1D5DB";
-                        return (
-                          <div key={item.id} style={{
-                            width: 10, height: 10, borderRadius: "50%",
-                            background: bg, flexShrink: 0,
-                          }} />
-                        );
-                      })}
-                    </div>
                   </div>
                 </div>
               );

@@ -5,6 +5,13 @@ import { Shell } from "../../../components/layout/index.js";
 import { Card, SectionLabel } from "../../../components/ui/index.js";
 import { CHECKLIST_ITEMS } from "../../../lib/checklist.js";
 
+function splitZoomDisplay(zoomStr) {
+  if (!zoomStr) return { main: zoomStr, sub: null };
+  const parts = zoomStr.split("·").map((s) => s.trim());
+  if (parts.length <= 1) return { main: zoomStr, sub: null };
+  return { main: parts[0], sub: parts.slice(1).join(" · ") };
+}
+
 // ── Shared primitives ─────────────────────────────────────────────────────────
 
 function PrimaryBtn({ children, onClick, disabled, gold }) {
@@ -562,22 +569,23 @@ function ChecklistPage({ onFinish, activeEvent }) {
       </StepBody>
 
       {/* Zoom training info */}
-      {activeEvent?.zoom_training_dates && (
-        <div style={{
-          background: NAVY, borderRadius: 14, padding: "1rem 1.25rem",
-          marginBottom: "1rem",
-        }}>
-          <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-            Leader Zoom Training
+      {activeEvent?.zoom_training_dates && (() => {
+        const { main, sub } = splitZoomDisplay(activeEvent.zoom_training_dates);
+        return (
+          <div style={{ background: NAVY, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
+            <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: GOLD, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+              Leader Zoom Training
+            </div>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", fontFamily: SANS, marginBottom: sub ? 2 : 4 }}>
+              {main}
+            </div>
+            {sub && <div style={{ fontSize: "12px", color: "#B8C0D0", fontFamily: SANS, marginBottom: 4 }}>{sub}</div>}
+            <div style={{ fontSize: "12px", color: "#B8C0D0", fontFamily: SANS }}>
+              Mandatory — mark the last item below once you have attended.
+            </div>
           </div>
-          <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", fontFamily: SANS, marginBottom: 2 }}>
-            {activeEvent.zoom_training_dates}
-          </div>
-          <div style={{ fontSize: "12px", color: "#B8C0D0", fontFamily: SANS }}>
-            Mandatory — mark the last item below once you have attended.
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       <Card style={{ padding: 0, overflow: "hidden", marginBottom: "0.75rem" }}>
         {CHECKLIST_ITEMS.map((item, i) => (
