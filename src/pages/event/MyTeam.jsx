@@ -5,7 +5,7 @@ import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel, Avatar } from "../../components/ui/index.js";
 import { CHECKLIST_ITEMS } from "../../lib/checklist.js";
 
-export default function MyTeam({ data, onBack }) {
+export default function MyTeam({ data, onBack, onViewProfile }) {
   const { eventMember, eventChecklist, coLeader, coLeaderChecklist, coLeaderVisited, coordinator } = data;
 
   const [items, setItems] = useState(eventChecklist?.items || {});
@@ -130,7 +130,10 @@ export default function MyTeam({ data, onBack }) {
       {coLeader ? (
         <Card style={{ padding: "1rem 1.25rem", marginBottom: "1rem" }}>
           {/* Name + avatar */}
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.875rem" }}>
+          <button
+            onClick={() => onViewProfile?.(coLeader.id)}
+            style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.875rem", background: "none", border: "none", padding: 0, cursor: "pointer", width: "100%", textAlign: "left" }}
+          >
             <Avatar url={coLeader.photo_url} name={coLeader.full_name} size={48} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{coLeader.full_name}</div>
@@ -138,7 +141,8 @@ export default function MyTeam({ data, onBack }) {
                 <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>{coLeader.churches.name}</div>
               )}
             </div>
-          </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CCCCCC" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
 
           {/* Co-leader checklist progress */}
           <div style={{ marginBottom: "0.875rem" }}>
@@ -208,13 +212,17 @@ export default function MyTeam({ data, onBack }) {
         <>
           <SectionLabel>Your Coordinator</SectionLabel>
           <Card style={{ padding: "1rem 1.25rem", marginBottom: "1rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.875rem" }}>
+            <button
+              onClick={() => onViewProfile?.(coordinator.id)}
+              style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "0.875rem", background: "none", border: "none", padding: 0, cursor: "pointer", width: "100%", textAlign: "left" }}
+            >
               <Avatar url={coordinator.photo_url} name={coordinator.full_name} size={48} />
-              <div>
+              <div style={{ flex: 1 }}>
                 <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{coordinator.full_name}</div>
                 <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>Team Coordinator</div>
               </div>
-            </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CCCCCC" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
             <div style={{ display: "flex", gap: 8 }}>
               {coordinator.phone && (
                 <a href={`tel:${coordinator.phone}`} style={contactBtnStyle("#111111")}>

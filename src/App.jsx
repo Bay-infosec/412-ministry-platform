@@ -13,6 +13,7 @@ import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide, CoordinatorView, M
 import { OnboardingFlow } from "./pages/event/onboarding/index.js";
 import { AdminShell } from "./pages/admin/index.js";
 import { Chat } from "./pages/chat/index.js";
+import { ProfileSheet } from "./components/shared/index.js";
 
 
 function LoadingScreen() {
@@ -94,6 +95,7 @@ export default function App() {
   const [chatUnread, setChatUnread] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [profileReturnTo, setProfileReturnTo] = useState(null);
+  const [viewingProfileId, setViewingProfileId] = useState(null);
   const [eventReturnTab, setEventReturnTab] = useState(null);
   const [adminInitProps, setAdminInitProps] = useState(null);
 
@@ -576,11 +578,11 @@ export default function App() {
           />
         )}
         {tab === "event" && page === "zoom_training" && <ZoomTraining data={data} onBack={eventBack} />}
-        {tab === "event" && page === "myteam" && <MyTeam data={data} onBack={eventBack} />}
+        {tab === "event" && page === "myteam" && <MyTeam data={data} onBack={eventBack} onViewProfile={setViewingProfileId} />}
         {tab === "event" && page === "prayer_chain" && <PrayerChain data={data} onBack={eventBack} />}
         {tab === "event" && page === "the_four" && <TheFour data={data} onBack={eventBack} />}
         {tab === "event" && page === "field_guide" && <FieldGuide data={data} onBack={eventBack} />}
-        {tab === "event" && page === "coordinator" && <CoordinatorView data={data} onBack={eventBack} />}
+        {tab === "event" && page === "coordinator" && <CoordinatorView data={data} onBack={eventBack} onViewProfile={setViewingProfileId} />}
         {tab === "event" && page === "checklist" && <MyChecklist data={data} onBack={eventBack} />}
         {tab === "event" && page === "attendance" && <Attendance data={data} onBack={eventBack} />}
 
@@ -616,6 +618,7 @@ export default function App() {
             isAdmin={data.isAdmin}
             initialScreen={adminInitProps?.screen}
             initialEvent={adminInitProps?.event}
+            initialProfile={adminInitProps?.profile}
           />
         )}
         {page === "chat" && (
@@ -624,8 +627,19 @@ export default function App() {
             onClose={() => setPage(null)}
             onlineUsers={onlineUsers}
             onOpenProfile={() => { setProfileReturnTo("chat"); setPage(null); setTab("profile"); }}
+            onViewProfile={setViewingProfileId}
           />
         )}
+        <ProfileSheet
+          profileId={viewingProfileId}
+          activeEventId={data.activeEvent?.id}
+          onClose={() => setViewingProfileId(null)}
+          onOpenAdmin={data.isAdmin ? (id) => {
+            const person = data.allProfiles?.find(p => p.id === id);
+            if (person) setAdminInitProps({ screen: "people.detail", profile: person });
+            setPage("admin");
+          } : null}
+        />
       </>
     );
   }

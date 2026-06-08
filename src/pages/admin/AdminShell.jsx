@@ -14,9 +14,9 @@ import SystemGroups from "./groups/SystemGroups.jsx";
 import { ModeratorAssignments } from "./moderators/index.js";
 import { AuditLog } from "./audit/index.js";
 
-export default function AdminShell({ data, onClose, onRefresh, isAdmin = false, initialScreen, initialEvent }) {
+export default function AdminShell({ data, onClose, onRefresh, isAdmin = false, initialScreen, initialEvent, initialProfile }) {
   const [screen, setScreen] = useState(initialScreen || "home");
-  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [selectedProfile, setSelectedProfile] = useState(initialProfile || null);
   const [selectedEvent, setSelectedEvent] = useState(initialEvent || null);
   const [toastData, setToastData] = useState({ msg: "", type: "success" });
 

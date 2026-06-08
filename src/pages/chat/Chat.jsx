@@ -35,7 +35,7 @@ function GroupAvatar({ name, size = 48 }) {
 
 // ── Main router ───────────────────────────────────────────────────────────────
 
-export default function Chat({ data, onClose, onOpenProfile, onlineUsers = [] }) {
+export default function Chat({ data, onClose, onOpenProfile, onlineUsers = [], onViewProfile }) {
   const { profile, activeEvent } = data;
   const myId = profile.id;
   const canCreateGroup = profile.platform_role === "admin" || profile.platform_role === "moderator";
@@ -47,7 +47,7 @@ export default function Chat({ data, onClose, onOpenProfile, onlineUsers = [] })
   const backHome = () => { setActiveThread(null); setView("home"); };
 
   if (view === "thread" && activeThread) {
-    return <ThreadView myId={myId} conv={activeThread} onBack={backHome} onlineUsers={onlineUsers} />;
+    return <ThreadView myId={myId} conv={activeThread} onBack={backHome} onlineUsers={onlineUsers} onViewProfile={onViewProfile} />;
   }
   if (view === "newchat") {
     return (
@@ -83,13 +83,14 @@ export default function Chat({ data, onClose, onOpenProfile, onlineUsers = [] })
       onOpenProfile={onOpenProfile}
       onNewChat={() => setView("newchat")}
       onOpenThread={openThread}
+      onViewProfile={onViewProfile}
     />
   );
 }
 
 // ── Home view ─────────────────────────────────────────────────────────────────
 
-function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProfile, onNewChat, onOpenThread }) {
+function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProfile, onNewChat, onOpenThread, onViewProfile }) {
   const [conversations, setConversations] = useState(null);
   const [allMembers, setAllMembers] = useState([]);
   const [search, setSearch] = useState("");
@@ -263,7 +264,10 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
               {activeRow.map((u) => (
                 <button
                   key={u.user_id}
-                  onClick={() => onOpenThread({ type: "dm", other: { id: u.user_id, full_name: u.name, photo_url: u.photo_url, isSelf: u.isSelf } })}
+                  onClick={() => u.isSelf
+                    ? onOpenThread({ type: "dm", other: { id: u.user_id, full_name: u.name, photo_url: u.photo_url, isSelf: true } })
+                    : onViewProfile?.(u.user_id)
+                  }
                   style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flexShrink: 0, padding: 0 }}
                 >
                   <div style={{ position: "relative" }}>
@@ -361,7 +365,7 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
 
 // ── Thread view ───────────────────────────────────────────────────────────────
 
-function ThreadView({ myId, conv, onBack, onlineUsers }) {
+function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
   const isGroup = conv.type === "group";
   const [messages, setMessages] = useState(null);
   const [senderMap, setSenderMap] = useState({});
@@ -503,6 +507,13 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
     if (inserted) setMessages((prev) => prev?.map((m) => m.id === tempId ? inserted : m) ?? []);
 
     await supabase.from("conversations").update({ last_message_at: new Date().toISOString() }).eq("id", convId);
+
+    // Push notification to recipient(s)
+    if (!isGroup && conv.other?.id && !isSelf) {
+      supabase.functions.invoke("send-push", {
+        body: { title: "New message", body: body.slice(0, 100), url: "/", profile_ids: [conv.other.id] },
+      });
+    }
     setSending(false);
     setTimeout(() => inputRef.current?.focus(), 50);
   }
@@ -529,27 +540,32 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
         </button>
-        <div style={{ position: "relative" }}>
-          {isGroup
-            ? <GroupAvatar name={title} size={38} />
-            : <Avatar url={conv.other?.photo_url} name={conv.other?.full_name} size={38} />
-          }
-          {!isGroup && isOnline && <div style={{ position: "absolute", bottom: 0, right: 0, width: 11, height: 11, borderRadius: "50%", background: "#22C55E", border: "2px solid #fff" }} />}
-        </div>
-        <div style={{ flex: 1 }}>
+        <button
+          onClick={() => !isGroup && !isSelf && onViewProfile?.(conv.other?.id)}
+          style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", padding: 0, cursor: !isGroup && !isSelf ? "pointer" : "default", flex: 1, minWidth: 0 }}
+        >
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            {isGroup
+              ? <GroupAvatar name={title} size={38} />
+              : <Avatar url={conv.other?.photo_url} name={conv.other?.full_name} size={38} />
+            }
+            {!isGroup && isOnline && <div style={{ position: "absolute", bottom: 0, right: 0, width: 11, height: 11, borderRadius: "50%", background: "#22C55E", border: "2px solid #fff" }} />}
+          </div>
+          <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
             <span style={{ fontSize: "15px", fontWeight: 800, color: "#111111", fontFamily: SANS }}>{title}</span>
             {!isGroup && !isSelf && conv.other?.nickname && (
               <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, fontStyle: "italic" }}>"{conv.other.nickname}"</span>
             )}
           </div>
-          <div style={{ fontSize: "11px", fontFamily: SANS, fontWeight: 600, color: isOnline ? "#22C55E" : TSEC }}>
-            {isGroup
-              ? (groupMembers ? `${groupMembers.length} members` : "Group")
-              : isSelf ? "Only visible to you"
-              : isOnline ? "Active now" : "Offline"}
+            <div style={{ fontSize: "11px", fontFamily: SANS, fontWeight: 600, color: isOnline ? "#22C55E" : TSEC }}>
+              {isGroup
+                ? (groupMembers ? `${groupMembers.length} members` : "Group")
+                : isSelf ? "Only visible to you"
+                : isOnline ? "Active now" : "Offline"}
+            </div>
           </div>
-        </div>
+        </button>
         {isGroup && (
           <button
             onClick={() => setShowMembers((s) => !s)}

@@ -4,7 +4,7 @@ import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel, Avatar, ProfileTags } from "../../components/ui/index.js";
 
-export default function CoordinatorView({ data, onBack }) {
+export default function CoordinatorView({ data, onBack, onViewProfile }) {
   const { profile, activeEvent } = data;
   const [teams, setTeams] = useState(null);
 
@@ -90,11 +90,16 @@ export default function CoordinatorView({ data, onBack }) {
                     not_started: { label: "Not started",  bg: "#FEE2E2", color: "#991B1B" },
                   }[obStatus];
                   return (
-                    <div key={m.id} style={{
-                      display: "flex", alignItems: "center", gap: 12,
-                      padding: "0.875rem 1.25rem",
-                      borderBottom: i < members.length - 1 ? `1px solid ${BORDER}` : "none",
-                    }}>
+                    <button
+                      key={m.id}
+                      onClick={() => onViewProfile?.(m.profile_id)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 12,
+                        padding: "0.875rem 1.25rem",
+                        borderBottom: i < members.length - 1 ? `1px solid ${BORDER}` : "none",
+                        background: "none", border: "none", cursor: "pointer", width: "100%", textAlign: "left",
+                      }}
+                    >
                       <Avatar url={photoUrl} name={name} size={40} />
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: "14px", fontWeight: 500, color: "#111111", fontFamily: SANS }}>{name}</div>
@@ -104,7 +109,7 @@ export default function CoordinatorView({ data, onBack }) {
                       <div style={{ background: obStyle.bg, borderRadius: 20, padding: "3px 10px", fontSize: "11px", fontWeight: 600, color: obStyle.color, fontFamily: SANS, flexShrink: 0 }}>
                         {obStyle.label}
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </Card>
