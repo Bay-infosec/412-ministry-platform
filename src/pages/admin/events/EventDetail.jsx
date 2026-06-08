@@ -29,6 +29,8 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
   const [teamModal, setTeamModal] = useState(null);
   const [teamInput, setTeamInput] = useState("");
   const [savingTeam, setSavingTeam] = useState(false);
+  const [teamCountEdit, setTeamCountEdit] = useState(null);
+  const [savingTeamCount, setSavingTeamCount] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -175,6 +177,17 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
     onRefresh();
   }
 
+  async function saveTeamCount() {
+    if (teamCountEdit === null) return;
+    setSavingTeamCount(true);
+    const count = teamCountEdit.trim() ? parseInt(teamCountEdit) || null : null;
+    await supabase.from("events").update({ team_count: count }).eq("id", event.id);
+    setSavingTeamCount(false);
+    setTeamCountEdit(null);
+    onToast(`Team count set to ${count ?? "cleared"}.`);
+    onRefresh();
+  }
+
   async function saveTeamNumber() {
     if (!teamModal) return;
     setSavingTeam(true);
@@ -241,6 +254,86 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
           )}
         </div>
       </div>
+
+      {/* Conference Setup */}
+      {["conference", "annual_conference", "youth_conference"].includes(event.type) && (
+        <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden", marginBottom: "1.25rem" }}>
+          {/* Header row */}
+          <div style={{ padding: "0.875rem 1.25rem", borderBottom: `1px solid ${BORDER}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: SANS }}>
+              Conference Setup
+            </div>
+            <button
+              onClick={openEditModal}
+              style={{ background: "none", border: `1px solid ${BORDER}`, borderRadius: 7, padding: "4px 12px", fontSize: "12px", fontWeight: 600, color: "#111111", cursor: "pointer", fontFamily: SANS }}
+            >
+              Edit info
+            </button>
+          </div>
+
+          {/* Team count row */}
+          <div style={{ padding: "0.875rem 1.25rem", borderBottom: `1px solid ${BORDER}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ fontSize: "13px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>Number of teams</div>
+              <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>Controls coordinator assignment grid below</div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              {teamCountEdit !== null ? (
+                <>
+                  <input
+                    type="number"
+                    value={teamCountEdit}
+                    onChange={(e) => setTeamCountEdit(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") saveTeamCount(); if (e.key === "Escape") setTeamCountEdit(null); }}
+                    autoFocus
+                    min="1"
+                    style={{ width: 56, border: "1px solid #FF4D00", borderRadius: 8, padding: "5px 8px", fontSize: "18px", fontWeight: 700, textAlign: "center", fontFamily: SANS, outline: "none" }}
+                  />
+                  <button onClick={saveTeamCount} disabled={savingTeamCount} style={{ background: "#FF4D00", color: "#fff", border: "none", borderRadius: 7, padding: "5px 12px", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: SANS }}>
+                    {savingTeamCount ? "…" : "Save"}
+                  </button>
+                  <button onClick={() => setTeamCountEdit(null)} style={{ background: "none", border: `1px solid ${BORDER}`, borderRadius: 7, padding: "5px 8px", fontSize: "12px", cursor: "pointer", color: TSEC, fontFamily: SANS }}>
+                    ✕
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span style={{ fontSize: "22px", fontWeight: 900, color: "#111111", fontFamily: SANS }}>{event.team_count ?? "—"}</span>
+                  <button onClick={() => setTeamCountEdit(event.team_count?.toString() || "")} style={{ background: "#F0F0F0", border: "none", borderRadius: 7, padding: "4px 12px", fontSize: "12px", fontWeight: 600, color: "#555", cursor: "pointer", fontFamily: SANS }}>
+                    Edit
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Coordinator per team */}
+          {event.team_count > 0 ? (
+            Array.from({ length: event.team_count }, (_, i) => i + 1).map((teamNum) => {
+              const leaders = members.filter((m) => m.team_number === teamNum && m.event_role === "leader");
+              const coordId = leaders[0]?.coordinator_id;
+              const coordProfile = coordId ? coordinatorMap[coordId] : null;
+              return (
+                <div key={teamNum} style={{ padding: "0.75rem 1.25rem", borderBottom: teamNum < event.team_count ? `1px solid ${BORDER}` : "none", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ fontSize: "13px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>Team {teamNum}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: "12px", color: coordProfile ? TSEC : "#DC2626", fontFamily: SANS }}>
+                      {coordProfile ? coordProfile.full_name.split(" ")[0] : "No coordinator"}
+                    </span>
+                    <button onClick={() => setCoordModal({ teamNumber: teamNum })} style={{ background: "none", border: `1px solid ${BORDER}`, borderRadius: 6, padding: "3px 9px", fontSize: "11px", fontWeight: 600, color: TSEC, cursor: "pointer", fontFamily: SANS }}>
+                      Change
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div style={{ padding: "1rem 1.25rem", textAlign: "center" }}>
+              <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS }}>Set number of teams above to configure coordinator assignments.</div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Onboarding progress summary */}
       {!loading && members.length > 0 && (() => {
