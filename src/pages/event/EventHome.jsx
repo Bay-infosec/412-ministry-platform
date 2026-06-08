@@ -140,15 +140,20 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
   const onboardingComplete = eventMember?.onboarding_completed;
   const TOTAL_STEPS = 6;
 
-  const sections = [
-    { id: "myteam", label: "My Team", desc: eventMember?.team_number ? `Team ${eventMember.team_number} · checklist inside` : "Team assignment & checklist" },
-    { id: "prayer_chain", label: "Prayer Chain", desc: "Pray for one another" },
-    { id: "the_four", label: "The Four", desc: "Your four essentials" },
-    { id: "field_guide", label: "Field Guide", desc: "Resources and references" },
-  ];
+  const CONFERENCE_TYPES = ["youth_conference", "annual_conference", "conference"];
+  const isConference = CONFERENCE_TYPES.includes(viewEvent?.type);
 
-  if (isCoordinator) {
-    sections.push({ id: "coordinator", label: "Coordinator Dashboard", desc: "Overview of teams you oversee" });
+  const sections = [];
+  if (isConference) {
+    sections.push(
+      { id: "myteam",       label: "My Team",       desc: eventMember?.team_number ? `Team ${eventMember.team_number} · checklist inside` : "Team assignment & checklist" },
+      { id: "prayer_chain", label: "Prayer Chain",  desc: "Pray for one another" },
+      { id: "the_four",     label: "The Four",       desc: "Your four essentials" },
+      { id: "field_guide",  label: "Field Guide",    desc: "Resources and references" },
+    );
+    if (isCoordinator) {
+      sections.push({ id: "coordinator", label: "Coordinator Dashboard", desc: "Overview of teams you oversee" });
+    }
   }
 
   const zoom = viewEvent?.zoom_training_dates ? splitZoomDisplay(viewEvent.zoom_training_dates) : null;
@@ -278,9 +283,15 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
         )}
       </div>
 
-      {/* Sections */}
-      <SectionLabel>Sections</SectionLabel>
-      <Card style={{ padding: 0, overflow: "hidden", marginBottom: "1rem" }}>
+      {/* Sections — conference only */}
+      {sections.length > 0 && <SectionLabel>Sections</SectionLabel>}
+      {sections.length === 0 && !zoom && (
+        <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1.5rem", marginBottom: "1rem", textAlign: "center" }}>
+          <div style={{ fontSize: "13px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS, marginBottom: 4 }}>More details coming soon</div>
+          <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>Materials and resources for this event will appear here once published by the admin.</div>
+        </div>
+      )}
+      {(sections.length > 0 || zoom) && <Card style={{ padding: 0, overflow: "hidden", marginBottom: "1rem" }}>
 
         {/* Zoom training — expandable info row at top of sections card */}
         {zoom && (
@@ -368,7 +379,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
             </svg>
           </button>
         ))}
-      </Card>
+      </Card>}
         </>
       )}
     </Shell>

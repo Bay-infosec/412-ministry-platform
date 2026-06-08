@@ -22,7 +22,7 @@ const STATUS_STYLE = {
 };
 
 export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
-  const { publicEvents = [], profile, eventMember, activeEvent } = data;
+  const { publicEvents = [], profile, eventMember, activeEvent, history = [] } = data;
   const myId = profile.id;
 
   const [requesting, setRequesting] = useState(null);
@@ -55,7 +55,10 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
     setRequesting(null);
   }
 
-  const myEventIds = new Set([activeEvent?.id].filter(Boolean));
+  const myEventIds = new Set([
+    activeEvent?.id,
+    ...history.map((h) => h.event_id),
+  ].filter(Boolean));
 
   return (
     <>
@@ -80,7 +83,7 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
           Events & Opportunities
         </div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginTop: "0.375rem" }}>
-          Public events open for anyone to join.
+          Your events and public opportunities.
         </div>
       </div>
 

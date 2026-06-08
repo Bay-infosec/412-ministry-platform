@@ -272,12 +272,18 @@ export default function App() {
       const isAdmin = profile.platform_role === "admin";
       const isModerator = profile.platform_role === "moderator" || isAdmin;
 
-      // Public events — visible to all logged-in users for the events browser
-      const { data: publicEventsRaw } = await supabase
+      // Events browser: public events + any event the user is already enrolled in
+      const enrolledEventIds = history.map((h) => h.event_id).filter(Boolean);
+      let eventsQuery = supabase
         .from("events")
         .select("id, name, type, description, dates, location, fee, registration_url, visible_to_public, allow_join_requests, status, start_date, end_date")
-        .eq("visible_to_public", true)
-        .order("start_date", { ascending: true });
+        .neq("status", "archived");
+      if (enrolledEventIds.length > 0) {
+        eventsQuery = eventsQuery.or(`visible_to_public.eq.true,id.in.(${enrolledEventIds.join(",")})`);
+      } else {
+        eventsQuery = eventsQuery.eq("visible_to_public", true);
+      }
+      const { data: publicEventsRaw } = await eventsQuery.order("start_date", { ascending: true });
       const publicEvents = publicEventsRaw || [];
 
       let allProfiles = null;
