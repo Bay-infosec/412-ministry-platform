@@ -60,7 +60,7 @@ export default function EventList({ data, onSelect, onToast, onRefresh }) {
 
   function getActions(ev) {
     const actions = [];
-    if (ev.status === "inactive") {
+    if (ev.status === "inactive" || ev.status === "archived") {
       actions.push({ key: "activate", label: "Activate", bg: "#22C55E", color: "#fff", onPress: () => setConfirm({ action: "activate", event: ev }) });
     }
     if (ev.status === "active" || ev.status === "inactive") {
