@@ -34,6 +34,11 @@
     <meta property="og:image:height" content="630" />
 
     <style>
+      /* Force light UA styling — without this, devices in system dark mode
+         render native inputs/textareas/selects with dark backgrounds and
+         light text, clashing with the app's light design regardless of
+         the inline styles each field sets. */
+      :root { color-scheme: light; }
       /* Prevent auto-zoom on input focus on iOS */
       input, textarea, select { font-size: 16px !important; }
       * { -webkit-tap-highlight-color: transparent; }
