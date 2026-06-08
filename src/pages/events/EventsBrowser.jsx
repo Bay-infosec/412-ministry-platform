@@ -21,7 +21,7 @@ const STATUS_STYLE = {
   inactive: { label: "Inactive", bg: "#F0EDE8", color: "#8A8498" },
 };
 
-export default function EventsBrowser({ data, onRefresh }) {
+export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
   const { publicEvents = [], profile, eventMember, activeEvent } = data;
   const myId = profile.id;
 
@@ -186,6 +186,20 @@ export default function EventsBrowser({ data, onRefresh }) {
                           </div>
                         )}
                       </div>
+                    )}
+
+                    {isMember && onViewEnrolled && (
+                      <button
+                        onClick={() => onViewEnrolled(ev.id)}
+                        style={{
+                          display: "block", width: "100%", marginTop: "0.75rem",
+                          background: "#FF4D00", color: "#fff", border: "none",
+                          borderRadius: 8, padding: "11px", textAlign: "center",
+                          fontSize: "14px", fontWeight: 700, fontFamily: SANS, cursor: "pointer",
+                        }}
+                      >
+                        Go to my event →
+                      </button>
                     )}
 
                     {!isMember && !ev.allow_join_requests && ev.status !== "archived" && (

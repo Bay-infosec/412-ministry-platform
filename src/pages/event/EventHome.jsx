@@ -144,7 +144,6 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
 
   if (isCoordinator) {
     sections.push({ id: "coordinator", label: "My Teams", desc: "Overview of teams you oversee" });
-    sections.push({ id: "attendance", label: "Attendance", desc: "Check in team members each day" });
   }
 
   const zoom = viewEvent?.zoom_training_dates ? splitZoomDisplay(viewEvent.zoom_training_dates) : null;
@@ -155,7 +154,11 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
       <ViewDropdown view={view} onChange={setView} enrolledEvents={enrolledEvents} />
 
       {view === "browse" && (
-        <EventsBrowser data={data} onRefresh={onNavigate ? () => onNavigate("event") : undefined} />
+        <EventsBrowser
+          data={data}
+          onRefresh={onNavigate ? () => onNavigate("event") : undefined}
+          onViewEnrolled={(eventId) => setView(`evt_${eventId}`)}
+        />
       )}
 
       {view === "past" && <PastEvents history={history} activeEvent={activeEvent} />}

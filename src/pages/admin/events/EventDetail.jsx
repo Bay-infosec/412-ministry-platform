@@ -23,6 +23,12 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [editModal, setEditModal] = useState(false);
+  const [editFields, setEditFields] = useState({});
+  const [editBusy, setEditBusy] = useState(false);
+  const [teamModal, setTeamModal] = useState(null);
+  const [teamInput, setTeamInput] = useState("");
+  const [savingTeam, setSavingTeam] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -141,6 +147,45 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
     onBack?.();
   }
 
+  function openEditModal() {
+    setEditFields({
+      name: event.name || "",
+      type: event.type || "conference",
+      dates: event.dates || "",
+      location: event.location || "",
+      team_count: event.team_count?.toString() || "",
+      fee: event.fee || "",
+      description: event.description || "",
+      verse: event.verse || "",
+      verse_text: event.verse_text || "",
+      zoom_training_dates: event.zoom_training_dates || "",
+      registration_url: event.registration_url || "",
+    });
+    setEditModal(true);
+  }
+
+  async function saveEventFields() {
+    setEditBusy(true);
+    const payload = { ...editFields };
+    payload.team_count = editFields.team_count !== "" ? parseInt(editFields.team_count) || null : null;
+    await supabase.from("events").update(payload).eq("id", event.id);
+    setEditBusy(false);
+    setEditModal(false);
+    onToast("Event updated.");
+    onRefresh();
+  }
+
+  async function saveTeamNumber() {
+    if (!teamModal) return;
+    setSavingTeam(true);
+    const num = teamInput.trim() ? parseInt(teamInput) || null : null;
+    await supabase.from("event_members").update({ team_number: num }).eq("id", teamModal.id);
+    setSavingTeam(false);
+    setTeamModal(null);
+    onToast(`Team ${num != null ? num : "cleared"} assigned to ${teamModal.profiles?.full_name}.`);
+    await fetchMembers();
+  }
+
   async function assignCoordinator(teamNumber, coordinatorProfileId) {
     setAssigningCoord(true);
     await supabase
@@ -175,6 +220,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
           {members.length} enrolled · {event.team_count || "?"} teams
         </div>
         <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
+          <button onClick={openEditModal} style={eventActionBtn()}>Edit</button>
           {event.status === "inactive" && (
             <button onClick={() => setPublishModal(true)} style={eventActionBtn("#22C55E")}>
               Publish
@@ -296,6 +342,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                     setEditingMessage(m);
                     setMessageText(m.personal_message || "");
                   }}
+                  onSetTeam={() => { setTeamModal(m); setTeamInput(m.team_number?.toString() || ""); }}
                 />
               ))}
             </div>
@@ -569,6 +616,107 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
           busy={deleting}
         />
       )}
+
+      {/* Event edit modal */}
+      {editModal && (
+        <div style={overlay}>
+          <div style={{ ...sheet, maxHeight: "88vh", display: "flex", flexDirection: "column", maxWidth: 400 }}>
+            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 700, color: "#111111", marginBottom: "1rem" }}>
+              Edit Event
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              {[
+                { key: "name", label: "Event Name", type: "text" },
+                { key: "dates", label: "Dates (e.g. August 5–9, 2026)", type: "text" },
+                { key: "location", label: "Location", type: "text" },
+                { key: "team_count", label: "Number of Teams", type: "number" },
+                { key: "fee", label: "Registration Fee (e.g. $50)", type: "text" },
+                { key: "registration_url", label: "Registration URL", type: "text" },
+                { key: "zoom_training_dates", label: "Zoom Training Dates", type: "text" },
+                { key: "verse", label: "Verse Reference (e.g. John 15:16)", type: "text" },
+              ].map(({ key, label, type }) => (
+                <div key={key}>
+                  <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.07em", fontFamily: SANS, marginBottom: 4 }}>{label}</div>
+                  <input
+                    type={type}
+                    value={editFields[key] ?? ""}
+                    onChange={(e) => setEditFields((f) => ({ ...f, [key]: e.target.value }))}
+                    style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111", outline: "none", boxSizing: "border-box" }}
+                  />
+                </div>
+              ))}
+              <div>
+                <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.07em", fontFamily: SANS, marginBottom: 4 }}>Verse Text</div>
+                <textarea
+                  value={editFields.verse_text ?? ""}
+                  onChange={(e) => setEditFields((f) => ({ ...f, verse_text: e.target.value }))}
+                  rows={3}
+                  style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111", outline: "none", resize: "vertical", boxSizing: "border-box" }}
+                />
+              </div>
+              <div>
+                <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.07em", fontFamily: SANS, marginBottom: 4 }}>Description</div>
+                <textarea
+                  value={editFields.description ?? ""}
+                  onChange={(e) => setEditFields((f) => ({ ...f, description: e.target.value }))}
+                  rows={3}
+                  style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111", outline: "none", resize: "vertical", boxSizing: "border-box" }}
+                />
+              </div>
+              <div>
+                <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.07em", fontFamily: SANS, marginBottom: 4 }}>Type</div>
+                <select
+                  value={editFields.type ?? "conference"}
+                  onChange={(e) => setEditFields((f) => ({ ...f, type: e.target.value }))}
+                  style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111", outline: "none", background: "#fff", boxSizing: "border-box" }}
+                >
+                  {[["conference","Conference"],["annual_conference","Annual Conference"],["youth_conference","Youth Conference"],["openmic","Open Mic"],["mission","Mission Trip"],["zoom_meeting","Zoom Meeting"],["board_meeting","Board Meeting"],["other","Other"]].map(([v,l]) => (
+                    <option key={v} value={v}>{l}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: "1rem" }}>
+              <button onClick={saveEventFields} disabled={editBusy} style={{ flex: 1, background: editBusy ? "#CCCCCC" : "#FF4D00", color: "#fff", border: "none", borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600, fontFamily: SANS, cursor: editBusy ? "default" : "pointer" }}>
+                {editBusy ? "Saving…" : "Save"}
+              </button>
+              <button onClick={() => setEditModal(false)} style={{ flex: 1, background: "#fff", color: "#111111", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600, fontFamily: SANS, cursor: "pointer" }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Team assignment modal */}
+      {teamModal && (
+        <div style={overlay}>
+          <div style={{ ...sheet, display: "flex", flexDirection: "column" }}>
+            <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 700, color: "#111111", marginBottom: 4 }}>
+              Assign Team
+            </div>
+            <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginBottom: "1rem" }}>
+              {teamModal.profiles?.full_name}
+            </div>
+            <input
+              type="number"
+              value={teamInput}
+              onChange={(e) => setTeamInput(e.target.value)}
+              placeholder="Team number"
+              min="1"
+              style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "12px", fontSize: "22px", fontFamily: SANS, color: "#111111", outline: "none", boxSizing: "border-box", marginBottom: "1rem", textAlign: "center", fontWeight: 700 }}
+            />
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={saveTeamNumber} disabled={savingTeam} style={{ flex: 1, background: savingTeam ? "#CCCCCC" : "#FF4D00", color: "#fff", border: "none", borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600, fontFamily: SANS, cursor: savingTeam ? "default" : "pointer" }}>
+                {savingTeam ? "Saving…" : "Assign"}
+              </button>
+              <button onClick={() => setTeamModal(null)} style={{ flex: 1, background: "#fff", color: "#111111", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600, fontFamily: SANS, cursor: "pointer" }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -593,7 +741,7 @@ function onboardingStatus(member) {
   return "not_started";
 }
 
-function MemberRow({ member, onRemove, onEditMessage }) {
+function MemberRow({ member, onRemove, onEditMessage, onSetTeam }) {
   const p = member.profiles || {};
   const status = onboardingStatus(member);
   const st = ONBOARDING_STATUS[status];
@@ -609,8 +757,14 @@ function MemberRow({ member, onRemove, onEditMessage }) {
         <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {p.full_name}
         </div>
-        <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>
-          {member.event_role}{member.ministry ? ` · ${member.ministry}` : ""}
+        <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1, display: "flex", alignItems: "center", gap: 6 }}>
+          <span>{member.event_role}{member.ministry ? ` · ${member.ministry}` : ""}</span>
+          <button
+            onClick={onSetTeam}
+            style={{ background: "#F0F0F0", border: "none", borderRadius: 4, padding: "1px 6px", fontSize: "11px", fontWeight: 700, color: "#555", cursor: "pointer", fontFamily: SANS }}
+          >
+            T{member.team_number ?? "–"}
+          </button>
         </div>
       </div>
       <span style={{ fontSize: "10px", fontWeight: 700, background: st.bg, color: st.color, borderRadius: 20, padding: "3px 8px", fontFamily: SANS, flexShrink: 0 }}>
