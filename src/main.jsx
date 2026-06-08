@@ -15,26 +15,21 @@ class ErrorBoundary extends React.Component {
   }
   render() {
     if (this.state.error) {
-      const err = this.state.error;
-      const stack = (err.stack || "").split("\n").slice(0, 8).join("\n");
       return (
         <div style={{
-          position: "fixed", inset: 0, background: "#111",
-          display: "flex", flexDirection: "column",
-          padding: "2rem", fontFamily: "monospace", color: "#fff", overflowY: "auto",
+          position: "fixed", inset: 0, background: "#FF4D00",
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          padding: "2rem", fontFamily: "system-ui, sans-serif", color: "#fff", textAlign: "center",
         }}>
-          <div style={{ fontSize: "18px", fontWeight: 900, marginBottom: "0.75rem", color: "#FF4D00" }}>
-            App crashed — share this with dev
+          <div style={{ fontSize: "24px", fontWeight: 900, marginBottom: "1rem" }}>
+            Something went wrong
           </div>
-          <div style={{ fontSize: "13px", color: "#FFB896", marginBottom: "0.75rem", wordBreak: "break-word" }}>
-            {err.message}
+          <div style={{ fontSize: "14px", opacity: 0.8, marginBottom: "1.5rem", lineHeight: 1.6 }}>
+            The app encountered an error. Please reload.
           </div>
-          <pre style={{ fontSize: "11px", color: "#8A9BB0", whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: 1.6, flex: 1 }}>
-            {stack}
-          </pre>
           <button
             onClick={() => { this.setState({ error: null }); window.location.reload(); }}
-            style={{ background: "#FF4D00", color: "#fff", border: "none", borderRadius: 12, padding: "12px 28px", fontSize: "15px", fontWeight: 700, cursor: "pointer", marginTop: "1.5rem", flexShrink: 0 }}
+            style={{ background: "#fff", color: "#FF4D00", border: "none", borderRadius: 12, padding: "12px 28px", fontSize: "15px", fontWeight: 700, cursor: "pointer" }}
           >
             Reload app
           </button>
