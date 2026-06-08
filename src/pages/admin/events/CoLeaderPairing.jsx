@@ -260,7 +260,7 @@ export default function CoLeaderPairing({ event, data, onRefresh, onToast }) {
                 cursor: "pointer", fontFamily: SANS,
               }}>Cancel</button>
               <button onClick={confirmPair} disabled={busy} style={{
-                flex: 1, background: busy ? "#C9B7A8" : "#111111", border: "none", borderRadius: 10,
+                flex: 1, background: busy ? "#CCCCCC" : "#FF4D00", border: "none", borderRadius: 10,
                 padding: "12px", fontSize: "14px", fontWeight: 600, color: "#fff",
                 cursor: busy ? "default" : "pointer", fontFamily: SANS,
               }}>

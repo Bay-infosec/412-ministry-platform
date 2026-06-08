@@ -184,7 +184,7 @@ export default function ModeratorAssignments({ data, onToast }) {
                   <button
                     onClick={() => { setAssignModal(mod); setSelectedEventId(""); }}
                     style={{
-                      background: "#111111", color: "#fff", border: "none", borderRadius: 8,
+                      background: "#FF4D00", color: "#fff", border: "none", borderRadius: 8,
                       padding: "7px 14px", fontSize: "12px", fontWeight: 700,
                       fontFamily: SANS, cursor: "pointer", flexShrink: 0,
                       whiteSpace: "nowrap",
@@ -242,10 +242,9 @@ export default function ModeratorAssignments({ data, onToast }) {
                 onClick={addAssignment}
                 disabled={busy || !selectedEventId}
                 style={{
-                  flex: 1, background: "#111111", color: "#fff", border: "none", borderRadius: 8,
+                  flex: 1, background: busy || !selectedEventId ? "#CCCCCC" : "#FF4D00", color: "#fff", border: "none", borderRadius: 8,
                   padding: "11px", fontSize: "14px", fontWeight: 700, fontFamily: SANS,
                   cursor: busy || !selectedEventId ? "not-allowed" : "pointer",
-                  opacity: busy || !selectedEventId ? 0.6 : 1,
                 }}
               >
                 {busy ? "Assigning…" : "Assign"}
@@ -253,7 +252,7 @@ export default function ModeratorAssignments({ data, onToast }) {
               <button
                 onClick={() => { setAssignModal(null); setSelectedEventId(""); }}
                 style={{
-                  flex: 1, background: "#F3F4F6", color: "#111111", border: "none", borderRadius: 8,
+                  flex: 1, background: "#fff", color: "#111111", border: "1px solid #E5E5E5", borderRadius: 8,
                   padding: "11px", fontSize: "14px", fontWeight: 600, fontFamily: SANS,
                   cursor: "pointer",
                 }}

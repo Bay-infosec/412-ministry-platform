@@ -320,10 +320,9 @@ export default function SystemGroups({ data, onToast }) {
                     onClick={() => cfg.isEvent ? syncEventGroup() : syncGroup(cfg)}
                     disabled={isSyncing}
                     style={{
-                      background: "#111111", color: "#fff", border: "none", borderRadius: 8,
+                      background: isSyncing ? "#CCCCCC" : "#FF4D00", color: "#fff", border: "none", borderRadius: 8,
                       padding: "7px 16px", fontSize: "12px", fontWeight: 700,
                       fontFamily: SANS, cursor: isSyncing ? "default" : "pointer",
-                      opacity: isSyncing ? 0.6 : 1,
                     }}
                   >
                     {isSyncing ? "Syncing…" : existing ? "Sync members" : "Create & sync"}

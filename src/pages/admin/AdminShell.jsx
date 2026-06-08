@@ -131,7 +131,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
           <button
             onClick={() => nav("events.pairing")}
             style={{
-              background: "#111111", color: "#fff", border: "none", borderRadius: 8,
+              background: "#FF4D00", color: "#fff", border: "none", borderRadius: 8,
               padding: "7px 14px", fontSize: "13px", fontWeight: 600,
               fontFamily: SANS, cursor: "pointer",
             }}

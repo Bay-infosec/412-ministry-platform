@@ -227,7 +227,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
           onClick={() => save(false)}
           disabled={busy}
           style={{
-            background: "#F3F4F6", color: "#111111", border: "none", borderRadius: 10,
+            background: "#fff", color: "#111111", border: "1px solid #E5E5E5", borderRadius: 10,
             padding: "12px", fontSize: "14px", fontWeight: 600, fontFamily: SANS,
             cursor: "pointer", width: "100%",
           }}

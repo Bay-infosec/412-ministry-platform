@@ -200,7 +200,7 @@ export default function EventsBrowser({ data, onRefresh }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
-                          display: "block", marginTop: "0.75rem", background: "#111111", color: "#fff",
+                          display: "block", marginTop: "0.75rem", background: "#FF4D00", color: "#fff",
                           borderRadius: 8, padding: "11px", textAlign: "center",
                           fontSize: "14px", fontWeight: 700, fontFamily: SANS, textDecoration: "none",
                         }}

@@ -81,7 +81,7 @@ export default function FieldGuide({ data, onBack }) {
             rel="noopener noreferrer"
             style={{
               flex: 1, display: "block", padding: "11px", textAlign: "center",
-              background: "#111111", color: "#fff", borderRadius: 8,
+              background: "#FF4D00", color: "#fff", borderRadius: 8,
               textDecoration: "none", fontSize: "14px", fontWeight: 600, fontFamily: SANS,
             }}
           >

@@ -22,7 +22,7 @@ function PrimaryBtn({ children, onClick, disabled, gold }) {
       disabled={disabled}
       style={{
         width: "100%", padding: "14px", border: "none", borderRadius: 12,
-        background: gold ? "#FF4D00" : "#111111", color: "#fff",
+        background: "#FF4D00", color: "#fff",
         fontSize: "15px", fontWeight: 700, fontFamily: SANS,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.35 : 1,

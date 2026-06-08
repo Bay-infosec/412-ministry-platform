@@ -772,7 +772,7 @@ function GroupCreateView({ myId, activeEvent, onlineUsers, onCreated, onBack }) 
           onClick={create}
           disabled={!groupName.trim() || selected.size === 0 || creating}
           style={{
-            background: groupName.trim() && selected.size > 0 ? "#111111" : BORDER,
+            background: groupName.trim() && selected.size > 0 ? "#FF4D00" : BORDER,
             color: "#fff", border: "none", borderRadius: 20, padding: "8px 18px",
             fontFamily: SANS, fontSize: "13px", fontWeight: 700, cursor: "pointer",
             transition: "background 0.15s",

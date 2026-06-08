@@ -20,11 +20,6 @@ export default function Button({
       color: "#111111",
       border: "1.5px solid #E5E5E5",
     },
-    navy: {
-      background: disabled ? "#CCCCCC" : "#111111",
-      color: "#fff",
-      border: "none",
-    },
     danger: {
       background: "transparent",
       color: "#DC2626",

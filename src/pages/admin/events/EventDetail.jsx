@@ -497,7 +497,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                 }}
                 disabled={busy}
                 style={{
-                  flex: 1, background: "#111111", color: "#fff", border: "none",
+                  flex: 1, background: "#FF4D00", color: "#fff", border: "none",
                   borderRadius: 10, padding: "11px", fontSize: "14px",
                   fontWeight: 600, cursor: "pointer", fontFamily: SANS,
                 }}

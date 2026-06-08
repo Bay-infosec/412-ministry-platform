@@ -319,7 +319,7 @@ function ModalButtons({ onCancel, onConfirm, confirmLabel, disabled }) {
   return (
     <div style={{ display: "flex", gap: 8 }}>
       <button onClick={onCancel} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "12px", fontSize: "15px", fontWeight: 600, color: "#111111", cursor: "pointer", fontFamily: SANS }}>Cancel</button>
-      <button onClick={onConfirm} disabled={disabled} style={{ flex: 1, background: disabled ? "#C9B7A8" : "#111111", border: "none", borderRadius: 10, padding: "12px", fontSize: "15px", fontWeight: 600, color: "#fff", cursor: disabled ? "default" : "pointer", fontFamily: SANS }}>
+      <button onClick={onConfirm} disabled={disabled} style={{ flex: 1, background: disabled ? "#CCCCCC" : "#FF4D00", border: "none", borderRadius: 10, padding: "12px", fontSize: "15px", fontWeight: 600, color: "#fff", cursor: disabled ? "default" : "pointer", fontFamily: SANS }}>
         {confirmLabel}
       </button>
     </div>
