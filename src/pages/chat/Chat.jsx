@@ -367,6 +367,8 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
   const [senderMap, setSenderMap] = useState({});
   const [convId, setConvId] = useState(null);
   const [input, setInput] = useState("");
+  const [showMembers, setShowMembers] = useState(false);
+  const [groupMembers, setGroupMembers] = useState(null);
   const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
@@ -375,8 +377,26 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
   const isOnline = !isGroup && !isSelf && onlineUsers.some((u) => u.user_id === conv.other?.id);
   const title = isGroup ? conv.group_name : isSelf ? "My Notes" : conv.other?.full_name;
 
-  useEffect(() => { init(); }, [conv.id, conv.other?.id]);
+  useEffect(() => { init(); setShowMembers(false); setGroupMembers(null); }, [conv.id, conv.other?.id]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => {
+    if (showMembers && convId && !groupMembers && isGroup) loadGroupMembers(convId);
+  }, [showMembers, convId]);
+
+  async function loadGroupMembers(cid) {
+    const { data: parts } = await supabase
+      .from("conversation_participants")
+      .select("profile_id")
+      .eq("conversation_id", cid);
+    const ids = (parts || []).map((p) => p.profile_id);
+    if (!ids.length) { setGroupMembers([]); return; }
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, full_name, photo_url")
+      .in("id", ids)
+      .order("full_name");
+    setGroupMembers(data || []);
+  }
 
   async function init() {
     let cid = conv.id;
@@ -493,10 +513,48 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
             )}
           </div>
           <div style={{ fontSize: "11px", fontFamily: SANS, fontWeight: 600, color: isOnline ? "#22C55E" : TSEC }}>
-            {isGroup ? "Group" : isSelf ? "Only visible to you" : isOnline ? "Active now" : "Offline"}
+            {isGroup
+              ? (groupMembers ? `${groupMembers.length} members` : "Group")
+              : isSelf ? "Only visible to you"
+              : isOnline ? "Active now" : "Offline"}
           </div>
         </div>
+        {isGroup && (
+          <button
+            onClick={() => setShowMembers((s) => !s)}
+            style={{ ...iconBtn(), background: showMembers ? "#F0F0F0" : undefined }}
+            title="Members"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+            </svg>
+          </button>
+        )}
       </div>
+
+      {/* Group member list (collapsible) */}
+      {isGroup && showMembers && (
+        <div style={{ background: "#fff", borderBottom: `1px solid ${BORDER}`, padding: "0.75rem 1.25rem" }}>
+          {!groupMembers ? (
+            <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>Loading members…</div>
+          ) : groupMembers.length === 0 ? (
+            <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, fontStyle: "italic" }}>No members yet.</div>
+          ) : (
+            <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 2 }}>
+              {groupMembers.map((m) => (
+                <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                  <Avatar url={m.photo_url} name={m.full_name} size={32} />
+                  <span style={{ fontSize: "9px", fontWeight: 700, color: "#111111", fontFamily: SANS, maxWidth: 48, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>
+                    {m.full_name?.split(" ")[0]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Messages */}
       <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: 4 }}>

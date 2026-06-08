@@ -575,11 +575,10 @@ export default function App() {
           />
         )}
         <BottomNav
-          active={page === "chat" ? "chat" : tab}
-          onNavigate={(t) => { if (t === "chat") { openChat(); } else { navigate(t); } }}
+          active={tab}
+          onNavigate={navigate}
           hasEvent={hasEvent}
           unreadCount={data.unreadCount}
-          chatUnread={chatUnread}
           profilePhotoUrl={data.profile.photo_url}
         />
         {page === "admin" && data.isModerator && (

@@ -1,17 +1,23 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { NAVY, ORANGE, GOLD, TSEC, BORDER, SERIF, SANS } from "../../../lib/constants.js";
-import { Avatar, SectionLabel } from "../../../components/ui/index.js";
+import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
+import { Avatar } from "../../../components/ui/index.js";
 
 const SYSTEM_GROUPS = [
   {
     key: "board",
     name: "412 Board",
     desc: "Members with the 412 Board tag",
-    color: "#162038",
-    textColor: "#EFAB25",
-    getMembers: (allProfiles) =>
-      allProfiles.filter((p) => (p.tags || []).includes("board_member")),
+    color: "#111111",
+    textColor: "#FF4D00",
+    fetchMembers: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, photo_url")
+        .contains("tags", ["board_member"])
+        .order("full_name");
+      return data || [];
+    },
   },
   {
     key: "pastors",
@@ -19,8 +25,14 @@ const SYSTEM_GROUPS = [
     desc: "Members with the Pastor tag",
     color: "#065F46",
     textColor: "#D1FAE5",
-    getMembers: (allProfiles) =>
-      allProfiles.filter((p) => (p.tags || []).includes("pastor")),
+    fetchMembers: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, photo_url")
+        .contains("tags", ["pastor"])
+        .order("full_name");
+      return data || [];
+    },
   },
   {
     key: "public",
@@ -28,7 +40,13 @@ const SYSTEM_GROUPS = [
     desc: "Everyone on the platform",
     color: "#059669",
     textColor: "#fff",
-    getMembers: (allProfiles) => allProfiles,
+    fetchMembers: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, photo_url")
+        .order("full_name");
+      return data || [];
+    },
   },
   {
     key: "staff",
@@ -36,18 +54,27 @@ const SYSTEM_GROUPS = [
     desc: "Platform staff only",
     color: "#1A4FBF",
     textColor: "#fff",
-    getMembers: (allProfiles) =>
-      allProfiles.filter((p) => p.platform_role === "admin" || p.platform_role === "moderator"),
+    fetchMembers: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, photo_url")
+        .in("platform_role", ["admin", "moderator"])
+        .order("full_name");
+      return data || [];
+    },
   },
 ];
 
 export default function SystemGroups({ data, onToast }) {
-  const { allProfiles, activeEvent, profile: myProfile, allEventMembers } = data;
+  const { activeEvent, profile: myProfile, allEventMembers } = data;
   const myId = myProfile.id;
 
-  const [groups, setGroups] = useState([]);
+  const [groups, setGroups] = useState({});
   const [syncing, setSyncing] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [expandedKey, setExpandedKey] = useState(null);
+  const [memberLists, setMemberLists] = useState({});
+  const [loadingMembers, setLoadingMembers] = useState(null);
 
   useEffect(() => { load(); }, []);
 
@@ -61,7 +88,6 @@ export default function SystemGroups({ data, onToast }) {
       .select("id, system_key, group_name, last_message_at")
       .in("system_key", keys);
 
-    // Count members per group
     const ids = (rows || []).map((r) => r.id);
     let countMap = {};
     if (ids.length) {
@@ -74,15 +100,48 @@ export default function SystemGroups({ data, onToast }) {
       }
     }
 
-    const byKey = Object.fromEntries((rows || []).map((r) => [r.system_key, { ...r, memberCount: countMap[r.id] || 0 }]));
+    const byKey = Object.fromEntries(
+      (rows || []).map((r) => [r.system_key, { ...r, memberCount: countMap[r.id] || 0 }])
+    );
     setGroups(byKey);
     setLoading(false);
   }
 
-  async function syncGroup(cfg, members) {
+  async function loadMemberList(convId, key) {
+    setLoadingMembers(key);
+    const { data: parts } = await supabase
+      .from("conversation_participants")
+      .select("profile_id")
+      .eq("conversation_id", convId);
+    const ids = (parts || []).map((p) => p.profile_id);
+    if (!ids.length) {
+      setMemberLists((prev) => ({ ...prev, [key]: [] }));
+      setLoadingMembers(null);
+      return;
+    }
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name, photo_url")
+      .in("id", ids)
+      .order("full_name");
+    setMemberLists((prev) => ({ ...prev, [key]: profiles || [] }));
+    setLoadingMembers(null);
+  }
+
+  function toggleExpand(key, convId) {
+    if (expandedKey === key) {
+      setExpandedKey(null);
+      return;
+    }
+    setExpandedKey(key);
+    if (convId && !memberLists[key]) loadMemberList(convId, key);
+  }
+
+  async function syncGroup(cfg) {
     setSyncing(cfg.key);
     try {
-      // Upsert conversation
+      const members = await cfg.fetchMembers();
+
       const { data: existing } = await supabase
         .from("conversations")
         .select("id")
@@ -107,13 +166,17 @@ export default function SystemGroups({ data, onToast }) {
       }
       if (!convId) { onToast(`Failed to create ${cfg.name}`, "error"); setSyncing(null); return; }
 
-      // Upsert all members
       const rows = members.map((p) => ({ conversation_id: convId, profile_id: p.id }));
       if (rows.length) {
         await supabase.from("conversation_participants").upsert(rows, { onConflict: "conversation_id,profile_id" });
       }
+
+      // Refresh member list if expanded
+      setMemberLists((prev) => ({ ...prev, [cfg.key]: undefined }));
+      if (expandedKey === cfg.key) loadMemberList(convId, cfg.key);
+
       onToast(`${cfg.name} synced — ${members.length} members.`);
-    } catch (e) {
+    } catch {
       onToast(`Sync failed for ${cfg.name}`, "error");
     }
     setSyncing(null);
@@ -122,9 +185,9 @@ export default function SystemGroups({ data, onToast }) {
 
   async function syncEventGroup() {
     if (!activeEvent) return;
-    setSyncing(`event_${activeEvent.id}`);
+    const key = `event_${activeEvent.id}`;
+    setSyncing(key);
     try {
-      const key = `event_${activeEvent.id}`;
       const name = `${activeEvent.name} Group`;
 
       const { data: existing } = await supabase
@@ -151,15 +214,18 @@ export default function SystemGroups({ data, onToast }) {
       }
       if (!convId) { onToast("Failed to create event group", "error"); setSyncing(null); return; }
 
-      // Add all event members
-      const eventIds = (allEventMembers || [])
+      const eventParticipants = (allEventMembers || [])
         .filter((m) => m.event_id === activeEvent.id)
         .map((m) => ({ conversation_id: convId, profile_id: m.profile_id }));
 
-      if (eventIds.length) {
-        await supabase.from("conversation_participants").upsert(eventIds, { onConflict: "conversation_id,profile_id" });
+      if (eventParticipants.length) {
+        await supabase.from("conversation_participants").upsert(eventParticipants, { onConflict: "conversation_id,profile_id" });
       }
-      onToast(`${name} synced — ${eventIds.length} members.`);
+
+      setMemberLists((prev) => ({ ...prev, [key]: undefined }));
+      if (expandedKey === key) loadMemberList(convId, key);
+
+      onToast(`${name} synced — ${eventParticipants.length} members.`);
     } catch {
       onToast("Sync failed for event group", "error");
     }
@@ -172,8 +238,8 @@ export default function SystemGroups({ data, onToast }) {
     ...(activeEvent ? [{
       key: `event_${activeEvent.id}`,
       name: `${activeEvent.name} Group`,
-      desc: "All event members (admin adds moderators manually)",
-      color: "#E8621A",
+      desc: "All event members",
+      color: "#FF4D00",
       textColor: "#fff",
       isEvent: true,
     }] : []),
@@ -182,11 +248,11 @@ export default function SystemGroups({ data, onToast }) {
   return (
     <div>
       <div style={{ marginBottom: "1.25rem" }}>
-        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111", marginBottom: 4 }}>
+        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, color: "#111111", marginBottom: 4, letterSpacing: "-0.02em" }}>
           System Groups
         </div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>
-          These groups are permanent and managed by the platform. Sync updates membership based on current tags and roles.
+          Permanent groups managed by the platform. Sync pulls fresh data from the database every time.
         </div>
       </div>
 
@@ -197,12 +263,17 @@ export default function SystemGroups({ data, onToast }) {
           {allCfgs.map((cfg) => {
             const existing = groups[cfg.key];
             const isSyncing = syncing === cfg.key;
-            const members = cfg.isEvent ? null : cfg.getMembers(allProfiles || []);
-            const memberCount = existing?.memberCount ?? (members?.length ?? "—");
+            const isExpanded = expandedKey === cfg.key;
+            const memberCount = existing?.memberCount ?? "—";
+            const memberList = memberLists[cfg.key];
 
             return (
               <div key={cfg.key} style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "1rem 1.25rem" }}>
+                {/* Header row */}
+                <button
+                  onClick={() => toggleExpand(cfg.key, existing?.id)}
+                  style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, padding: "1rem 1.25rem", textAlign: "left" }}
+                >
                   <div style={{
                     width: 42, height: 42, borderRadius: "50%", background: cfg.color, flexShrink: 0,
                     display: "flex", alignItems: "center", justifyContent: "center",
@@ -214,17 +285,54 @@ export default function SystemGroups({ data, onToast }) {
                     <div style={{ fontSize: "14px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>{cfg.name}</div>
                     <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>{cfg.desc}</div>
                   </div>
-                  <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111" }}>{memberCount}</div>
+                  <div style={{ textAlign: "right", flexShrink: 0, marginRight: 4 }}>
+                    <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, color: "#111111" }}>{memberCount}</div>
                     <div style={{ fontSize: "10px", color: TSEC, fontFamily: SANS }}>members</div>
                   </div>
-                </div>
-                <div style={{ borderTop: `1px solid ${BORDER}`, padding: "0.75rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FAFAF9" }}>
+                  <svg
+                    width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke={TSEC} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    style={{ flexShrink: 0, transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+
+                {/* Expanded member list */}
+                {isExpanded && (
+                  <div style={{ borderTop: `1px solid ${BORDER}`, padding: "0.75rem 1.25rem" }}>
+                    {!existing ? (
+                      <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, fontStyle: "italic" }}>
+                        Group not created yet. Sync to create it.
+                      </div>
+                    ) : loadingMembers === cfg.key ? (
+                      <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>Loading members…</div>
+                    ) : !memberList || memberList.length === 0 ? (
+                      <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, fontStyle: "italic" }}>
+                        No members yet. Sync to add members.
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {memberList.map((m) => (
+                          <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 6, background: "#FAFAFA", border: `1px solid ${BORDER}`, borderRadius: 20, padding: "4px 10px 4px 4px" }}>
+                            <Avatar url={m.photo_url} name={m.full_name} size={22} />
+                            <span style={{ fontSize: "12px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
+                              {m.full_name}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Footer: status + sync button */}
+                <div style={{ borderTop: `1px solid ${BORDER}`, padding: "0.75rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FAFAFA" }}>
                   <span style={{ fontSize: "12px", color: existing ? "#059669" : TSEC, fontFamily: SANS, fontWeight: existing ? 700 : 400 }}>
                     {existing ? "Group exists" : "Not created yet"}
                   </span>
                   <button
-                    onClick={() => cfg.isEvent ? syncEventGroup() : syncGroup(cfg, members)}
+                    onClick={() => cfg.isEvent ? syncEventGroup() : syncGroup(cfg)}
                     disabled={isSyncing}
                     style={{
                       background: "#111111", color: "#fff", border: "none", borderRadius: 8,
@@ -245,8 +353,7 @@ export default function SystemGroups({ data, onToast }) {
       <div style={{ background: "#FFF5EC", border: "1px solid #FFD5C0", borderRadius: 12, padding: "0.875rem 1.25rem", marginTop: "1.25rem" }}>
         <div style={{ fontSize: "12px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS, marginBottom: 4 }}>After syncing</div>
         <div style={{ fontSize: "12px", color: "#111111", fontFamily: SANS, lineHeight: 1.6 }}>
-          Members will see these groups in their messenger automatically. Re-sync any time to add new members.
-          To add specific moderators to the Event Group, sync first, then use the messenger to add individuals.
+          Members will see these groups in their messenger automatically. Re-sync any time tags or roles change — sync always reads fresh data from the database.
         </div>
       </div>
     </div>

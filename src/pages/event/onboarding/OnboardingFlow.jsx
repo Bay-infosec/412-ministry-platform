@@ -459,32 +459,31 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: "1.25rem" }}>
             {coLeader.phone && (
               <a href={`tel:${coLeader.phone}`} style={{ textDecoration: "none" }}>
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 10,
-                  background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px",
-                }}>
-                  <span style={{ fontSize: "16px" }}>📞</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 012 1.18 2 2 0 014 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9a16 16 0 006.91 6.91l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+                  </svg>
                   <span style={{ fontSize: "13px", color: "#fff", fontFamily: SANS }}>{coLeader.phone}</span>
                 </div>
               </a>
             )}
             {coLeader.email && (
               <a href={`mailto:${coLeader.email}`} style={{ textDecoration: "none" }}>
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 10,
-                  background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px",
-                }}>
-                  <span style={{ fontSize: "16px" }}>✉️</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
                   <span style={{ fontSize: "13px", color: "#fff", fontFamily: SANS }}>{coLeader.email}</span>
                 </div>
               </a>
             )}
             {coLeader.churches?.name && (
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10,
-                background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px",
-              }}>
-                <span style={{ fontSize: "16px" }}>⛪</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
                 <span style={{ fontSize: "13px", color: "#fff", fontFamily: SANS }}>{coLeader.churches.name}</span>
               </div>
             )}

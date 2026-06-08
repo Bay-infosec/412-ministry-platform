@@ -19,7 +19,6 @@ export default function BottomNav({
   const items = [
     { key: "home",    label: "Home" },
     ...(hasEvent ? [{ key: "event", label: "Conference" }] : []),
-    { key: "chat",    label: "Chat",    badge: chatUnread },
     { key: "updates", label: "Updates", badge: unreadCount > 0 },
     { key: "profile", label: "Profile" },
   ];
