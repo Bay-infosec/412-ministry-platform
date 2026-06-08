@@ -42,7 +42,8 @@ export default function BottomNav({
           background: "#fff",
           borderTop: "1px solid #E5E5E5",
           display: "flex",
-          padding: "0.4rem 0 0.6rem",
+          padding: "0.4rem 0 0",
+          paddingBottom: "max(0.6rem, env(safe-area-inset-bottom))",
         }}
       >
         {items.map((it) => (
