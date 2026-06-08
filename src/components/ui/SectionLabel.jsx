@@ -7,7 +7,7 @@ export default function SectionLabel({ children, color }) {
         fontSize: "10px",
         fontWeight: 800,
         letterSpacing: "0.14em",
-        color: color || "#999999",
+        color: color || "#FF4D00",
         textTransform: "uppercase",
         marginBottom: "0.5rem",
         fontFamily: SANS,

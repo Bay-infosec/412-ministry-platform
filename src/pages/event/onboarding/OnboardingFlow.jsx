@@ -3,6 +3,7 @@ import { supabase } from "../../../lib/supabase.js";
 import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
 import { Shell } from "../../../components/layout/index.js";
 import { Card, SectionLabel } from "../../../components/ui/index.js";
+import { ContactForm } from "../../../components/shared/index.js";
 import { CHECKLIST_ITEMS } from "../../../lib/checklist.js";
 
 function splitZoomDisplay(zoomStr) {
@@ -234,14 +235,9 @@ const REQUIREMENTS = [
   },
 ];
 
-function RequirementsPage({ onNext }) {
+function RequirementsPage({ profile, onNext }) {
   const [acknowledged, setAcknowledged] = useState(false);
-
-  function handleEmail() {
-    const sub = encodeURIComponent("Set Apart 2026 Question");
-    const body = encodeURIComponent("Hi,\n\nI have a question about the requirements for Set Apart 2026.\n\n");
-    window.location.href = `mailto:info@412ministry.com?subject=${sub}&body=${body}`;
-  }
+  const [showContact, setShowContact] = useState(false);
 
   return (
     <>
@@ -286,7 +282,7 @@ function RequirementsPage({ onNext }) {
         </span>
       </button>
       <button
-        onClick={handleEmail}
+        onClick={() => setShowContact(true)}
         style={{
           width: "100%", padding: "12px", background: "transparent",
           color: "#111111", border: `1px solid ${BORDER}`, borderRadius: 12,
@@ -299,6 +295,7 @@ function RequirementsPage({ onNext }) {
       <PrimaryBtn onClick={onNext} disabled={!acknowledged}>
         I acknowledge and continue
       </PrimaryBtn>
+      {showContact && <ContactForm profile={profile} onClose={() => setShowContact(false)} />}
     </>
   );
 }
@@ -698,7 +695,7 @@ export default function OnboardingFlow({ data, onDone, onExit }) {
   const steps = [
     <WelcomePage key="welcome" profile={profile} activeEvent={activeEvent} onNext={next} />,
     <PersonalMessagePage key="message" eventMember={eventMember} onNext={next} />,
-    <RequirementsPage key="req" onNext={next} />,
+    <RequirementsPage key="req" profile={profile} onNext={next} />,
     <TeamRevealPage key="team" eventMember={eventMember} coLeader={coLeader} onNext={next} />,
     <PrayerTopicsPage key="prayer" onNext={next} />,
     <ChecklistPage key="checklist" onFinish={handleFinish} activeEvent={activeEvent} />,
