@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Toast } from "../../components/ui/index.js";
 import PeopleList from "./people/PeopleList.jsx";
@@ -31,6 +31,14 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false }
   }
 
   const [editingAnn, setEditingAnn] = useState(null); // null = list, {} = new, {id,...} = edit
+
+  // Keep selectedEvent in sync when data refreshes (e.g. after editing event fields)
+  useEffect(() => {
+    if (selectedEvent && data?.allEvents) {
+      const updated = data.allEvents.find((e) => e.id === selectedEvent.id);
+      if (updated) setSelectedEvent(updated);
+    }
+  }, [data?.allEvents]);
 
   const titles = {
     home: "Admin",

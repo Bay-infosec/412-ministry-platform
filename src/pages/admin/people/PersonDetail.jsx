@@ -69,9 +69,27 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
 
   async function toggleTag(key) {
     setSavingTag(key);
-    const next = tags.includes(key) ? tags.filter((t) => t !== key) : [...tags, key];
+    const isAdding = !tags.includes(key);
+    const next = isAdding ? [...tags, key] : tags.filter((t) => t !== key);
     await supabase.from("profiles").update({ tags: next }).eq("id", profile.id);
     setTags(next);
+
+    // Auto-sync the corresponding system group conversation
+    const groupKey = key === "pastor" ? "pastors" : key === "board_member" ? "board" : null;
+    if (groupKey) {
+      const { data: conv } = await supabase
+        .from("conversations").select("id").eq("system_key", groupKey).maybeSingle();
+      if (conv?.id) {
+        if (isAdding) {
+          await supabase.from("conversation_participants")
+            .upsert({ conversation_id: conv.id, profile_id: profile.id }, { onConflict: "conversation_id,profile_id" });
+        } else {
+          await supabase.from("conversation_participants")
+            .delete().eq("conversation_id", conv.id).eq("profile_id", profile.id);
+        }
+      }
+    }
+
     setSavingTag(null);
     onRefresh();
   }
