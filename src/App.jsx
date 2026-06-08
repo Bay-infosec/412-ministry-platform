@@ -35,7 +35,7 @@ function LoadingScreen() {
         <img
           src="/logo.png"
           alt="412 Ministry"
-          style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", display: "block" }}
+          style={{ width: 72, height: 72, borderRadius: 16, objectFit: "cover", display: "block" }}
         />
       </div>
       <div style={{ fontSize: "12px", fontWeight: 600, color: TSEC, fontFamily: SANS, letterSpacing: "0.04em" }}>
