@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
 import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 import { Card, Field, Button } from "../../../components/ui/index.js";
-import { sendEmail, sendAnnouncementEmails } from "../../../lib/email.js";
+import { sendEmail as sendEmailFn, sendAnnouncementEmails } from "../../../lib/email.js";
 import { matchesAudience } from "../../../lib/utils.js";
 
 const AUDIENCE_TYPES = [
@@ -30,7 +30,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
     return ann.audience[0]?.value || "";
   });
   const [busy, setBusy] = useState(false);
-  const [sendEmail, setSendEmail] = useState(false);
+  const [sendEmailToggle, setSendEmailToggle] = useState(false);
 
   const buildAudience = () => {
     if (audienceType === "all") return [{ type: "all" }];
@@ -64,7 +64,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
     if (ann?.id) {
       ({ error } = await supabase.from("announcements").update(payload).eq("id", ann.id));
     } else {
-      payload.created_by = profile.id;
+      payload.posted_by = profile.id;
       ({ error } = await supabase.from("announcements").insert(payload));
     }
 
@@ -72,7 +72,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
     if (error) { onToast("Could not save.", "error"); return; }
 
     // Email sending for published announcements
-    if (status === "published" && sendEmail) {
+    if (status === "published" && sendEmailToggle) {
       const audience = buildAudience();
       const allProfiles = data.allProfiles || [];
       const matched = allProfiles.filter((p) =>
@@ -83,13 +83,11 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
           event_role: p.event_role,
         })
       );
-
-      // Send emails non-blocking, via the send-email edge function (Resend)
       (async () => {
         let count = 0;
         for (const p of matched) {
           if (p.email) {
-            const ok = await sendEmail(
+            const ok = await sendEmailFn(
               p.email,
               payload.title,
               `<p>Hi ${p.full_name || "there"},</p><p><strong>${payload.title}</strong></p><p>${payload.body}</p>`
@@ -106,10 +104,9 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
           ? "Submitted for admin approval."
           : "Saved as draft.";
       onToast(msg);
-    }
-
-    if (status === "published" && activeEventId && !sendEmail) {
-      sendAnnouncementEmails(buildAudience(), { title: payload.title, body: payload.body }, activeEventId);
+      if (status === "published" && activeEventId) {
+        sendAnnouncementEmails(buildAudience(), { title: payload.title, body: payload.body }, activeEventId);
+      }
     }
 
     onSaved();
@@ -201,8 +198,8 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
           <input
             id="send-email-toggle"
             type="checkbox"
-            checked={sendEmail}
-            onChange={(e) => setSendEmail(e.target.checked)}
+            checked={sendEmailToggle}
+            onChange={(e) => setSendEmailToggle(e.target.checked)}
             style={{ width: 16, height: 16, accentColor: "#111111", cursor: "pointer", flexShrink: 0 }}
           />
           <label htmlFor="send-email-toggle" style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
