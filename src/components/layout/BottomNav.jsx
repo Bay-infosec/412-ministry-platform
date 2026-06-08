@@ -39,8 +39,8 @@ export default function BottomNav({
         style={{
           width: "100%",
           maxWidth: 460,
-          background: "#fff",
-          borderTop: "1px solid #E5E5E5",
+          background: "#FF4D00",
+          borderTop: "none",
           display: "flex",
           padding: "0.4rem 0 0",
           paddingBottom: "max(0.6rem, env(safe-area-inset-bottom))",
@@ -70,7 +70,7 @@ export default function BottomNav({
                   alt="Profile"
                   style={{
                     width: 30, height: 30, borderRadius: "50%", objectFit: "cover",
-                    border: `2.5px solid ${active === "profile" ? "#FF4D00" : "transparent"}`,
+                    border: `2.5px solid ${active === "profile" ? "#FFFFFF" : "rgba(255,255,255,0.3)"}`,
                     boxSizing: "border-box",
                   }}
                 />
@@ -80,7 +80,7 @@ export default function BottomNav({
                   height="22"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke={active === it.key ? "#FF4D00" : "#CCCCCC"}
+                  stroke={active === it.key ? "#FFFFFF" : "rgba(255,255,255,0.5)"}
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -99,7 +99,7 @@ export default function BottomNav({
                   width: 8,
                   height: 8,
                   borderRadius: "50%",
-                  background: "#E53E3E",
+                  background: "#FFFFFF",
                 }}
               />
             )}
@@ -109,7 +109,7 @@ export default function BottomNav({
                 fontWeight: 700,
                 letterSpacing: "0.04em",
                 textTransform: "uppercase",
-                color: active === it.key ? "#FF4D00" : "#CCCCCC",
+                color: active === it.key ? "#FFFFFF" : "rgba(255,255,255,0.5)",
                 fontFamily: SANS,
               }}
             >
