@@ -112,7 +112,7 @@ function EventCard({ ev }) {
       padding: "1rem 1.25rem",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-        <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 800, color: "#111111", lineHeight: 1.2, flex: 1, marginRight: 8 }}>
+        <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 800, color: "#1B2A4A", lineHeight: 1.2, flex: 1, marginRight: 8 }}>
           {ev.name}
         </div>
         <span style={{

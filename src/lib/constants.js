@@ -1,17 +1,23 @@
 export const C = {
   orange:      "#FF4D00",
-  dark:        "#111111",
-  dark2:       "#222222",
+  orangeDeep:  "#E64500",
+  orangeTint:  "#FFE4D6",
+  dark:        "#1B2A4A",   // navy — the platform's "ink": text, featured cards, dark surfaces (replaces black)
+  dark2:       "#2A3D63",   // lighter navy — secondary dark surfaces / pills inside dark cards
   white:       "#FFFFFF",
   bg:          "#FAFAFA",
   border:      "#E5E5E5",
-  text:        "#111111",
-  muted:       "#999999",
-  faint:       "#CCCCCC",
+  text:        "#1B2A4A",
+  muted:       "#6B7280",   // secondary/meta text on light surfaces (was #999999 — failed contrast on white/gray)
+  faint:       "#9CA3AF",
   verseBg:     "#FFF5F0",
   verseBorder: "#FFD5C0",
   success:     "#27AE60",
   barBg:       "#F0F0F0",
+  // Text-on-navy tokens — use these instead of #555/#999 inside dark cards (those failed contrast badly)
+  onDark:          "#FFFFFF",
+  onDarkSecondary: "rgba(255,255,255,0.6)",
+  onDarkTertiary:  "rgba(255,255,255,0.4)",
 };
 
 // Legacy aliases — all files using these get new colors automatically

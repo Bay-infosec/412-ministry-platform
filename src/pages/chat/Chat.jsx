@@ -21,7 +21,7 @@ function fmtFull(ts) {
 function GroupAvatar({ name, size = 48 }) {
   return (
     <div style={{
-      width: size, height: size, borderRadius: "50%", background: "#111111",
+      width: size, height: size, borderRadius: "50%", background: "#1B2A4A",
       display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
     }}>
       <svg width={size * 0.45} height={size * 0.45} viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -224,18 +224,18 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
       {/* Header */}
       <div style={{ background: "#fff", borderBottom: `1px solid ${BORDER}`, padding: "0.75rem 1.25rem", paddingTop: "max(0.75rem, env(safe-area-inset-top))", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <button onClick={onClose} style={iconBtn()}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
         </button>
-        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#111111", letterSpacing: "-0.02em" }}>Messages</div>
+        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.02em" }}>Messages</div>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={onOpenProfile} style={iconBtn()}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1" />
             </svg>
           </button>
-          <button onClick={onNewChat} style={iconBtn("#111111")}>
+          <button onClick={onNewChat} style={iconBtn("#1B2A4A")}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
               <line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" />
@@ -256,7 +256,7 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search people"
-              style={{ flex: 1, border: "none", background: "none", outline: "none", fontFamily: SANS, fontSize: "14px", color: "#111111" }}
+              style={{ flex: 1, border: "none", background: "none", outline: "none", fontFamily: SANS, fontSize: "14px", color: "#1B2A4A" }}
             />
             {search && <button onClick={() => setSearch("")} style={{ background: "none", border: "none", cursor: "pointer", color: TSEC, fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>}
           </div>
@@ -282,7 +282,7 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
                     <Avatar url={u.photo_url} name={u.name} size={54} />
                     <div style={{ position: "absolute", bottom: 1, right: 1, width: 14, height: 14, borderRadius: "50%", background: "#22C55E", border: "2.5px solid #fff" }} />
                   </div>
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: u.isSelf ? "#FF4D00" : "#111111", fontFamily: SANS, maxWidth: 62, textAlign: "center", lineHeight: 1.3, wordBreak: "break-word" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: u.isSelf ? "#FF4D00" : "#1B2A4A", fontFamily: SANS, maxWidth: 62, textAlign: "center", lineHeight: 1.3, wordBreak: "break-word" }}>
                     {u.isSelf ? "You" : (u.nickname || (u.name || "").split(" ")[0])}
                   </span>
                 </button>
@@ -309,7 +309,7 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
             <div style={{ padding: "3rem 0", textAlign: "center", fontSize: "13px", color: TSEC, fontFamily: SANS }}>Loading…</div>
           ) : conversations.length === 0 ? (
             <div style={{ padding: "3rem 1.5rem", textAlign: "center" }}>
-              <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#111111", marginBottom: 8, letterSpacing: "-0.02em" }}>No messages yet</div>
+              <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#1B2A4A", marginBottom: 8, letterSpacing: "-0.02em" }}>No messages yet</div>
               <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>Tap the compose icon or an active person to start a conversation.</div>
             </div>
           ) : (
@@ -336,7 +336,7 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
                   </div>
                   <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 3 }}>
-                      <span style={{ fontSize: "14px", fontWeight: c.unread > 0 ? 800 : 600, color: "#111111", fontFamily: SANS }}>
+                      <span style={{ fontSize: "14px", fontWeight: c.unread > 0 ? 800 : 600, color: "#1B2A4A", fontFamily: SANS }}>
                         {c.type === "group" ? c.group_name : (c.other?.nickname || c.other?.full_name)}
                       </span>
                       {c.lastMsg && (
@@ -346,7 +346,7 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
                       )}
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "12px", color: c.unread > 0 ? "#111111" : TSEC, fontFamily: SANS, fontWeight: c.unread > 0 ? 600 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                      <span style={{ fontSize: "12px", color: c.unread > 0 ? "#1B2A4A" : TSEC, fontFamily: SANS, fontWeight: c.unread > 0 ? 600 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                         {c.lastMsg ? (c.lastMsg.profile_id === myId ? "You: " : "") + c.lastMsg.body : "Start a conversation"}
                       </span>
                       {c.unread > 0 && (
@@ -539,7 +539,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
       {/* Header */}
       <div style={{ background: "#fff", borderBottom: `1px solid ${BORDER}`, padding: "0.75rem 1.25rem", paddingTop: "max(0.75rem, env(safe-area-inset-top))", display: "flex", alignItems: "center", gap: 12 }}>
         <button onClick={onBack} style={iconBtn()}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
         </button>
@@ -556,7 +556,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
           </div>
           <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-            <span style={{ fontSize: "15px", fontWeight: 800, color: "#111111", fontFamily: SANS }}>{title}</span>
+            <span style={{ fontSize: "15px", fontWeight: 800, color: "#1B2A4A", fontFamily: SANS }}>{title}</span>
             {!isGroup && !isSelf && conv.other?.nickname && (
               <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, fontStyle: "italic" }}>"{conv.other.nickname}"</span>
             )}
@@ -575,7 +575,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
             style={{ ...iconBtn(), background: showMembers ? "#F0F0F0" : undefined }}
             title="Members"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
               <circle cx="9" cy="7" r="4" />
               <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
@@ -596,7 +596,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
               {groupMembers.map((m) => (
                 <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
                   <Avatar url={m.photo_url} name={m.full_name} size={32} />
-                  <span style={{ fontSize: "9px", fontWeight: 700, color: "#111111", fontFamily: SANS, maxWidth: 48, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>
+                  <span style={{ fontSize: "9px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS, maxWidth: 48, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>
                     {m.full_name?.split(" ")[0]}
                   </span>
                 </div>
@@ -615,7 +615,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
             <div style={{ marginBottom: 12, display: "flex", justifyContent: "center" }}>
               {isGroup ? <GroupAvatar size={56} /> : <Avatar url={conv.other?.photo_url} name={conv.other?.full_name} size={56} />}
             </div>
-            <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 900, color: "#111111", marginBottom: 6, letterSpacing: "-0.02em" }}>{title}</div>
+            <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 900, color: "#1B2A4A", marginBottom: 6, letterSpacing: "-0.02em" }}>{title}</div>
             <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
               {isGroup ? "Send the first message to the group." : isSelf ? "Jot down notes, links, or reminders — only you can see this." : "Send a message to start the conversation."}
             </div>
@@ -652,7 +652,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
                     background: isMe ? "#FF4D00" : "#fff",
                     border: isMe ? "none" : `1px solid ${BORDER}`,
                   }}>
-                    <div style={{ fontSize: "13px", fontWeight: 500, color: isMe ? "#fff" : "#111111", fontFamily: SANS, lineHeight: 1.5, wordBreak: "break-word" }}>
+                    <div style={{ fontSize: "13px", fontWeight: 500, color: isMe ? "#fff" : "#1B2A4A", fontFamily: SANS, lineHeight: 1.5, wordBreak: "break-word" }}>
                       {msg.body}
                     </div>
                     <div style={{ fontSize: "9px", color: isMe ? "#FFB896" : TSEC, fontFamily: SANS, marginTop: 3, textAlign: isMe ? "right" : "left" }}>
@@ -676,7 +676,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
           placeholder={isGroup ? `Message ${title}…` : `Message ${conv.other?.full_name?.split(" ")[0]}…`}
-          style={{ flex: 1, border: `1px solid ${BORDER}`, borderRadius: 20, padding: "10px 16px", fontFamily: SANS, fontSize: "14px", color: "#111111", outline: "none", background: "#FAFAFA" }}
+          style={{ flex: 1, border: `1px solid ${BORDER}`, borderRadius: 20, padding: "10px 16px", fontFamily: SANS, fontSize: "14px", color: "#1B2A4A", outline: "none", background: "#FAFAFA" }}
         />
         <button
           onClick={send}
@@ -718,11 +718,11 @@ function NewChatView({ myId, activeEvent, canCreateGroup, onlineUsers, onSelectP
     <div style={{ position: "fixed", inset: 0, background: "#fff", display: "flex", flexDirection: "column", zIndex: 200, maxWidth: 460, margin: "0 auto" }}>
       <div style={{ borderBottom: `1px solid ${BORDER}`, padding: "0.75rem 1.25rem", paddingTop: "max(0.75rem, env(safe-area-inset-top))", display: "flex", alignItems: "center", gap: 12 }}>
         <button onClick={onBack} style={iconBtn()}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
         </button>
-        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#111111", letterSpacing: "-0.02em" }}>New Message</div>
+        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.02em" }}>New Message</div>
       </div>
 
       {canCreateGroup && (
@@ -732,7 +732,7 @@ function NewChatView({ myId, activeEvent, canCreateGroup, onlineUsers, onSelectP
         >
           <GroupAvatar size={44} />
           <div style={{ flex: 1, textAlign: "left" }}>
-            <div style={{ fontSize: "14px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>Create Group Chat</div>
+            <div style={{ fontSize: "14px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS }}>Create Group Chat</div>
             <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>Name it and add members</div>
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -747,7 +747,7 @@ function NewChatView({ myId, activeEvent, canCreateGroup, onlineUsers, onSelectP
             <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name"
-            style={{ flex: 1, border: "none", background: "none", outline: "none", fontFamily: SANS, fontSize: "14px", color: "#111111" }} />
+            style={{ flex: 1, border: "none", background: "none", outline: "none", fontFamily: SANS, fontSize: "14px", color: "#1B2A4A" }} />
         </div>
       </div>
 
@@ -813,11 +813,11 @@ function GroupCreateView({ myId, activeEvent, onlineUsers, onCreated, onBack }) 
     <div style={{ position: "fixed", inset: 0, background: "#fff", display: "flex", flexDirection: "column", zIndex: 200, maxWidth: 460, margin: "0 auto" }}>
       <div style={{ borderBottom: `1px solid ${BORDER}`, padding: "0.75rem 1.25rem", paddingTop: "max(0.75rem, env(safe-area-inset-top))", display: "flex", alignItems: "center", gap: 12 }}>
         <button onClick={onBack} style={iconBtn()}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
         </button>
-        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#111111", flex: 1, letterSpacing: "-0.02em" }}>New Group</div>
+        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#1B2A4A", flex: 1, letterSpacing: "-0.02em" }}>New Group</div>
         <button
           onClick={create}
           disabled={!groupName.trim() || selected.size === 0 || creating}
@@ -840,7 +840,7 @@ function GroupCreateView({ myId, activeEvent, onlineUsers, onCreated, onBack }) 
           onChange={(e) => setGroupName(e.target.value)}
           placeholder="Group name (e.g. Leaders — EM Ministry)"
           maxLength={60}
-          style={{ width: "100%", border: "none", borderBottom: `2px solid ${groupName ? "#111111" : BORDER}`, padding: "0.5rem 0", fontFamily: SANS, fontSize: "16px", fontWeight: 700, color: "#111111", outline: "none", background: "none", boxSizing: "border-box", transition: "border-color 0.15s" }}
+          style={{ width: "100%", border: "none", borderBottom: `2px solid ${groupName ? "#1B2A4A" : BORDER}`, padding: "0.5rem 0", fontFamily: SANS, fontSize: "16px", fontWeight: 700, color: "#1B2A4A", outline: "none", background: "none", boxSizing: "border-box", transition: "border-color 0.15s" }}
         />
         <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 6 }}>
           {selected.size === 0 ? "Select people below to add to the group" : `${selected.size} member${selected.size !== 1 ? "s" : ""} selected`}
@@ -854,7 +854,7 @@ function GroupCreateView({ myId, activeEvent, onlineUsers, onCreated, onBack }) 
             const p = people.find((x) => x.id === id);
             if (!p) return null;
             return (
-              <button key={id} onClick={() => toggleSelect(id)} style={{ display: "flex", alignItems: "center", gap: 6, background: "#FAFAFA", border: `1px solid ${BORDER}`, borderRadius: 20, padding: "4px 10px 4px 6px", cursor: "pointer", fontFamily: SANS, fontSize: "12px", fontWeight: 600, color: "#111111" }}>
+              <button key={id} onClick={() => toggleSelect(id)} style={{ display: "flex", alignItems: "center", gap: 6, background: "#FAFAFA", border: `1px solid ${BORDER}`, borderRadius: 20, padding: "4px 10px 4px 6px", cursor: "pointer", fontFamily: SANS, fontSize: "12px", fontWeight: 600, color: "#1B2A4A" }}>
                 <Avatar url={p.photo_url} name={p.full_name} size={20} />
                 {p.full_name?.split(" ")[0]} ×
               </button>
@@ -870,7 +870,7 @@ function GroupCreateView({ myId, activeEvent, onlineUsers, onCreated, onBack }) 
             <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search"
-            style={{ flex: 1, border: "none", background: "none", outline: "none", fontFamily: SANS, fontSize: "14px", color: "#111111" }} />
+            style={{ flex: 1, border: "none", background: "none", outline: "none", fontFamily: SANS, fontSize: "14px", color: "#1B2A4A" }} />
         </div>
       </div>
 
@@ -889,7 +889,7 @@ function GroupCreateView({ myId, activeEvent, onlineUsers, onCreated, onBack }) 
                 {onlineIds.has(p.id) && <div style={{ position: "absolute", bottom: 0, right: 0, width: 12, height: 12, borderRadius: "50%", background: "#22C55E", border: "2px solid #fff" }} />}
               </div>
               <div style={{ flex: 1, textAlign: "left" }}>
-                <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{p.full_name}</div>
+                <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{p.full_name}</div>
                 {onlineIds.has(p.id) && <div style={{ fontSize: "11px", color: "#22C55E", fontFamily: SANS, fontWeight: 600, marginTop: 1 }}>Active now</div>}
               </div>
               <div style={{ width: 22, height: 22, borderRadius: "50%", border: `2px solid ${isSelected ? "#FF4D00" : BORDER}`, background: isSelected ? "#FF4D00" : "none", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -913,7 +913,7 @@ function PersonRow({ person, isOnline, onPress }) {
         {isOnline && <div style={{ position: "absolute", bottom: 0, right: 0, width: 12, height: 12, borderRadius: "50%", background: "#22C55E", border: "2px solid #fff" }} />}
       </div>
       <div style={{ flex: 1, textAlign: "left" }}>
-        <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{person.full_name}</div>
+        <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{person.full_name}</div>
         {isOnline && <div style={{ fontSize: "11px", color: "#22C55E", fontFamily: SANS, fontWeight: 600, marginTop: 1 }}>Active now</div>}
       </div>
     </button>

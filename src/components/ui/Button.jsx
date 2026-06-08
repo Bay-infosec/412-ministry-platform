@@ -17,7 +17,7 @@ export default function Button({
     },
     secondary: {
       background: "transparent",
-      color: "#111111",
+      color: "#1B2A4A",
       border: "1.5px solid #E5E5E5",
     },
     danger: {
@@ -27,7 +27,7 @@ export default function Button({
     },
     ghost: {
       background: "none",
-      color: "#999999",
+      color: "#6B7280",
       border: "none",
     },
   };

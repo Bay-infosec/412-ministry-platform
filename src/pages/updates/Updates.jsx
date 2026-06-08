@@ -23,7 +23,7 @@ export default function Updates({ data, readIds, onMarkRead, onOpenAdmin }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.5rem" }}>
         <div>
           <SectionLabel>412 Ministry</SectionLabel>
-          <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#111111", letterSpacing: "-0.02em" }}>
+          <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.02em" }}>
             Updates
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function Updates({ data, readIds, onMarkRead, onOpenAdmin }) {
                   fontFamily: SANS,
                   fontSize: "15px",
                   fontWeight: 900,
-                  color: "#111111",
+                  color: "#1B2A4A",
                   marginBottom: 6,
                   letterSpacing: "-0.01em",
                 }}

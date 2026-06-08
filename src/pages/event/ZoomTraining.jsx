@@ -31,7 +31,7 @@ export default function ZoomTraining({ data, onBack }) {
         ← Back
       </button>
 
-      <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#111111", letterSpacing: "-0.03em", marginBottom: 4 }}>
+      <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.03em", marginBottom: 4 }}>
         Leader Zoom Training
       </div>
       <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginBottom: "1.5rem" }}>
@@ -39,7 +39,7 @@ export default function ZoomTraining({ data, onBack }) {
       </div>
 
       {zoom ? (
-        <div style={{ background: "#111111", borderRadius: 16, padding: "1.25rem 1.5rem", marginBottom: "1.25rem" }}>
+        <div style={{ background: "#1B2A4A", borderRadius: 16, padding: "1.25rem 1.5rem", marginBottom: "1.25rem" }}>
           <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 6 }}>
             Scheduled Date & Time
           </div>
@@ -65,11 +65,11 @@ export default function ZoomTraining({ data, onBack }) {
       <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem", marginBottom: "1.5rem" }}>
         {AGENDA.map(({ title, body }, i) => (
           <div key={title} style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12, padding: "1rem 1.25rem", display: "flex", gap: 14, alignItems: "flex-start" }}>
-            <div style={{ width: 26, height: 26, borderRadius: "50%", flexShrink: 0, background: "#111111", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 26, height: 26, borderRadius: "50%", flexShrink: 0, background: "#1B2A4A", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <span style={{ fontSize: "11px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS }}>{String(i + 1).padStart(2, "0")}</span>
             </div>
             <div>
-              <div style={{ fontSize: "13px", fontWeight: 700, color: "#111111", fontFamily: SANS, marginBottom: 3 }}>{title}</div>
+              <div style={{ fontSize: "13px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS, marginBottom: 3 }}>{title}</div>
               <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>{body}</div>
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function ZoomTraining({ data, onBack }) {
         <div style={{ fontSize: "12px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS, marginBottom: 4 }}>
           Mandatory attendance
         </div>
-        <div style={{ fontSize: "12px", color: "#111111", fontFamily: SANS, lineHeight: 1.6 }}>
+        <div style={{ fontSize: "12px", color: "#1B2A4A", fontFamily: SANS, lineHeight: 1.6 }}>
           The zoom training is required for all team leaders. If you cannot attend, please contact a coordinator as soon as possible.
         </div>
       </div>

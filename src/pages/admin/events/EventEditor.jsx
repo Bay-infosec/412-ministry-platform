@@ -9,7 +9,7 @@ import { EVENT_TYPES } from "../../../lib/eventTypes.js";
 const baseInputStyle = {
   width: "100%", padding: "12px 14px", borderRadius: 10,
   border: `1px solid ${BORDER}`, fontSize: "14px", fontFamily: SANS,
-  color: "#111111", outline: "none", boxSizing: "border-box", background: "#fff",
+  color: "#1B2A4A", outline: "none", boxSizing: "border-box", background: "#fff",
 };
 
 // No appearance:none on selects — kills native picker on iOS/Safari
@@ -146,7 +146,7 @@ function ToggleRow({ label, sub, value, onChange }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 0", borderBottom: `1px solid ${BORDER}`, marginBottom: "1rem" }}>
       <div>
-        <div style={{ fontSize: "13px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{label}</div>
+        <div style={{ fontSize: "13px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{label}</div>
         {sub && <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>{sub}</div>}
       </div>
       <button
@@ -182,7 +182,7 @@ const TYPE_HINTS = {
 function TypePicker({ onPick }) {
   return (
     <div>
-      <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111", marginBottom: 6 }}>
+      <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#1B2A4A", marginBottom: 6 }}>
         What kind of event?
       </div>
       <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginBottom: "1.5rem" }}>

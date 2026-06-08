@@ -142,7 +142,7 @@ export default function Attendance({ data, onBack }) {
       {toast && (
         <div style={{
           position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)",
-          background: toast.type === "error" ? "#DC2626" : "#111111",
+          background: toast.type === "error" ? "#DC2626" : "#1B2A4A",
           color: "#fff", borderRadius: 10, padding: "10px 20px",
           fontSize: "13px", fontFamily: SANS, fontWeight: 600, zIndex: 9999,
           boxShadow: "0 4px 20px rgba(0,0,0,0.15)", whiteSpace: "nowrap",
@@ -160,7 +160,7 @@ export default function Attendance({ data, onBack }) {
         <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
           {activeEvent?.name}
         </div>
-        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 600, color: "#111111", lineHeight: 1.2 }}>
+        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 600, color: "#1B2A4A", lineHeight: 1.2 }}>
           Attendance
         </div>
       </div>
@@ -173,11 +173,11 @@ export default function Attendance({ data, onBack }) {
             <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS }}>Present</div>
           </div>
           <div style={{ flex: 1, background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12, padding: "0.75rem 1rem", textAlign: "center" }}>
-            <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 600, color: "#111111" }}>{totalMembers - checkedIn}</div>
+            <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 600, color: "#1B2A4A" }}>{totalMembers - checkedIn}</div>
             <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS }}>Absent</div>
           </div>
           <div style={{ flex: 1, background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12, padding: "0.75rem 1rem", textAlign: "center" }}>
-            <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 600, color: "#111111" }}>{totalMembers}</div>
+            <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 600, color: "#1B2A4A" }}>{totalMembers}</div>
             <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS }}>Total</div>
           </div>
         </div>
@@ -199,9 +199,9 @@ export default function Attendance({ data, onBack }) {
                     flexShrink: 0,
                     padding: "7px 14px",
                     borderRadius: 20,
-                    border: `1.5px solid ${isSelected ? "#111111" : BORDER}`,
-                    background: isSelected ? "#111111" : "#fff",
-                    color: isSelected ? "#fff" : "#111111",
+                    border: `1.5px solid ${isSelected ? "#1B2A4A" : BORDER}`,
+                    background: isSelected ? "#1B2A4A" : "#fff",
+                    color: isSelected ? "#fff" : "#1B2A4A",
                     fontFamily: SANS,
                     fontSize: "12px",
                     fontWeight: isSelected ? 700 : 500,
@@ -220,7 +220,7 @@ export default function Attendance({ data, onBack }) {
       {/* Member list */}
       {loading ? (
         <div style={{ textAlign: "center", padding: "3rem 0" }}>
-          <div style={{ width: 24, height: 24, border: `2px solid ${BORDER}`, borderTopColor: "#111111", borderRadius: "50%", animation: "spin412 0.7s linear infinite", margin: "0 auto" }} />
+          <div style={{ width: 24, height: 24, border: `2px solid ${BORDER}`, borderTopColor: "#1B2A4A", borderRadius: "50%", animation: "spin412 0.7s linear infinite", margin: "0 auto" }} />
           <style>{`@keyframes spin412 { to { transform: rotate(360deg); } }`}</style>
         </div>
       ) : members.length === 0 ? (
@@ -251,7 +251,7 @@ export default function Attendance({ data, onBack }) {
                     >
                       <Avatar url={m.profiles.photo_url} name={m.profiles.full_name} size={40} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{m.profiles.full_name}</div>
+                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{m.profiles.full_name}</div>
                         {record && (
                           <div style={{ fontSize: "11px", color: "#16A34A", fontFamily: SANS, marginTop: 2 }}>
                             Checked in at {fmtTime(record.checked_in_at)}

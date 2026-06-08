@@ -76,7 +76,7 @@ export default function ChurchList({ onToast }) {
   if (editing !== null) {
     return (
       <div>
-        <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 600, color: "#111111", marginBottom: "1.25rem" }}>
+        <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 600, color: "#1B2A4A", marginBottom: "1.25rem" }}>
           {editing.id ? "Edit Church" : "Add Church"}
         </div>
         <Card style={{ marginBottom: "1rem" }}>
@@ -122,7 +122,7 @@ export default function ChurchList({ onToast }) {
           <SectionLabel>Pending Submissions ({pending.length})</SectionLabel>
           {pending.map((p) => (
             <Card key={p.id} style={{ marginBottom: "0.75rem", padding: "1rem 1.25rem" }}>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS, marginBottom: 2 }}>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS, marginBottom: 2 }}>
                 {p.church_name_custom}
               </div>
               <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 10 }}>
@@ -158,7 +158,7 @@ export default function ChurchList({ onToast }) {
             borderBottom: i < churches.length - 1 ? `1px solid ${BORDER}` : "none",
           }}>
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 500, color: "#111111", fontFamily: SANS }}>{c.name}</div>
+              <div style={{ fontSize: "14px", fontWeight: 500, color: "#1B2A4A", fontFamily: SANS }}>{c.name}</div>
               {(c.city || c.state) && (
                 <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>
                   {[c.city, c.state].filter(Boolean).join(", ")}
@@ -167,7 +167,7 @@ export default function ChurchList({ onToast }) {
             </div>
             <button
               onClick={() => setEditing({ id: c.id, name: c.name, city: c.city || "", state: c.state || "" })}
-              style={{ background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#111111", cursor: "pointer", fontFamily: SANS }}
+              style={{ background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: "12px", fontWeight: 600, color: "#1B2A4A", cursor: "pointer", fontFamily: SANS }}
             >
               Edit
             </button>

@@ -4,7 +4,7 @@ import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
 
 const inputStyle = {
   width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10,
-  padding: "10px 12px", fontSize: "15px", fontFamily: SANS, color: "#111111",
+  padding: "10px 12px", fontSize: "15px", fontFamily: SANS, color: "#1B2A4A",
   outline: "none", boxSizing: "border-box", background: "#fff",
 };
 
@@ -51,7 +51,7 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
     return (
       <div style={{ textAlign: "center", paddingTop: "2rem" }}>
         <div style={{ fontSize: "48px", marginBottom: "1rem" }}>✓</div>
-        <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 600, color: "#111111", marginBottom: "0.75rem" }}>
+        <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 600, color: "#1B2A4A", marginBottom: "0.75rem" }}>
           {done.name} invited!
         </div>
         {done.emailSent ? (
@@ -74,7 +74,7 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
   return (
     <form onSubmit={submit}>
       <div style={{ marginBottom: "1.5rem" }}>
-        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111", marginBottom: 4 }}>
+        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#1B2A4A", marginBottom: 4 }}>
           Invite a new leader
         </div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>

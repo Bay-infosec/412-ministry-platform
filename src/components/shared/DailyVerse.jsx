@@ -65,7 +65,7 @@ export default function DailyVerse() {
           fontFamily: SANS,
           fontSize: "14px",
           fontStyle: "italic",
-          color: "#111111",
+          color: "#1B2A4A",
           lineHeight: 1.75,
           marginBottom: "0.625rem",
         }}

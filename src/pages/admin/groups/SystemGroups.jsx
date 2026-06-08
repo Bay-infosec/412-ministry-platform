@@ -8,7 +8,7 @@ const SYSTEM_GROUPS = [
     key: "board",
     name: "412 Board",
     desc: "Members with the 412 Board tag",
-    color: "#111111",
+    color: "#1B2A4A",
     textColor: "#FF4D00",
     fetchMembers: async () => {
       const { data } = await supabase.from("profiles").select("id, full_name, photo_url, tags").order("full_name");
@@ -233,7 +233,7 @@ export default function SystemGroups({ data, onToast }) {
   return (
     <div>
       <div style={{ marginBottom: "1.25rem" }}>
-        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, color: "#111111", marginBottom: 4, letterSpacing: "-0.02em" }}>
+        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, color: "#1B2A4A", marginBottom: 4, letterSpacing: "-0.02em" }}>
           System Groups
         </div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>
@@ -267,11 +267,11 @@ export default function SystemGroups({ data, onToast }) {
                     {cfg.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "14px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>{cfg.name}</div>
+                    <div style={{ fontSize: "14px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS }}>{cfg.name}</div>
                     <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>{cfg.desc}</div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0, marginRight: 4 }}>
-                    <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, color: "#111111" }}>{memberCount}</div>
+                    <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, color: "#1B2A4A" }}>{memberCount}</div>
                     <div style={{ fontSize: "10px", color: TSEC, fontFamily: SANS }}>members</div>
                   </div>
                   <svg
@@ -301,7 +301,7 @@ export default function SystemGroups({ data, onToast }) {
                         {memberList.map((m) => (
                           <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 6, background: "#FAFAFA", border: `1px solid ${BORDER}`, borderRadius: 20, padding: "4px 10px 4px 4px" }}>
                             <Avatar url={m.photo_url} name={m.full_name} size={22} />
-                            <span style={{ fontSize: "12px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
+                            <span style={{ fontSize: "12px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
                               {m.full_name}
                             </span>
                           </div>
@@ -336,7 +336,7 @@ export default function SystemGroups({ data, onToast }) {
 
       <div style={{ background: "#FFF5EC", border: "1px solid #FFD5C0", borderRadius: 12, padding: "0.875rem 1.25rem", marginTop: "1.25rem" }}>
         <div style={{ fontSize: "12px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS, marginBottom: 4 }}>After syncing</div>
-        <div style={{ fontSize: "12px", color: "#111111", fontFamily: SANS, lineHeight: 1.6 }}>
+        <div style={{ fontSize: "12px", color: "#1B2A4A", fontFamily: SANS, lineHeight: 1.6 }}>
           Members will see these groups in their messenger automatically. Re-sync any time tags or roles change — sync always reads fresh data from the database.
         </div>
       </div>

@@ -83,7 +83,7 @@ export default function TrainingMaterials({ onToast }) {
   if (editing !== null) {
     return (
       <div>
-        <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 600, color: "#111111", marginBottom: "1.25rem" }}>
+        <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 600, color: "#1B2A4A", marginBottom: "1.25rem" }}>
           {editing.id ? "Edit Material" : "Add Material"}
         </div>
         <Card style={{ marginBottom: "1rem" }}>
@@ -118,14 +118,14 @@ export default function TrainingMaterials({ onToast }) {
               onChange={(e) => setEditing((ed) => ({ ...ed, body: e.target.value }))}
               placeholder="Description or content…"
               rows={4}
-              style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#111111", resize: "vertical", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#1B2A4A", resize: "vertical", outline: "none", boxSizing: "border-box" }}
             />
           </div>
 
           <Field label="EXTERNAL URL (optional)" value={editing.external_url || ""} onChange={(v) => setEditing((e) => ({ ...e, external_url: v }))} placeholder="https://…" />
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 0 0" }}>
-            <span style={{ fontSize: "13px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>Published</span>
+            <span style={{ fontSize: "13px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>Published</span>
             <button
               onClick={() => setEditing((e) => ({ ...e, published: !e.published }))}
               style={{
@@ -202,7 +202,7 @@ export default function TrainingMaterials({ onToast }) {
                           {mat.published ? "Published" : "Draft"}
                         </span>
                       </div>
-                      <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{mat.title}</div>
+                      <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{mat.title}</div>
                       {mat.body && (
                         <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                           {mat.body}
@@ -218,7 +218,7 @@ export default function TrainingMaterials({ onToast }) {
                   <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                     <button
                       onClick={() => setEditing({ ...mat })}
-                      style={{ fontSize: "12px", fontWeight: 600, color: "#111111", background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: SANS }}
+                      style={{ fontSize: "12px", fontWeight: 600, color: "#1B2A4A", background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: SANS }}
                     >
                       Edit
                     </button>

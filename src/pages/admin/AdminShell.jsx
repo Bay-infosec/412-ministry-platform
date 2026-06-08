@@ -100,7 +100,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false, 
           }}
           style={{
             background: "none", border: "none", cursor: "pointer",
-            padding: "4px 6px 4px 0", color: "#111111",
+            padding: "4px 6px 4px 0", color: "#1B2A4A",
             display: "flex", alignItems: "center",
           }}
         >
@@ -108,7 +108,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false, 
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
-        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#111111", flex: 1, letterSpacing: "-0.02em" }}>
+        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#1B2A4A", flex: 1, letterSpacing: "-0.02em" }}>
           {titles[screen] || "Admin"}
         </div>
         {screen === "people.list" && isAdmin && (
@@ -267,7 +267,7 @@ function AdminHome({ data, onNav, isAdmin }) {
         <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
           412 Ministry
         </div>
-        <div style={{ fontFamily: SANS, fontSize: "28px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.03em" }}>
+        <div style={{ fontFamily: SANS, fontSize: "28px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1.2, letterSpacing: "-0.03em" }}>
           {isAdmin ? "Admin Panel" : "Staff Panel"}
         </div>
         <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, marginTop: 4 }}>
@@ -359,7 +359,7 @@ function EntryCard({ icon, iconBg, label, sub, count, badge, onClick }) {
           {icon}
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: "16px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>
+          <div style={{ fontSize: "16px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS }}>
             {label}
           </div>
           <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>

@@ -37,7 +37,7 @@ function ViewDropdown({ view, onChange, enrolledEvents }) {
           appearance: "none", WebkitAppearance: "none",
           background: "#FFF5F0", border: "1px solid #FFD5C0",
           borderRadius: 12, padding: "13px 44px 13px 16px",
-          fontSize: "15px", fontWeight: 700, color: "#111111",
+          fontSize: "15px", fontWeight: 700, color: "#1B2A4A",
           fontFamily: SANS, cursor: "pointer", outline: "none",
         }}
       >
@@ -60,7 +60,7 @@ function PastEvents({ history, activeEvent }) {
   if (past.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
-        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#111111", marginBottom: 8 }}>No past events yet</div>
+        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#1B2A4A", marginBottom: 8 }}>No past events yet</div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS }}>Archived events you've taken part in will appear here.</div>
       </div>
     );
@@ -78,7 +78,7 @@ function PastEvents({ history, activeEvent }) {
               Past
             </span>
           </div>
-          <div style={{ fontFamily: SANS, fontSize: "16px", fontWeight: 800, color: "#111111" }}>{h.events.name}</div>
+          <div style={{ fontFamily: SANS, fontSize: "16px", fontWeight: 800, color: "#1B2A4A" }}>{h.events.name}</div>
           {h.events.dates && <div style={{ fontSize: "12px", color: TSEC, marginTop: 2 }}>{h.events.dates}</div>}
           {h.team_number && (
             <div style={{ fontSize: "12px", color: TSEC, marginTop: 2 }}>
@@ -165,7 +165,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
           title={view === pinnedView ? "This is your default view" : "Set as default entrance"}
           style={{ flexShrink: 0, width: 44, height: 44, borderRadius: 12, border: "none", background: view === pinnedView ? "#FF4D00" : "#F0F0F0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill={view === pinnedView ? "#fff" : "none"} stroke={view === pinnedView ? "#fff" : "#999999"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill={view === pinnedView ? "#fff" : "none"} stroke={view === pinnedView ? "#fff" : "#6B7280"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
           </svg>
         </button>
@@ -195,7 +195,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
           <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.625rem", fontFamily: SANS }}>
             Getting Started
           </div>
-          <div style={{ fontSize: "15px", fontWeight: 800, color: "#111111", fontFamily: SANS, marginBottom: "0.375rem" }}>
+          <div style={{ fontSize: "15px", fontWeight: 800, color: "#1B2A4A", fontFamily: SANS, marginBottom: "0.375rem" }}>
             Complete your setup
           </div>
           <div style={{ fontSize: "13px", color: "#555555", fontFamily: SANS, lineHeight: 1.55, marginBottom: "1rem" }}>
@@ -222,7 +222,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
       )}
 
       {/* Event header card */}
-      <div style={{ background: "#111111", borderRadius: 18, padding: "1.25rem 1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
+      <div style={{ background: "#1B2A4A", borderRadius: 18, padding: "1.25rem 1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
           <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase" }}>
             Your Event · Active
@@ -260,7 +260,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
               href={viewEvent.registration_url}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ background: "#222222", color: "#FF4D00", borderRadius: 8, padding: "4px 10px", fontSize: "10px", fontWeight: 800, textDecoration: "none" }}
+              style={{ background: "#2A3D63", color: "#FF4D00", borderRadius: 8, padding: "4px 10px", fontSize: "10px", fontWeight: 800, textDecoration: "none" }}
             >
               Register →
             </a>
@@ -297,7 +297,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
                 <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
                   Leader Zoom Training
                 </div>
-                <div style={{ fontSize: "14px", fontWeight: 700, color: "#111111", fontFamily: SANS, marginBottom: zoom.sub ? 2 : 0 }}>
+                <div style={{ fontSize: "14px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS, marginBottom: zoom.sub ? 2 : 0 }}>
                   {zoom.main}
                 </div>
                 {zoom.sub && (
@@ -328,14 +328,14 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
                     <div key={title} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                       <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#FF4D00", flexShrink: 0, marginTop: 6 }} />
                       <div>
-                        <div style={{ fontSize: "13px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>{title}</div>
+                        <div style={{ fontSize: "13px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS }}>{title}</div>
                         <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>{body}</div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div style={{ background: "#111111", borderRadius: 10, padding: "0.75rem 1rem" }}>
+                <div style={{ background: "#1B2A4A", borderRadius: 10, padding: "0.75rem 1rem" }}>
                   <div style={{ fontSize: "12px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS, marginBottom: 3 }}>
                     Mandatory for all team leaders
                   </div>
@@ -360,7 +360,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
             }}
           >
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 700, color: "#111111" }}>{s.label}</div>
+              <div style={{ fontSize: "14px", fontWeight: 700, color: "#1B2A4A" }}>{s.label}</div>
               <div style={{ fontSize: "12px", color: TSEC, marginTop: 2 }}>{s.desc}</div>
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -97,7 +97,7 @@ export default function AuditLog() {
       <div style={{ display: "flex", justifyContent: "center", padding: "3rem 0" }}>
         <div style={{
           width: 28, height: 28, borderRadius: "50%",
-          border: `3px solid ${BORDER}`, borderTop: "3px solid #111111",
+          border: `3px solid ${BORDER}`, borderTop: "3px solid #1B2A4A",
           animation: "spin 0.8s linear infinite",
         }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -110,7 +110,7 @@ export default function AuditLog() {
   return (
     <div style={{ fontFamily: SANS }}>
       <div style={{ marginBottom: "1.5rem" }}>
-        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111" }}>
+        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#1B2A4A" }}>
           Audit Log
         </div>
         <div style={{ fontSize: "13px", color: TSEC, marginTop: 4 }}>
@@ -151,7 +151,7 @@ export default function AuditLog() {
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                         <div style={{ flex: 1 }}>
-                          <span style={{ fontSize: "14px", fontWeight: 600, color: "#111111" }}>
+                          <span style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A" }}>
                             {entry.actor_name || "Unknown"}
                           </span>
                           {" "}
@@ -160,7 +160,7 @@ export default function AuditLog() {
                           </span>
                           {" "}
                           {entry.target_name && (
-                            <span style={{ fontSize: "14px", fontWeight: 600, color: "#111111" }}>
+                            <span style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A" }}>
                               {entry.target_name}
                             </span>
                           )}

@@ -72,7 +72,7 @@ function PhotoCropModal({ file, onConfirm, onCancel }) {
           borderRadius: "50%", overflow: "hidden",
           border: "3px solid #fff", position: "relative",
           cursor: dragging ? "grabbing" : "grab", flexShrink: 0,
-          background: "#111",
+          background: "#1B2A4A",
         }}
         onMouseDown={(e) => startDrag(e.clientX, e.clientY)}
         onMouseMove={(e) => moveDrag(e.clientX, e.clientY)}
@@ -264,7 +264,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           }}
         >
           <div
-            style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#111111", letterSpacing: "-0.02em" }}
+            style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.02em" }}
           >
             My Profile
           </div>
@@ -297,7 +297,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               fontFamily: SANS,
               fontSize: "24px",
               fontWeight: 900,
-              color: "#111111",
+              color: "#1B2A4A",
               marginTop: "0.75rem",
             }}
           >
@@ -339,7 +339,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               >
                 {label}
               </div>
-              <div style={{ fontSize: "15px", color: val ? "#111111" : "#999999" }}>
+              <div style={{ fontSize: "15px", color: val ? "#1B2A4A" : "#6B7280" }}>
                 {val || "Not set"}
               </div>
             </div>
@@ -366,7 +366,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
         </button>
 
         {/* App install instructions */}
-        <div style={{ background: "#111111", borderRadius: 14, padding: "1.25rem 1.5rem", marginBottom: "1rem" }}>
+        <div style={{ background: "#1B2A4A", borderRadius: 14, padding: "1.25rem 1.5rem", marginBottom: "1rem" }}>
           <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: SANS }}>
             Install the App
           </div>
@@ -415,7 +415,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
         {pushSupported() && notifPerm !== "denied" && (
           <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>Push Notifications</div>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>Push Notifications</div>
               <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
                 {notifPerm === "granted" ? "Enabled — you'll get announcement alerts" : "Get notified when announcements are posted"}
               </div>
@@ -425,7 +425,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               disabled={notifBusy}
               style={{
                 background: notifPerm === "granted" ? "#FF4D00" : "#F0F0F0",
-                color: notifPerm === "granted" ? "#fff" : "#111111",
+                color: notifPerm === "granted" ? "#fff" : "#1B2A4A",
                 border: "none", borderRadius: 8, padding: "7px 16px",
                 fontSize: "13px", fontWeight: 700, fontFamily: SANS,
                 cursor: notifBusy ? "default" : "pointer",
@@ -439,7 +439,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
         )}
         {pushSupported() && notifPerm === "denied" && (
           <div style={{ background: "#FFF5F0", border: "1px solid #FFD5C0", borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
-            <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS, marginBottom: 3 }}>Notifications blocked</div>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS, marginBottom: 3 }}>Notifications blocked</div>
             <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>Enable notifications in your browser or phone settings to receive updates.</div>
           </div>
         )}
@@ -449,7 +449,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
             onClick={onOpenAdmin}
             style={{
               width: "100%",
-              background: "#111111",
+              background: "#1B2A4A",
               border: "none",
               color: "#fff",
               padding: "14px",
@@ -498,7 +498,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
                     fontFamily: SANS,
                     fontSize: "18px",
                     fontWeight: 600,
-                    color: "#111111",
+                    color: "#1B2A4A",
                   }}
                 >
                   {h.events?.name || "Event"}
@@ -544,7 +544,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           ← Back
         </button>
         <div
-          style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, color: "#111111", letterSpacing: "-0.02em" }}
+          style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.02em" }}
         >
           Edit Profile
         </div>
@@ -668,7 +668,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               border: `1px solid ${BORDER}`,
               fontSize: "15px",
               fontFamily: SANS,
-              color: "#111111",
+              color: "#1B2A4A",
               background: "#fff",
               outline: "none",
             }}
@@ -695,7 +695,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
                   border: `1px solid ${BORDER}`,
                   fontSize: "15px",
                   fontFamily: SANS,
-                  color: "#111111",
+                  color: "#1B2A4A",
                   background: "#fff",
                   outline: "none",
                   boxSizing: "border-box",
@@ -734,7 +734,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
             style={{
               background: "none",
               border: "none",
-              color: "#111111",
+              color: "#1B2A4A",
               fontSize: "14px",
               fontWeight: 600,
               cursor: "pointer",
@@ -750,7 +750,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               style={{
                 fontSize: "14px",
                 fontWeight: 600,
-                color: "#111111",
+                color: "#1B2A4A",
                 marginBottom: "1rem",
                 fontFamily: SANS,
               }}

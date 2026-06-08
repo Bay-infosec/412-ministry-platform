@@ -39,7 +39,7 @@ function StepTitle({ children }) {
   return (
     <div style={{
       fontFamily: SANS, fontSize: "24px", fontWeight: 900,
-      color: "#111111", lineHeight: 1.2, marginBottom: "0.75rem",
+      color: "#1B2A4A", lineHeight: 1.2, marginBottom: "0.75rem",
       letterSpacing: "-0.03em",
     }}>
       {children}
@@ -66,7 +66,7 @@ function WelcomePage({ profile, activeEvent, onNext }) {
     <>
       {/* Hero card */}
       <div style={{
-        background: "#111111", borderRadius: 24, padding: "1.5rem 1.75rem 1.75rem",
+        background: "#1B2A4A", borderRadius: 24, padding: "1.5rem 1.75rem 1.75rem",
         marginBottom: "1.5rem",
       }}>
         {/* Top row: event name left, logo right */}
@@ -129,7 +129,7 @@ function PersonalMessagePage({ eventMember, onNext }) {
       <StepTitle>A word for you.</StepTitle>
       {message ? (
         <div style={{
-          background: "#111111", borderRadius: 20, padding: "1.75rem",
+          background: "#1B2A4A", borderRadius: 20, padding: "1.75rem",
           marginBottom: "1.25rem", position: "relative", overflow: "hidden",
         }}>
           {/* Decorative quote mark */}
@@ -210,7 +210,7 @@ function EventInfoPage({ activeEvent, eventMember, onNext }) {
             <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, flexShrink: 0 }}>
               {row.label}
             </span>
-            <span style={{ fontSize: "13px", color: "#111111", fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>
+            <span style={{ fontSize: "13px", color: "#1B2A4A", fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>
               {row.value}
             </span>
           </div>
@@ -250,7 +250,7 @@ function RequirementsPage({ profile, onNext }) {
               <span style={{ fontSize: "11px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS }}>
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <span style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
+              <span style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
                 {req.title}
               </span>
             </div>
@@ -270,8 +270,8 @@ function RequirementsPage({ profile, onNext }) {
       >
         <div style={{
           width: 20, height: 20, borderRadius: 4, flexShrink: 0, marginTop: 1,
-          border: `2px solid ${acknowledged ? "#111111" : BORDER}`,
-          background: acknowledged ? "#111111" : "transparent",
+          border: `2px solid ${acknowledged ? "#1B2A4A" : BORDER}`,
+          background: acknowledged ? "#1B2A4A" : "transparent",
           display: "flex", alignItems: "center", justifyContent: "center",
           transition: "all 0.15s",
         }}>
@@ -285,7 +285,7 @@ function RequirementsPage({ profile, onNext }) {
         onClick={() => setShowContact(true)}
         style={{
           width: "100%", padding: "12px", background: "transparent",
-          color: "#111111", border: `1px solid ${BORDER}`, borderRadius: 12,
+          color: "#1B2A4A", border: `1px solid ${BORDER}`, borderRadius: 12,
           fontSize: "14px", fontFamily: SANS, cursor: "pointer",
         }}
       >
@@ -344,7 +344,7 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
 
       {/* Team number card */}
       <div style={{
-        background: "#111111", borderRadius: 20, padding: "1.5rem",
+        background: "#1B2A4A", borderRadius: 20, padding: "1.5rem",
         marginBottom: "0.75rem", textAlign: "center",
       }}>
         <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.22em", color: "#FF4D00", textTransform: "uppercase", marginBottom: 8, fontFamily: SANS }}>
@@ -364,7 +364,7 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
       {!revealed ? (
         /* ── Mystery card ── */
         <div style={{
-          background: "#111111", borderRadius: 20, padding: "2rem 1.75rem",
+          background: "#1B2A4A", borderRadius: 20, padding: "2rem 1.75rem",
           marginBottom: "1rem", textAlign: "center",
           opacity: transitioning ? 0 : 1,
           transform: transitioning ? "scale(0.92)" : "scale(1)",
@@ -378,7 +378,7 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
           <div className="pulse-orb" style={{
             width: 90, height: 90, borderRadius: "50%",
             margin: "0 auto 1.5rem",
-            background: "radial-gradient(circle at 40% 35%, rgba(255,77,0,0.15), rgba(17,17,17,0.6))",
+            background: "radial-gradient(circle at 40% 35%, rgba(255,77,0,0.15), rgba(27,42,74,0.6))",
             border: "2px solid rgba(255,77,0,0.3)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
@@ -413,7 +413,7 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
       ) : coLeader ? (
         /* ── Revealed card ── */
         <div className="reveal-card" style={{
-          background: "#111111", borderRadius: 20, padding: "2rem 1.75rem",
+          background: "#1B2A4A", borderRadius: 20, padding: "2rem 1.75rem",
           marginBottom: "1rem", textAlign: "center",
         }}>
           <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.2em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "1.5rem" }}>
@@ -426,7 +426,7 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
             margin: "0 auto 1.25rem",
             border: "3px solid #FF4D00",
             padding: 3,
-            background: "#111111",
+            background: "#1B2A4A",
           }}>
             <div style={{
               width: "100%", height: "100%", borderRadius: "50%",
@@ -533,11 +533,11 @@ function PrayerTopicsPage({ onNext }) {
           }}>
             <div style={{
               width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
-              background: "#111111", display: "flex", alignItems: "center", justifyContent: "center",
+              background: "#1B2A4A", display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               <span style={{ fontSize: "11px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS }}>{topic.num}</span>
             </div>
-            <p style={{ fontSize: "13px", color: "#111111", fontFamily: SANS, lineHeight: 1.65, margin: 0 }}>
+            <p style={{ fontSize: "13px", color: "#1B2A4A", fontFamily: SANS, lineHeight: 1.65, margin: 0 }}>
               {topic.text}
             </p>
           </div>
@@ -570,7 +570,7 @@ function ChecklistPage({ onFinish, activeEvent }) {
       {activeEvent?.zoom_training_dates && (() => {
         const { main, sub } = splitZoomDisplay(activeEvent.zoom_training_dates);
         return (
-          <div style={{ background: "#111111", borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
+          <div style={{ background: "#1B2A4A", borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
             <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
               Leader Zoom Training
             </div>
@@ -608,7 +608,7 @@ function ChecklistPage({ onFinish, activeEvent }) {
             </div>
             <span style={{
               fontSize: "14px", fontFamily: SANS,
-              color: checked[item.id] ? TSEC : "#111111",
+              color: checked[item.id] ? TSEC : "#1B2A4A",
               textDecoration: checked[item.id] ? "line-through" : "none",
               transition: "color 0.15s",
             }}>
@@ -643,7 +643,7 @@ function ProgressDots({ step, total }) {
             height: 8,
             width: isCurrent ? 24 : 8,
             borderRadius: 4,
-            background: isCurrent ? "#FF4D00" : isPast ? "#111111" : BORDER,
+            background: isCurrent ? "#FF4D00" : isPast ? "#1B2A4A" : BORDER,
             transition: "all 0.3s ease",
           }} />
         );

@@ -53,7 +53,7 @@ export default function TheFour({ data, onBack }) {
         <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
           The Four
         </div>
-        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "0.5rem" }}>
+        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "0.5rem" }}>
           Sharing the gospel.
         </div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>
@@ -70,12 +70,12 @@ export default function TheFour({ data, onBack }) {
                 width: 40, height: 40, borderRadius: 10, flexShrink: 0,
                 background: item.accent ? "#FFF5F0" : "#FAFAFA",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "20px", color: item.accent ? "#FF4D00" : "#111111",
+                fontSize: "20px", color: item.accent ? "#FF4D00" : "#1B2A4A",
               }}>
                 {item.symbol}
               </div>
               <div>
-                <div style={{ fontSize: "14px", fontWeight: 700, color: "#111111", fontFamily: SANS, marginBottom: 6 }}>
+                <div style={{ fontSize: "14px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS, marginBottom: 6 }}>
                   {item.title}
                 </div>
                 <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>
@@ -91,7 +91,7 @@ export default function TheFour({ data, onBack }) {
       <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.75rem" }}>
         A Prayer of Response
       </div>
-      <Card style={{ padding: "1.25rem", marginBottom: "1rem", background: "#111111" }}>
+      <Card style={{ padding: "1.25rem", marginBottom: "1rem", background: "#1B2A4A" }}>
         <div style={{
           fontFamily: SANS, fontSize: "15px", color: "#FFF5F0",
           lineHeight: 1.85, whiteSpace: "pre-wrap", textAlign: "center", fontStyle: "italic",

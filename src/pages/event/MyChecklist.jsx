@@ -38,7 +38,7 @@ export default function MyChecklist({ data, onBack }) {
         <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
           Pre-Conference
         </div>
-        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
+        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
           My Checklist
         </div>
       </div>
@@ -96,7 +96,7 @@ export default function MyChecklist({ data, onBack }) {
               <div style={{ flex: 1 }}>
                 <div style={{
                   fontSize: "14px", fontWeight: 600, fontFamily: SANS,
-                  color: done ? "#059669" : "#111111",
+                  color: done ? "#059669" : "#1B2A4A",
                   textDecoration: done ? "line-through" : "none",
                   transition: "color 0.15s",
                   marginBottom: 3,

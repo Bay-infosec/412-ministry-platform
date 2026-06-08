@@ -80,7 +80,7 @@ export default function AnnouncementList({ data, onNew, onEdit, onToast, isAdmin
           return (
             <Card key={ann.id} style={{ marginBottom: "0.75rem", padding: "1rem 1.25rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
-                <div style={{ fontFamily: SANS, fontSize: "14px", fontWeight: 600, color: "#111111", flex: 1 }}>{ann.title}</div>
+                <div style={{ fontFamily: SANS, fontSize: "14px", fontWeight: 600, color: "#1B2A4A", flex: 1 }}>{ann.title}</div>
                 <span style={{ fontSize: "10px", fontWeight: 700, background: sc.bg, color: sc.color, borderRadius: 20, padding: "2px 8px", fontFamily: SANS, flexShrink: 0 }}>
                   {STATUS_LABELS[ann.status]}
                 </span>
@@ -94,7 +94,7 @@ export default function AnnouncementList({ data, onNew, onEdit, onToast, isAdmin
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button
                   onClick={() => onEdit(ann)}
-                  style={{ fontSize: "12px", fontWeight: 600, color: "#111111", background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: SANS }}
+                  style={{ fontSize: "12px", fontWeight: 600, color: "#1B2A4A", background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: SANS }}
                 >
                   Edit
                 </button>

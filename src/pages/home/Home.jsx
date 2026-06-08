@@ -146,17 +146,17 @@ export default function Home({
       {/* ── Header ─────────────────────────────────────────────────── */}
       <div style={{ marginBottom: "1.5rem" }}>
         {/* Brand — own row, above chat */}
-        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, letterSpacing: "-0.02em", color: "#111111", lineHeight: 1, marginBottom: "0.875rem" }}>
+        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, letterSpacing: "-0.02em", color: "#1B2A4A", lineHeight: 1, marginBottom: "0.875rem" }}>
           412 <span style={{ color: "#FF4D00" }}>Ministry</span>
         </div>
 
         {/* Greeting + Chat — same row, below brand */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div>
-            <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#999999", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+            <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#6B7280", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
               Good morning
             </div>
-            <div style={{ fontFamily: SANS, fontSize: "36px", fontWeight: 900, color: "#111111", lineHeight: 1.1, letterSpacing: "-0.04em" }}>
+            <div style={{ fontFamily: SANS, fontSize: "36px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1.1, letterSpacing: "-0.04em" }}>
               {displayName}
             </div>
           </div>
@@ -244,10 +244,10 @@ export default function Home({
           {/* Onboarding step progress */}
           <div style={{ marginBottom: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS }}>
                 Onboarding
               </span>
-              <span style={{ fontSize: "11px", color: "#999999", fontFamily: SANS }}>
+              <span style={{ fontSize: "11px", color: "#6B7280", fontFamily: SANS }}>
                 {onboardingComplete ? "Complete ✓" : `Step ${Math.min(onboardingStep + 1, TOTAL_STEPS)} of ${TOTAL_STEPS}`}
               </span>
             </div>
@@ -264,10 +264,10 @@ export default function Home({
           {/* Checklist progress */}
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS }}>
                 Pre-Conference Checklist
               </span>
-              <span style={{ fontSize: "11px", color: "#999999", fontFamily: SANS }}>
+              <span style={{ fontSize: "11px", color: "#6B7280", fontFamily: SANS }}>
                 {checklistDone} / {CHECKLIST_ITEMS.length}
               </span>
             </div>
@@ -309,7 +309,7 @@ export default function Home({
 
       {/* ── Active event card (same style as Event tab) ─────────────── */}
       {activeEvent && (
-        <div style={{ background: "#111111", borderRadius: 18, padding: "1.25rem 1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
+        <div style={{ background: "#1B2A4A", borderRadius: 18, padding: "1.25rem 1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
           <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.5rem" }}>
             Your Event · Active
           </div>
@@ -349,7 +349,7 @@ export default function Home({
                 href={activeEvent.registration_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ background: "#222222", color: "#FF4D00", borderRadius: 8, padding: "4px 10px", fontSize: "10px", fontWeight: 800, textDecoration: "none" }}
+                style={{ background: "#2A3D63", color: "#FF4D00", borderRadius: 8, padding: "4px 10px", fontSize: "10px", fontWeight: 800, textDecoration: "none" }}
               >
                 Register →
               </a>
@@ -388,10 +388,10 @@ export default function Home({
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: "#999999", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+                    <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: "#6B7280", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
                       Your Team Prayer Day
                     </div>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
+                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
                       {fmtDate(nextPrayer)}
                     </div>
                     <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
@@ -404,7 +404,7 @@ export default function Home({
                         <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 900, color: "#FF4D00" }}>Today!</div>
                       ) : (
                         <>
-                          <div style={{ fontFamily: SANS, fontSize: "32px", fontWeight: 900, color: "#111111", lineHeight: 1 }}>{days}</div>
+                          <div style={{ fontFamily: SANS, fontSize: "32px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1 }}>{days}</div>
                           <div style={{ fontSize: "10px", color: TSEC, fontWeight: 600, letterSpacing: "0.08em", fontFamily: SANS }}>{days === 1 ? "DAY" : "DAYS"}</div>
                         </>
                       )}
@@ -431,7 +431,7 @@ export default function Home({
                     <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
                       Leader Zoom Training
                     </div>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS, marginBottom: 2 }}>
+                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS, marginBottom: 2 }}>
                       {main}
                     </div>
                     {sub && <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 2 }}>{sub}</div>}
@@ -464,7 +464,7 @@ export default function Home({
                     <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
                       {nextMeeting.type === "zoom_meeting" ? "Zoom Meeting" : "Meeting"}
                     </div>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS, marginBottom: 2 }}>
+                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS, marginBottom: 2 }}>
                       {nextMeeting.name}
                     </div>
                     {(nextMeeting.dates || nextMeeting.location) && (
@@ -513,12 +513,12 @@ export default function Home({
                   }}>
                     {m.profiles?.photo_url
                       ? <img src={m.profiles.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : <span style={{ fontFamily: SANS, fontSize: 14, color: "#999999" }}>{m.profiles?.full_name?.charAt(0)}</span>}
+                      : <span style={{ fontFamily: SANS, fontSize: 14, color: "#6B7280" }}>{m.profiles?.full_name?.charAt(0)}</span>}
                   </div>
 
                   {/* Name + team number */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "13px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
+                    <div style={{ fontSize: "13px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
                       {m.profiles?.full_name}
                     </div>
                     <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>
@@ -532,7 +532,7 @@ export default function Home({
                       <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>Not started</div>
                     ) : (
                       <>
-                        <div style={{ fontSize: "11px", color: checkedCount === CHECKLIST_ITEMS.length ? "#FF4D00" : "#999999", fontFamily: SANS, fontWeight: checkedCount === CHECKLIST_ITEMS.length ? 600 : 400 }}>
+                        <div style={{ fontSize: "11px", color: checkedCount === CHECKLIST_ITEMS.length ? "#FF4D00" : "#6B7280", fontFamily: SANS, fontWeight: checkedCount === CHECKLIST_ITEMS.length ? 600 : 400 }}>
                           {checkedCount === CHECKLIST_ITEMS.length ? "Complete ✓" : `${checkedCount} / ${CHECKLIST_ITEMS.length} done`}
                         </div>
                         <div style={{ display: "flex", gap: 5 }}>
@@ -578,12 +578,12 @@ export default function Home({
                   width: 36, height: 36, borderRadius: 9, flexShrink: 0,
                   background: "#FAFAFA", display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
                   </svg>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{mat.title}</div>
+                  <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{mat.title}</div>
                   {mat.body && (
                     <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
                       {mat.body}
@@ -605,7 +605,7 @@ export default function Home({
       <button
         onClick={() => setShowContact(true)}
         style={{
-          width: "100%", background: "#111111", border: "none",
+          width: "100%", background: "#1B2A4A", border: "none",
           borderRadius: 16, padding: "1.25rem 1.5rem", cursor: "pointer",
           fontFamily: SANS, display: "flex", alignItems: "center", gap: 14,
           marginBottom: "0.5rem",
@@ -618,7 +618,7 @@ export default function Home({
         </div>
         <div style={{ flex: 1, textAlign: "left" }}>
           <div style={{ fontSize: "15px", fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>Contact Us</div>
-          <div style={{ fontSize: "12px", color: "#999999", marginTop: 2 }}>Send a message to the 412 team</div>
+          <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)", marginTop: 2 }}>Send a message to the 412 team</div>
         </div>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M9 6l6 6-6 6" />

@@ -63,7 +63,7 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
       {toast && (
         <div style={{
           position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)",
-          background: toast.type === "error" ? "#DC2626" : "#111111",
+          background: toast.type === "error" ? "#DC2626" : "#1B2A4A",
           color: "#fff", borderRadius: 10, padding: "10px 20px",
           fontSize: "13px", fontFamily: SANS, fontWeight: 600, zIndex: 9999,
           boxShadow: "0 4px 20px rgba(0,0,0,0.15)", whiteSpace: "nowrap",
@@ -76,7 +76,7 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
         <div style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "0.16em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
           Ministry Events
         </div>
-        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
+        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
           Events & Opportunities
         </div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginTop: "0.375rem" }}>
@@ -86,7 +86,7 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
 
       {publicEvents.length === 0 ? (
         <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
-          <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#111111", marginBottom: 8, letterSpacing: "-0.02em" }}>Nothing upcoming yet</div>
+          <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#1B2A4A", marginBottom: 8, letterSpacing: "-0.02em" }}>Nothing upcoming yet</div>
           <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS }}>Check back soon for new events and opportunities.</div>
         </div>
       ) : (
@@ -126,7 +126,7 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
                         </span>
                       )}
                     </div>
-                    <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 900, color: "#111111", lineHeight: 1.2, marginBottom: "0.25rem", letterSpacing: "-0.02em" }}>
+                    <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1.2, marginBottom: "0.25rem", letterSpacing: "-0.02em" }}>
                       {ev.name}
                     </div>
                     {ev.dates && <div style={{ fontSize: "12px", color: TSEC }}>{ev.dates}</div>}
@@ -155,7 +155,7 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
                     {ev.fee && (
                       <div style={{ fontSize: "13px", fontFamily: SANS, marginBottom: "0.5rem" }}>
                         <span style={{ color: TSEC }}>Registration fee: </span>
-                        <span style={{ fontWeight: 700, color: "#111111" }}>{ev.fee}</span>
+                        <span style={{ fontWeight: 700, color: "#1B2A4A" }}>{ev.fee}</span>
                       </div>
                     )}
 
@@ -172,7 +172,7 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
                               style={{
                                 width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8,
                                 padding: "0.5rem 0.75rem", fontFamily: SANS, fontSize: "13px",
-                                color: "#111111", background: "#FAFAFA", resize: "none", outline: "none",
+                                color: "#1B2A4A", background: "#FAFAFA", resize: "none", outline: "none",
                                 marginBottom: "0.625rem", boxSizing: "border-box",
                               }}
                             />

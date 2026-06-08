@@ -134,7 +134,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
 
   return (
     <div>
-      <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 600, color: "#111111", marginBottom: "1.25rem" }}>
+      <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 600, color: "#1B2A4A", marginBottom: "1.25rem" }}>
         {ann?.id ? "Edit Announcement" : "New Announcement"}
       </div>
 
@@ -153,7 +153,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
             style={{
               width: "100%", padding: "12px 14px", borderRadius: 10,
               border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS,
-              color: "#111111", resize: "vertical", outline: "none", boxSizing: "border-box",
+              color: "#1B2A4A", resize: "vertical", outline: "none", boxSizing: "border-box",
             }}
           />
         </div>
@@ -166,7 +166,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
           <select
             value={audienceType}
             onChange={(e) => { setAudienceType(e.target.value); setAudienceValue(""); }}
-            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#111111", background: "#fff", outline: "none" }}
+            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#1B2A4A", background: "#fff", outline: "none" }}
           >
             {AUDIENCE_TYPES.map((a) => (
               <option key={a.value} value={a.value}>{a.label}</option>
@@ -177,7 +177,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
             <select
               value={audienceValue}
               onChange={(e) => setAudienceValue(e.target.value)}
-              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#111111", background: "#fff", outline: "none" }}
+              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#1B2A4A", background: "#fff", outline: "none" }}
             >
               <option value="">Select ministry</option>
               {MINISTRIES.map((m) => <option key={m} value={m}>{m}</option>)}
@@ -191,14 +191,14 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
               value={audienceValue}
               onChange={(e) => setAudienceValue(e.target.value)}
               placeholder="Team number"
-              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#111111", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#1B2A4A", outline: "none", boxSizing: "border-box" }}
             />
           )}
           {audienceType === "role" && (
             <select
               value={audienceValue}
               onChange={(e) => setAudienceValue(e.target.value)}
-              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#111111", background: "#fff", outline: "none" }}
+              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#1B2A4A", background: "#fff", outline: "none" }}
             >
               <option value="">Select role</option>
               {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -217,7 +217,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
               onChange={(e) => setSendPushToggle(e.target.checked)}
               style={{ width: 16, height: 16, accentColor: "#FF4D00", cursor: "pointer", flexShrink: 0 }}
             />
-            <label htmlFor="send-push-toggle" style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
+            <label htmlFor="send-push-toggle" style={{ fontSize: "14px", color: "#1B2A4A", fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
               Send push notification to audience
             </label>
           </div>
@@ -229,7 +229,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
               onChange={(e) => setSendEmailToggle(e.target.checked)}
               style={{ width: 16, height: 16, accentColor: "#FF4D00", cursor: "pointer", flexShrink: 0 }}
             />
-            <label htmlFor="send-email-toggle" style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
+            <label htmlFor="send-email-toggle" style={{ fontSize: "14px", color: "#1B2A4A", fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
               Also send email to audience
             </label>
           </div>
@@ -255,7 +255,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
           onClick={() => save(false)}
           disabled={busy}
           style={{
-            background: "#fff", color: "#111111", border: "1px solid #E5E5E5", borderRadius: 10,
+            background: "#fff", color: "#1B2A4A", border: "1px solid #E5E5E5", borderRadius: 10,
             padding: "12px", fontSize: "14px", fontWeight: 600, fontFamily: SANS,
             cursor: "pointer", width: "100%",
           }}

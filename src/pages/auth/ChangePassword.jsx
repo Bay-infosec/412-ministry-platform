@@ -98,7 +98,7 @@ function PhotoCropModal({ file, onConfirm, onCancel }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(0,0,0,0.88)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
       <div style={{ color: "#fff", fontFamily: SANS, fontSize: "15px", fontWeight: 600, marginBottom: 20 }}>Drag to adjust your photo</div>
       <div
-        style={{ width: CROP_SIZE, height: CROP_SIZE, borderRadius: "50%", overflow: "hidden", border: "3px solid #fff", position: "relative", cursor: dragging ? "grabbing" : "grab", flexShrink: 0, background: "#111" }}
+        style={{ width: CROP_SIZE, height: CROP_SIZE, borderRadius: "50%", overflow: "hidden", border: "3px solid #fff", position: "relative", cursor: dragging ? "grabbing" : "grab", flexShrink: 0, background: "#1B2A4A" }}
         onMouseDown={(e) => startDrag(e.clientX, e.clientY)}
         onMouseMove={(e) => moveDrag(e.clientX, e.clientY)}
         onMouseUp={endDrag} onMouseLeave={endDrag}
@@ -259,7 +259,7 @@ function ProfileSetupStep({ userId, onDone }) {
           <button
             onClick={() => fileRef.current.click()}
             disabled={uploading}
-            style={{ background: "none", border: "1.5px solid #E5E5E5", borderRadius: 10, padding: "8px 20px", fontFamily: SANS, fontSize: "13px", fontWeight: 600, color: "#111", cursor: "pointer" }}
+            style={{ background: "none", border: "1.5px solid #E5E5E5", borderRadius: 10, padding: "8px 20px", fontFamily: SANS, fontSize: "13px", fontWeight: 600, color: "#1B2A4A", cursor: "pointer" }}
           >
             {uploading ? "Uploading…" : photoUrl ? "Change photo" : "Add a photo"}
           </button>
@@ -268,29 +268,29 @@ function ProfileSetupStep({ userId, onDone }) {
         {/* Info card */}
         <div style={{ background: "#fff", border: "1px solid #E5E5E5", borderRadius: 14, padding: "1.25rem", marginBottom: "1rem" }}>
           <div style={{ marginBottom: "1rem" }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: "#999", textTransform: "uppercase", marginBottom: 6 }}>Name</div>
-            <div style={{ fontSize: "15px", fontWeight: 600, color: "#111" }}>{profile.full_name}</div>
+            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: "#6B7280", textTransform: "uppercase", marginBottom: 6 }}>Name</div>
+            <div style={{ fontSize: "15px", fontWeight: 600, color: "#1B2A4A" }}>{profile.full_name}</div>
           </div>
           {churchName && (
             <div style={{ marginBottom: "1rem" }}>
-              <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: "#999", textTransform: "uppercase", marginBottom: 6 }}>Church</div>
-              <div style={{ fontSize: "15px", color: "#111" }}>{churchName}</div>
+              <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: "#6B7280", textTransform: "uppercase", marginBottom: 6 }}>Church</div>
+              <div style={{ fontSize: "15px", color: "#1B2A4A" }}>{churchName}</div>
             </div>
           )}
           <div>
-            <label style={{ display: "block", fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: "#999", textTransform: "uppercase", marginBottom: 8 }}>Nickname (optional)</label>
+            <label style={{ display: "block", fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: "#6B7280", textTransform: "uppercase", marginBottom: 8 }}>Nickname (optional)</label>
             <input
               type="text"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               placeholder="What do people call you?"
-              style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1px solid #E5E5E5", background: "#F5F5F5", fontSize: "15px", fontFamily: SANS, color: "#111", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1px solid #E5E5E5", background: "#F5F5F5", fontSize: "15px", fontFamily: SANS, color: "#1B2A4A", outline: "none", boxSizing: "border-box" }}
             />
           </div>
         </div>
 
         {/* PWA install card */}
-        <div style={{ background: "#111", borderRadius: 14, padding: "1.25rem", marginBottom: "1.25rem" }}>
+        <div style={{ background: "#1B2A4A", borderRadius: 14, padding: "1.25rem", marginBottom: "1.25rem" }}>
           <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.5rem" }}>Add to Your Home Screen</div>
           <div style={{ fontSize: "13px", color: "#B8C0D0", lineHeight: 1.6, marginBottom: "1rem" }}>
             Install the 412 Ministry app on your phone so you can open it like any other app — no browser needed.
@@ -314,7 +314,7 @@ function ProfileSetupStep({ userId, onDone }) {
         <button onClick={save} disabled={saving || uploading} style={{ width: "100%", padding: "15px", background: "#FF4D00", color: "#fff", border: "none", borderRadius: 12, fontSize: "15px", fontWeight: 800, fontFamily: SANS, cursor: saving ? "default" : "pointer", opacity: (saving || uploading) ? 0.7 : 1, marginBottom: "0.875rem" }}>
           {saving ? "Saving…" : "Save and continue →"}
         </button>
-        <button onClick={() => onDone("welcome")} style={{ display: "block", width: "100%", background: "none", border: "none", color: "#999", fontFamily: SANS, fontSize: "13px", cursor: "pointer", padding: "0.5rem" }}>
+        <button onClick={() => onDone("welcome")} style={{ display: "block", width: "100%", background: "none", border: "none", color: "#6B7280", fontFamily: SANS, fontSize: "13px", cursor: "pointer", padding: "0.5rem" }}>
           Skip for now
         </button>
       </div>

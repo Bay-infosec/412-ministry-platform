@@ -46,7 +46,7 @@ export default function CoordinatorView({ data, onBack, onViewProfile }) {
         <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
           Coordinator
         </div>
-        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
+        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
           My Teams
         </div>
         {teamNums.length > 0 && (
@@ -102,7 +102,7 @@ export default function CoordinatorView({ data, onBack, onViewProfile }) {
                     >
                       <Avatar url={photoUrl} name={name} size={40} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: "14px", fontWeight: 500, color: "#111111", fontFamily: SANS }}>{name}</div>
+                        <div style={{ fontSize: "14px", fontWeight: 500, color: "#1B2A4A", fontFamily: SANS }}>{name}</div>
                         <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>{roleLabel}</div>
                         <ProfileTags profile={m.profiles} showRole={false} />
                       </div>

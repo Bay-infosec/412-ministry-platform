@@ -57,7 +57,7 @@ export default function ProfileSheet({ profileId, activeEventId, onClose, onOpen
         </div>
 
         {!person ? (
-          <div style={{ textAlign: "center", padding: "3rem 0", color: "#999", fontFamily: SANS, fontSize: 14 }}>Loading…</div>
+          <div style={{ textAlign: "center", padding: "3rem 0", color: "#6B7280", fontFamily: SANS, fontSize: 14 }}>Loading…</div>
         ) : (
           <>
             {/* Hero — photo + name */}
@@ -81,11 +81,11 @@ export default function ProfileSheet({ profileId, activeEventId, onClose, onOpen
               )}
 
               {/* Name */}
-              <div style={{ fontFamily: SANS, fontSize: 22, fontWeight: 900, color: "#111", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+              <div style={{ fontFamily: SANS, fontSize: 22, fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
                 {displayName}
               </div>
               {realName && (
-                <div style={{ fontFamily: SANS, fontSize: 13, color: "#999", marginTop: 3 }}>{realName}</div>
+                <div style={{ fontFamily: SANS, fontSize: 13, color: "#6B7280", marginTop: 3 }}>{realName}</div>
               )}
 
               {/* Ministry / team pill */}
@@ -102,7 +102,7 @@ export default function ProfileSheet({ profileId, activeEventId, onClose, onOpen
                     </span>
                   )}
                   {member?.event_role && (
-                    <span style={{ background: "#111", color: "#fff", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700, fontFamily: SANS, textTransform: "capitalize" }}>
+                    <span style={{ background: "#1B2A4A", color: "#fff", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700, fontFamily: SANS, textTransform: "capitalize" }}>
                       {member.event_role}
                     </span>
                   )}
@@ -124,8 +124,8 @@ export default function ProfileSheet({ profileId, activeEventId, onClose, onOpen
                       <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
                     </svg>
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 800, color: "#999", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: SANS }}>Church</div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#111", fontFamily: SANS, marginTop: 1 }}>{person.church_name}</div>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: SANS }}>Church</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#1B2A4A", fontFamily: SANS, marginTop: 1 }}>{person.church_name}</div>
                     </div>
                   </div>
                 )}
@@ -135,8 +135,8 @@ export default function ProfileSheet({ profileId, activeEventId, onClose, onOpen
                       <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
                     </svg>
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 800, color: "#999", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: SANS }}>Hobby</div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#111", fontFamily: SANS, marginTop: 1 }}>{person.hobby}</div>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: SANS }}>Hobby</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#1B2A4A", fontFamily: SANS, marginTop: 1 }}>{person.hobby}</div>
                     </div>
                   </div>
                 )}
@@ -157,16 +157,16 @@ export default function ProfileSheet({ profileId, activeEventId, onClose, onOpen
                 </button>
               )}
               {person.phone && (
-                <a href={`tel:${person.phone}`} style={actionBtn("#F5F5F5", "#111")}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <a href={`tel:${person.phone}`} style={actionBtn("#F5F5F5", "#1B2A4A")}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.02 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.72 6.72l1.28-1.28a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
                   </svg>
                   Call
                 </a>
               )}
               {person.email && (
-                <a href={`mailto:${person.email}`} style={actionBtn("#F5F5F5", "#111")}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <a href={`mailto:${person.email}`} style={actionBtn("#F5F5F5", "#1B2A4A")}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
                   </svg>
                   Email
@@ -179,7 +179,7 @@ export default function ProfileSheet({ profileId, activeEventId, onClose, onOpen
               <div style={{ padding: "0 1.25rem" }}>
                 <button
                   onClick={() => { onClose(); onOpenAdmin(person.id); }}
-                  style={{ width: "100%", background: "#111", border: "none", borderRadius: 12, padding: "12px", fontFamily: SANS, fontSize: 14, fontWeight: 700, color: "#fff", cursor: "pointer" }}
+                  style={{ width: "100%", background: "#1B2A4A", border: "none", borderRadius: 12, padding: "12px", fontFamily: SANS, fontSize: 14, fontWeight: 700, color: "#fff", cursor: "pointer" }}
                 >
                   View Full Profile in Admin
                 </button>

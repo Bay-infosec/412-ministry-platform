@@ -64,7 +64,7 @@ export default function MyTeam({ data, onBack, onViewProfile }) {
       <BackBtn onBack={onBack} />
 
       {/* Team header */}
-      <div style={{ background: "#111111", borderRadius: 16, padding: "1.5rem", marginBottom: "1rem" }}>
+      <div style={{ background: "#1B2A4A", borderRadius: 16, padding: "1.5rem", marginBottom: "1rem" }}>
         <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.25rem", fontFamily: SANS }}>
           Your Team
         </div>
@@ -136,7 +136,7 @@ export default function MyTeam({ data, onBack, onViewProfile }) {
           >
             <Avatar url={coLeader.photo_url} name={coLeader.full_name} size={48} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{coLeader.full_name}</div>
+              <div style={{ fontSize: "15px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{coLeader.full_name}</div>
               {coLeader.churches?.name && (
                 <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>{coLeader.churches.name}</div>
               )}
@@ -174,7 +174,7 @@ export default function MyTeam({ data, onBack, onViewProfile }) {
                         }}>
                           {done && <span style={{ color: "#fff", fontSize: 8, lineHeight: 1 }}>✓</span>}
                         </div>
-                        <span style={{ fontSize: "12px", fontFamily: SANS, color: done ? "#FF4D00" : "#999999", textDecoration: done ? "line-through" : "none" }}>
+                        <span style={{ fontSize: "12px", fontFamily: SANS, color: done ? "#FF4D00" : "#6B7280", textDecoration: done ? "line-through" : "none" }}>
                           {item.label}
                         </span>
                       </div>
@@ -194,8 +194,8 @@ export default function MyTeam({ data, onBack, onViewProfile }) {
               </a>
             )}
             {coLeader.email && (
-              <a href={`mailto:${coLeader.email}`} style={contactBtnStyle("transparent", "#111111", BORDER)}>
-                <MailIcon color="#111111" />
+              <a href={`mailto:${coLeader.email}`} style={contactBtnStyle("transparent", "#1B2A4A", BORDER)}>
+                <MailIcon color="#1B2A4A" />
                 Email
               </a>
             )}
@@ -218,21 +218,21 @@ export default function MyTeam({ data, onBack, onViewProfile }) {
             >
               <Avatar url={coordinator.photo_url} name={coordinator.full_name} size={48} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{coordinator.full_name}</div>
+                <div style={{ fontSize: "15px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{coordinator.full_name}</div>
                 <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>Team Coordinator</div>
               </div>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CCCCCC" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6"/></svg>
             </button>
             <div style={{ display: "flex", gap: 8 }}>
               {coordinator.phone && (
-                <a href={`tel:${coordinator.phone}`} style={contactBtnStyle("#111111")}>
+                <a href={`tel:${coordinator.phone}`} style={contactBtnStyle("#1B2A4A")}>
                   <PhoneIcon color="#fff" />
                   Call
                 </a>
               )}
               {coordinator.email && (
-                <a href={`mailto:${coordinator.email}`} style={contactBtnStyle("transparent", "#111111", BORDER)}>
-                  <MailIcon color="#111111" />
+                <a href={`mailto:${coordinator.email}`} style={contactBtnStyle("transparent", "#1B2A4A", BORDER)}>
+                  <MailIcon color="#1B2A4A" />
                   Email
                 </a>
               )}
@@ -289,7 +289,7 @@ export default function MyTeam({ data, onBack, onViewProfile }) {
                 {isSaving && <span style={{ color: TSEC, fontSize: 9 }}>…</span>}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: "14px", fontWeight: 600, fontFamily: SANS, color: done ? "#059669" : "#111111", textDecoration: done ? "line-through" : "none", transition: "color 0.15s", marginBottom: 3 }}>
+                <div style={{ fontSize: "14px", fontWeight: 600, fontFamily: SANS, color: done ? "#059669" : "#1B2A4A", textDecoration: done ? "line-through" : "none", transition: "color 0.15s", marginBottom: 3 }}>
                   {item.label}
                 </div>
                 <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.5 }}>
