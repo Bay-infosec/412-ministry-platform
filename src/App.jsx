@@ -27,7 +27,7 @@ function LoadingScreen() {
         <div style={{
           position: "absolute",
           inset: -10,
-          borderRadius: "50%",
+          borderRadius: 26,
           border: "2.5px solid #E5E5E5",
           borderTopColor: ORANGE,
           animation: "spin412 1s linear infinite",

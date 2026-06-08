@@ -146,15 +146,8 @@ export default function Home({
       {/* ── Header ─────────────────────────────────────────────────── */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
         {/* Brand */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <img
-            src="/logo.png"
-            alt="412 Ministry"
-            style={{ width: 38, height: 38, borderRadius: 10, objectFit: "cover", flexShrink: 0 }}
-          />
-          <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, letterSpacing: "-0.02em", color: "#111111", lineHeight: 1 }}>
-            412 <span style={{ color: "#FF4D00" }}>Ministry</span>
-          </div>
+        <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, letterSpacing: "-0.02em", color: "#111111", lineHeight: 1 }}>
+          412 <span style={{ color: "#FF4D00" }}>Ministry</span>
         </div>
 
         {/* Chat button — pill */}
