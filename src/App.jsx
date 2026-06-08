@@ -534,6 +534,8 @@ export default function App() {
             onOpenEventPage={(p) => { setTab("event"); setPage(p); }}
             chatUnread={chatUnread}
             onlineUsers={onlineUsers}
+            readIds={readIds}
+            onMarkRead={markRead}
           />
         )}
         {tab === "event" && !page && (

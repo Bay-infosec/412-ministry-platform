@@ -80,16 +80,23 @@ function TileChevron() {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function Home({
-  data, onNavigate, onOpenChat, onOpenOnboarding, onOpenMyTeam, onOpenUpdates, onOpenEventPage, chatUnread, onlineUsers,
+  data, onNavigate, onOpenChat, onOpenOnboarding, onOpenMyTeam, onOpenUpdates, onOpenEventPage, chatUnread, onlineUsers, readIds, onMarkRead,
 }) {
   const { profile, eventMember, eventChecklist, announcements, unreadCount, activeEvent, trainingMaterials } = data;
 
   const othersOnline = (onlineUsers || []).filter((u) => u.user_id !== profile.id);
   const displayName = profile.nickname || (profile.full_name || "").split(" ")[0];
 
-  // Dismissals (session-only)
-  const [annDismissed, setAnnDismissed] = useState(false);
   const [showContact, setShowContact] = useState(false);
+
+  async function dismissAnnouncement(annId) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    try {
+      await supabase.from("announcement_reads").insert({ announcement_id: annId, profile_id: user.id });
+    } catch {}
+    onMarkRead?.(annId);
+  }
 
   // Standalone zoom/board meetings (not part of a conference)
   const [meetings, setMeetings] = useState([]);
@@ -165,7 +172,7 @@ export default function Home({
       </div>
 
       {/* ── Announcement ───────────────────────────────────────────── */}
-      {latestAnn && !annDismissed && (
+      {latestAnn && !(readIds || []).includes(latestAnn.id) && (
         <div style={{ position: "relative", marginBottom: "1rem" }}>
           <button
             onClick={onOpenUpdates}
@@ -194,7 +201,7 @@ export default function Home({
             </div>
           </button>
           <button
-            onClick={() => setAnnDismissed(true)}
+            onClick={() => dismissAnnouncement(latestAnn.id)}
             style={{
               position: "absolute", top: 10, right: 10,
               background: "rgba(26,79,191,0.12)", border: "none", borderRadius: "50%",
