@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
 import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
+import { sendInviteEmail } from "../../../lib/email.js";
 
 const inputStyle = {
   width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10,
@@ -36,15 +37,38 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
       },
     });
 
-    setLoading(false);
-
     if (error || !res?.success) {
+      setLoading(false);
       const msg = res?.error || "Could not create account. Email may already be in use.";
       onToast(msg, "error");
       return;
     }
 
-    setDone({ name: fullName.trim(), emailSent: res.email_sent });
+    const normalizedEmail = email.trim().toLowerCase();
+    const { data: createdProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", normalizedEmail)
+      .maybeSingle();
+
+    let emailSent = false;
+    let tempPassword = null;
+    if (createdProfile?.id) {
+      const { data: resetResult } = await supabase.functions.invoke("reset-password", {
+        body: { user_id: createdProfile.id },
+      });
+      tempPassword = resetResult?.temp_password || null;
+      if (tempPassword) {
+        emailSent = await sendInviteEmail({
+          toEmail: normalizedEmail,
+          toName: fullName.trim(),
+          tempPassword,
+        });
+      }
+    }
+
+    setLoading(false);
+    setDone({ name: fullName.trim(), emailSent, tempPassword });
   }
 
   if (done) {
@@ -60,11 +84,12 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
           </div>
         ) : (
           <div style={{
-            background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 12,
+            background: "#111111", border: "none", borderRadius: 12,
             padding: "1rem", marginTop: "0.5rem",
-            fontSize: "14px", color: "#92400E", fontFamily: SANS, lineHeight: 1.65,
+            fontSize: "14px", color: "#FFFFFF", fontFamily: SANS, lineHeight: 1.65,
           }}>
-            Account created but the invite email failed to send. You will need to share the login credentials manually. Check the Resend configuration (RESEND_API_KEY / RESEND_FROM_EMAIL secrets).
+            Account created, but EmailJS did not confirm delivery.
+            {done.tempPassword ? ` Share this temporary password manually: ${done.tempPassword}` : " Reset the password from the user profile and share it manually."}
           </div>
         )}
       </div>

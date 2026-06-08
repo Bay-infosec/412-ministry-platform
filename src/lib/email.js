@@ -1,20 +1,65 @@
 import { supabase } from "./supabase.js";
 
-// Sends one email via the `send-email` Supabase Edge Function, which calls
-// Resend server-side (the Resend API key never reaches the browser).
-export async function sendEmail(to, subject, html) {
+// These are EmailJS client identifiers, not secret server credentials.
+const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_7njy4no";
+const WELCOME_TEMPLATE = import.meta.env.VITE_EMAILJS_INVITE_TEMPLATE || "template_6d9u7bp";
+const ANNOUNCEMENT_TEMPLATE = import.meta.env.VITE_EMAILJS_ANNOUNCE_TEMPLATE || "template_ecf57nm";
+const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "FP0ZiFckHYBqYpN6s";
+
+async function sendTemplate(templateId, templateParams) {
+  if (!SERVICE_ID || !templateId || !PUBLIC_KEY) return false;
+
   try {
-    const { error } = await supabase.functions.invoke("send-email", {
-      body: { to, subject, html },
+    const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        service_id: SERVICE_ID,
+        template_id: templateId,
+        user_id: PUBLIC_KEY,
+        template_params: templateParams,
+      }),
     });
-    return !error;
+    return response.ok;
   } catch {
     return false;
   }
 }
 
-function announcementHtml(toName, title, body) {
-  return `<p>Hi ${toName || "there"},</p><p><strong>${title}</strong></p><p>${body}</p>`;
+function htmlToText(html) {
+  if (!html) return "";
+  const container = document.createElement("div");
+  container.innerHTML = html;
+  return container.textContent || container.innerText || "";
+}
+
+export function sendInviteEmail({ toEmail, toName, tempPassword }) {
+  return sendTemplate(WELCOME_TEMPLATE, {
+    to_email: toEmail,
+    to_name: toName,
+    temp_password: tempPassword,
+    platform_url: window.location.origin,
+  });
+}
+
+// The free EmailJS plan has two templates. Reuse Announcement for platform
+// announcements and contact-form messages; Welcome is reserved for invites.
+export function sendEmail(to, subject, html, toName = "") {
+  const body = htmlToText(html);
+  return sendTemplate(ANNOUNCEMENT_TEMPLATE, {
+    to_email: to,
+    to_name: toName,
+    title: subject,
+    body,
+    announcement_title: subject,
+    announcement_body: body,
+    subject,
+    message: body,
+    event_name: "412 Ministry",
+    event_dates: "",
+    event_location: "",
+    platform_url: window.location.origin,
+  });
 }
 
 // Sends announcement email to all event members matching the audience rule.
@@ -25,7 +70,7 @@ export async function sendAnnouncementEmails(audience, announcement, eventId) {
   let query = supabase
     .from("event_members")
     .select("profile_id, ministry, team_number, event_role, profiles(full_name, email)")
-    .eq("event_id", eventId);
+    .eq("event_id", rule.event_id || eventId);
 
   if (rule.type === "ministry" && rule.value) {
     query = query.eq("ministry", rule.value);
@@ -40,10 +85,15 @@ export async function sendAnnouncementEmails(audience, announcement, eventId) {
   const { data: members } = await query;
   if (!members?.length) return;
 
-  for (const m of members) {
-    const p = m.profiles;
-    if (p?.email) {
-      await sendEmail(p.email, announcement.title, announcementHtml(p.full_name, announcement.title, announcement.body));
+  for (const member of members) {
+    const person = member.profiles;
+    if (person?.email) {
+      await sendEmail(
+        person.email,
+        announcement.title,
+        announcement.body,
+        person.full_name || "",
+      );
     }
   }
 }

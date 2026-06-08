@@ -157,8 +157,37 @@ export default function App() {
         .select("*")
         .eq("status", "active")
         .order("created_at", { ascending: false });
-      const CONF_TYPES = ["youth_conference", "annual_conference", "conference"];
-      const activeEvent = (activeEventsArr || []).find((e) => CONF_TYPES.includes(e.type)) || (activeEventsArr || [])[0] || null;
+      const getEventStart = (event) => {
+        if (event.start_date) {
+          const parsed = new Date(`${event.start_date}T00:00:00`);
+          if (!Number.isNaN(parsed.getTime())) return parsed.getTime();
+        }
+        const range = event.dates?.match(/([A-Za-z]+ \d+)[–-]\d+,?\s*(\d{4})/);
+        const single = event.dates?.match(/([A-Za-z]+ \d+,\s*\d{4})/);
+        const parsed = range ? new Date(`${range[1]}, ${range[2]}`) : single ? new Date(single[1]) : null;
+        return parsed && !Number.isNaN(parsed.getTime()) ? parsed.getTime() : Number.MAX_SAFE_INTEGER;
+      };
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const sortedActiveEvents = [...(activeEventsArr || [])].sort((a, b) => {
+        const aStart = getEventStart(a);
+        const bStart = getEventStart(b);
+        const aOrder = aStart < now.getTime() ? Number.MAX_SAFE_INTEGER - 1 : aStart;
+        const bOrder = bStart < now.getTime() ? Number.MAX_SAFE_INTEGER - 1 : bStart;
+        return aOrder - bOrder;
+      });
+      const activeEventIds = sortedActiveEvents.map((event) => event.id);
+      const { data: activeMemberships } = activeEventIds.length > 0
+        ? await supabase
+            .from("event_members")
+            .select("event_id")
+            .eq("profile_id", user.id)
+            .in("event_id", activeEventIds)
+        : { data: [] };
+      const enrolledActiveIds = new Set((activeMemberships || []).map((membership) => membership.event_id));
+      const activeEvent = sortedActiveEvents.find((event) => enrolledActiveIds.has(event.id))
+        || sortedActiveEvents[0]
+        || null;
 
       // Load event membership
       let eventMember = null;

@@ -3,7 +3,7 @@ import { supabase } from "../../lib/supabase.js";
 import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { SectionLabel } from "../../components/ui/index.js";
-import { DailyVerse, ContactForm } from "../../components/shared/index.js";
+import { DailyVerse } from "../../components/shared/index.js";
 import { CHECKLIST_ITEMS } from "../../lib/checklist.js";
 
 const TYPE_LABELS = {
@@ -260,12 +260,8 @@ function MemberCard({ m, onPress }) {
 // ── Tool icons ────────────────────────────────────────────────────────────────
 
 const ICON_COLOR = "#FF4D00";
-function TeamIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ICON_COLOR} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>; }
-function PrayerIcon() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ICON_COLOR} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>; }
 function FourIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>; }
 function BookIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ICON_COLOR} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>; }
-function ListIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ICON_COLOR} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>; }
-function DashIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ICON_COLOR} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>; }
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -278,7 +274,6 @@ export default function Home({
   } = data;
 
   const displayName = profile.nickname || (profile.full_name || "").split(" ")[0];
-  const [showContact, setShowContact] = useState(false);
 
   async function dismissAnnouncement(annId) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -308,7 +303,15 @@ export default function Home({
     ...(history || []).map((h) => h.event_id),
   ].filter(Boolean));
 
-  const myEvents = (publicEvents || []).filter((ev) => myEventIds.has(ev.id));
+  const myEvents = (publicEvents || [])
+    .filter((ev) => myEventIds.has(ev.id))
+    .sort((a, b) => {
+      const aDays = a.start_date ? daysUntilDate(a.start_date) : daysUntilEvent(a.dates);
+      const bDays = b.start_date ? daysUntilDate(b.start_date) : daysUntilEvent(b.dates);
+      const aOrder = aDays === null || aDays < 0 ? Number.MAX_SAFE_INTEGER : aDays;
+      const bOrder = bDays === null || bDays < 0 ? Number.MAX_SAFE_INTEGER : bDays;
+      return aOrder - bOrder;
+    });
 
   const checklistItems = eventChecklist?.items || {};
   const checklistDone = CHECKLIST_ITEMS.filter((i) => checklistItems[i.id]).length;
@@ -492,7 +495,7 @@ export default function Home({
 
       {/* ── Coordinator Dashboard ───────────────────────────────────── */}
       {isCoordinator && teamProgress.length > 0 && (
-        <div style={{ marginBottom: "1rem" }}>
+        <div style={{ marginBottom: "2rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
             <SectionLabel style={{ marginBottom: 0 }}>Coordinator Dashboard</SectionLabel>
             <button
@@ -556,30 +559,25 @@ export default function Home({
           <SectionLabel>Tools</SectionLabel>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {[
-              { id: "myteam",       label: "My Team",      icon: <TeamIcon />,    dark: false },
-              { id: "prayer_chain", label: "Prayer Chain", icon: <PrayerIcon />,  dark: false },
-              { id: "the_four",     label: "The Four",     icon: <FourIcon />,    dark: true  },
-              { id: "field_guide",  label: "Field Guide",  icon: <BookIcon />,    dark: false },
-              { id: "onboarding",   label: "Onboarding",   icon: <ListIcon />,    dark: false },
-              { id: "coordinator",  label: "My Dashboard", icon: <DashIcon />,    dark: false, coordinatorOnly: true },
+              { id: "the_four",    label: "The Four",    icon: <FourIcon /> },
+              { id: "field_guide", label: "Field Guide", icon: <BookIcon /> },
             ]
-              .filter((t) => !t.coordinatorOnly || isCoordinator)
               .map((t) => (
                 <button
                   key={t.id}
                   onClick={() => onOpenEventPage?.(t.id)}
                   style={{
-                    background: t.dark ? "#1B2A4A" : "#fff",
-                    border: t.dark ? "none" : "1px solid #E5E5E5",
+                    background: "#fff",
+                    border: "1px solid #E5E5E5",
                     borderRadius: 14, padding: "14px 12px",
                     display: "flex", alignItems: "center", gap: 10,
                     cursor: "pointer", textAlign: "left",
                   }}
                 >
-                  <div style={{ width: 32, height: 32, borderRadius: 9, background: t.dark ? "rgba(255,77,0,0.18)" : "#FFF0EA", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 9, background: "#FFF0EA", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     {t.icon}
                   </div>
-                  <span style={{ fontSize: "12px", fontWeight: 800, color: t.dark ? "#fff" : "#1B2A4A", fontFamily: SANS, lineHeight: 1.2 }}>
+                  <span style={{ fontSize: "12px", fontWeight: 800, color: "#1B2A4A", fontFamily: SANS, lineHeight: 1.2 }}>
                     {t.label}
                   </span>
                 </button>
@@ -589,31 +587,6 @@ export default function Home({
         </div>
       )}
 
-      {/* ── Contact ──────────────────────────────────────────────────── */}
-      <button
-        onClick={() => setShowContact(true)}
-        style={{
-          width: "100%", background: "#1B2A4A", border: "none",
-          borderRadius: 16, padding: "1.25rem 1.5rem", cursor: "pointer",
-          fontFamily: SANS, display: "flex", alignItems: "center", gap: 14,
-          marginBottom: "0.5rem",
-        }}
-      >
-        <div style={{ width: 44, height: 44, borderRadius: 12, background: "#FF4D00", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
-        </div>
-        <div style={{ flex: 1, textAlign: "left" }}>
-          <div style={{ fontSize: "15px", fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>Contact Us</div>
-          <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)", marginTop: 2 }}>Send a message to the 412 team</div>
-        </div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M9 6l6 6-6 6" />
-        </svg>
-      </button>
-
-      {showContact && <ContactForm profile={profile} onClose={() => setShowContact(false)} />}
       <div style={{ height: "1rem" }} />
     </Shell>
   );

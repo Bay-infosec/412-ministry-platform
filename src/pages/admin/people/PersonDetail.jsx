@@ -38,6 +38,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
   const [modal, setModal] = useState(null);
   const [busy, setBusy] = useState(false);
   const [tempPw, setTempPw] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
 
   // Platform role (inline chip)
   const [currentRole, setCurrentRole] = useState(profile.platform_role);
@@ -103,6 +104,23 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
     setModal(null);
     if (error || !res?.success) { onToast("Password reset failed.", "error"); return; }
     setTempPw(res.temp_password);
+  }
+
+  async function deleteAccount() {
+    if (deleteConfirm !== "DELETE") return;
+    setBusy(true);
+    const { data: result, error } = await supabase.functions.invoke("delete-user", {
+      body: { user_id: profile.id },
+    });
+    setBusy(false);
+    if (error || !result?.success) {
+      onToast(result?.error || "Could not remove account.", "error");
+      return;
+    }
+    setModal(null);
+    onToast(`${profile.full_name}'s account was permanently removed.`);
+    await onRefresh();
+    onDone();
   }
 
   async function addToEvent() {
@@ -259,6 +277,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
           <ActionRow label={`Add to ${activeEvent.name}`} sub="Enroll in active event" onClick={() => setModal("add")} />
         )}
         <ActionRow label="Reset password" sub="Generate new temp password" danger onClick={() => setModal("reset")} />
+        <ActionRow label="Remove account" sub="Permanently delete this test or duplicate account" danger onClick={() => { setDeleteConfirm(""); setModal("delete"); }} />
       </div>
 
       {/* Add to event modal */}
@@ -300,6 +319,30 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
           onConfirm={resetPassword}
           busy={busy}
         />
+      )}
+
+      {modal === "delete" && (
+        <div style={overlay}>
+          <div style={sheet}>
+            <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 700, color: "#111", marginBottom: "0.75rem" }}>Remove Account</div>
+            <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, lineHeight: 1.6, marginBottom: "1rem" }}>
+              This permanently deletes {profile.full_name}'s login and profile. Use it only for accidental, test, or duplicate accounts.
+            </div>
+            <FieldLabel>TYPE DELETE TO CONFIRM</FieldLabel>
+            <input
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder="DELETE"
+              style={{ ...inputStyle, marginBottom: "1.25rem" }}
+            />
+            <ModalButtons
+              onCancel={() => setModal(null)}
+              onConfirm={deleteAccount}
+              confirmLabel={busy ? "Removing…" : "Remove Account"}
+              disabled={busy || deleteConfirm !== "DELETE"}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

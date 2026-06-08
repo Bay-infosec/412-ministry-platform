@@ -5,6 +5,7 @@ import { pushSupported, pushPermission, subscribeToPush, unsubscribeFromPush } f
 import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, Field, Button, Avatar, SectionLabel, Badge, ProfileTags } from "../../components/ui/index.js";
+import { ContactForm } from "../../components/shared/index.js";
 
 const CROP_SIZE = 270;
 
@@ -433,6 +434,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
   const [showInstall, setShowInstall] = useState(false);
   const [showChangePw, setShowChangePw] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [showContact, setShowContact] = useState(false);
 
   // Notifications (for settings page toggle)
   const [notifPerm, setNotifPerm] = useState(() => pushPermission());
@@ -565,6 +567,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           />
         )}
         {showDeleteAccount && <DeleteAccountModal profile={profile} onClose={() => setShowDeleteAccount(false)} />}
+        {showContact && <ContactForm profile={profile} onClose={() => setShowContact(false)} />}
 
         <button onClick={() => setSettingsPage(false)} style={{ background: "none", border: "none", color: TSEC, fontSize: "14px", cursor: "pointer", padding: "0 0 1rem 0", fontFamily: SANS, display: "block" }}>
           ‹ Profile
@@ -623,6 +626,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           />
         )}
         {showDeleteAccount && <DeleteAccountModal profile={profile} onClose={() => setShowDeleteAccount(false)} />}
+        {showContact && <ContactForm profile={profile} onClose={() => setShowContact(false)} />}
 
         {onBack && (
           <button onClick={onBack} style={{ background: "none", border: "none", color: TSEC, fontSize: "14px", cursor: "pointer", padding: "0 0 1rem 0", fontFamily: SANS, display: "block" }}>
@@ -705,7 +709,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
         {/* History nav button */}
         <button
           onClick={() => setHistoryPage(true)}
-          style={{ width: "100%", background: "#fff", border: "1px solid #E5E5E5", borderRadius: 10, padding: "13px 16px", cursor: "pointer", fontFamily: SANS, display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}
+          style={{ width: "100%", background: "#fff", border: "1px solid #E5E5E5", borderRadius: 10, padding: "13px 16px", cursor: "pointer", fontFamily: SANS, display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 34, height: 34, borderRadius: 9, background: "#F5F5F5", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -723,6 +727,13 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 18l6-6-6-6" />
           </svg>
+        </button>
+
+        <button
+          onClick={() => setShowContact(true)}
+          style={{ width: "100%", background: "none", border: "none", color: TSEC, padding: "10px", cursor: "pointer", fontSize: "13px", fontWeight: 600, fontFamily: SANS, marginBottom: "1rem" }}
+        >
+          Contact 412 Ministry
         </button>
 
         {msg && <div style={{ fontSize: "13px", color: "#0A7C42", marginTop: "0.5rem", fontFamily: SANS, textAlign: "center" }}>{msg}</div>}

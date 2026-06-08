@@ -95,7 +95,11 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
   const { activeEvent, eventMember, profile, isAdmin, history, eventChecklist } = data;
 
   // Build enrolled event options from history (non-archived), sorted by start date
-  function parseEventStart(datesStr) {
+  function parseEventStart(startDate, datesStr) {
+    if (startDate) {
+      const parsed = new Date(`${startDate}T00:00:00`);
+      if (!isNaN(parsed)) return parsed;
+    }
     if (!datesStr) return new Date(9999, 0, 1);
     const m1 = datesStr.match(/([A-Za-z]+ \d+)[–\-]\d+,?\s*(\d{4})/);
     const m2 = datesStr.match(/([A-Za-z]+ \d+,\s*\d{4})/);
@@ -108,18 +112,13 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
   for (const h of (history || [])) {
     if (h.events && h.events.status !== "archived" && !seen.has(h.event_id)) {
       seen.add(h.event_id);
-      enrolledEvents.push({ key: `evt_${h.event_id}`, label: h.events.name, eventId: h.event_id, dates: h.events.dates });
+      enrolledEvents.push({ key: `evt_${h.event_id}`, label: h.events.name, eventId: h.event_id, dates: h.events.dates, startDate: h.events.start_date });
     }
   }
-  enrolledEvents.sort((a, b) => parseEventStart(a.dates) - parseEventStart(b.dates));
+  enrolledEvents.sort((a, b) => parseEventStart(a.startDate, a.dates) - parseEventStart(b.startDate, b.dates));
 
-  const [view, setView] = useState(() => localStorage.getItem("event_default_view") || "browse");
-  const [pinnedView, setPinnedView] = useState(() => localStorage.getItem("event_default_view") || "browse");
-
-  function pinCurrentView() {
-    localStorage.setItem("event_default_view", view);
-    setPinnedView(view);
-  }
+  const initialEventView = enrolledEvents[0]?.key || "browse";
+  const [view, setView] = useState(initialEventView);
 
   // Resolve which activeEvent data to show for the selected view
   const viewEventId = view.startsWith("evt_") ? view.slice(4) : null;
@@ -161,19 +160,8 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
 
   return (
     <Shell withNav>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "1.25rem" }}>
-        <div style={{ flex: 1 }}>
-          <ViewDropdown view={view} onChange={setView} enrolledEvents={enrolledEvents} />
-        </div>
-        <button
-          onClick={pinCurrentView}
-          title={view === pinnedView ? "This is your default view" : "Set as default entrance"}
-          style={{ flexShrink: 0, width: 44, height: 44, borderRadius: 12, border: "none", background: view === pinnedView ? "#FF4D00" : "#F0F0F0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill={view === pinnedView ? "#fff" : "none"} stroke={view === pinnedView ? "#fff" : "#6B7280"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
-          </svg>
-        </button>
+      <div style={{ marginBottom: "1.25rem" }}>
+        <ViewDropdown view={view} onChange={setView} enrolledEvents={enrolledEvents} />
       </div>
 
       {view === "browse" && (
@@ -251,6 +239,34 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
           </div>
         )}
       </div>
+
+      {/* Onboarding — directly below event information */}
+      {eventMember && viewEventId === activeEvent?.id && (
+        <div style={{ background: "#FF4D00", borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.625rem" }}>
+            <div>
+              <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "rgba(255,255,255,0.72)", textTransform: "uppercase", fontFamily: SANS, marginBottom: 3 }}>
+                Onboarding
+              </div>
+              <div style={{ fontSize: "14px", fontWeight: 800, color: "#fff", fontFamily: SANS }}>
+                {onboardingComplete ? "Onboarding complete" : `Step ${Math.min(onboardingStep + 1, TOTAL_STEPS)} of ${TOTAL_STEPS}`}
+              </div>
+            </div>
+            <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.8)", fontFamily: SANS }}>
+              {checklistDone}/{CHECKLIST_ITEMS.length} checklist
+            </div>
+          </div>
+          <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 6, height: 5, marginBottom: "0.875rem", overflow: "hidden" }}>
+            <div style={{ background: "#fff", height: "100%", borderRadius: 6, width: onboardingComplete ? "100%" : `${Math.min((onboardingStep / TOTAL_STEPS) * 100, 100)}%`, transition: "width 0.3s" }} />
+          </div>
+          <button
+            onClick={() => onOpenPage("onboarding")}
+            style={{ width: "100%", background: "#fff", color: "#FF4D00", border: "none", borderRadius: 10, padding: "10px 0", fontSize: "13px", fontWeight: 800, cursor: "pointer", fontFamily: SANS }}
+          >
+            {onboardingComplete ? "Review Onboarding →" : onboardingStep > 0 ? "Continue Onboarding →" : "Start Onboarding →"}
+          </button>
+        </div>
+      )}
 
       {/* Sections — conference only */}
       {sections.length > 0 && <SectionLabel>Sections</SectionLabel>}
@@ -349,41 +365,6 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
           </button>
         ))}
 
-        {/* Onboarding invitation — solid orange, bottom of sections card */}
-        {eventMember && !onboardingComplete && viewEventId === activeEvent?.id && (
-          <div style={{ background: "#FF4D00", padding: "1rem 1.25rem", borderRadius: "0 0 14px 14px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.625rem" }}>
-              <div>
-                <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "rgba(255,255,255,0.7)", textTransform: "uppercase", fontFamily: SANS, marginBottom: 3 }}>
-                  Onboarding
-                </div>
-                <div style={{ fontSize: "14px", fontWeight: 800, color: "#fff", fontFamily: SANS }}>
-                  Step {Math.min(onboardingStep + 1, TOTAL_STEPS)} of {TOTAL_STEPS}
-                </div>
-              </div>
-              <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", fontFamily: SANS }}>
-                {checklistDone}/{CHECKLIST_ITEMS.length} checklist
-              </div>
-            </div>
-            <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 6, height: 5, marginBottom: "0.875rem", overflow: "hidden" }}>
-              <div style={{ background: "#fff", height: "100%", borderRadius: 6, width: `${Math.min((onboardingStep / TOTAL_STEPS) * 100, 100)}%`, transition: "width 0.3s" }} />
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                onClick={() => onOpenPage("onboarding")}
-                style={{ flex: 1, background: "#fff", color: "#FF4D00", border: "none", borderRadius: 10, padding: "9px 0", fontSize: "13px", fontWeight: 800, cursor: "pointer", fontFamily: SANS }}
-              >
-                {onboardingStep > 0 ? "Continue Setup →" : "Start Onboarding →"}
-              </button>
-              <button
-                onClick={() => onOpenPage("myteam")}
-                style={{ background: "rgba(0,0,0,0.18)", color: "#fff", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: "13px", fontWeight: 700, cursor: "pointer", fontFamily: SANS }}
-              >
-                Checklist
-              </button>
-            </div>
-          </div>
-        )}
       </Card>}
         </>
       )}
