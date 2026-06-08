@@ -137,14 +137,23 @@ export default function Home({
   return (
     <Shell withNav>
       {/* ── Header ─────────────────────────────────────────────────── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
-        <div style={{ fontFamily: SANS, fontSize: "13px", fontWeight: 900, letterSpacing: "0.04em", color: "#111111" }}>
-          412 <span style={{ color: "#FF4D00" }}>Ministry</span>
+      <div style={{ fontFamily: SANS, fontSize: "13px", fontWeight: 900, letterSpacing: "0.04em", color: "#111111", marginBottom: "0.5rem" }}>
+        412 <span style={{ color: "#FF4D00" }}>Ministry</span>
+      </div>
+
+      {/* ── Greeting + Chat ────────────────────────────────────────── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.25rem" }}>
+        <div>
+          <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#999999", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+            Good morning
+          </div>
+          <div style={{ fontFamily: SANS, fontSize: "36px", fontWeight: 900, color: "#111111", lineHeight: 1.1, letterSpacing: "-0.04em" }}>
+            {displayName}
+          </div>
         </div>
-        {/* Chat button */}
         <button
           onClick={onOpenChat}
-          style={{ position: "relative", width: 40, height: 40, borderRadius: "50%", background: "#FF4D00", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
+          style={{ position: "relative", width: 40, height: 40, borderRadius: "50%", background: "#FF4D00", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, marginLeft: 12 }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -153,16 +162,6 @@ export default function Home({
             <div style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#E53E3E", border: "2px solid #FF4D00" }} />
           )}
         </button>
-      </div>
-
-      {/* ── Greeting ───────────────────────────────────────────────── */}
-      <div style={{ marginBottom: "1.25rem" }}>
-        <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#999999", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-          Good morning
-        </div>
-        <div style={{ fontFamily: SANS, fontSize: "36px", fontWeight: 900, color: "#111111", lineHeight: 1.1, letterSpacing: "-0.04em" }}>
-          {displayName}
-        </div>
       </div>
 
       {/* ── Announcement ───────────────────────────────────────────── */}
