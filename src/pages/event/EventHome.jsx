@@ -148,7 +148,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
   ];
 
   if (isCoordinator) {
-    sections.push({ id: "coordinator", label: "My Teams", desc: "Overview of teams you oversee" });
+    sections.push({ id: "coordinator", label: "Coordinator Dashboard", desc: "Overview of teams you oversee" });
   }
 
   const zoom = viewEvent?.zoom_training_dates ? splitZoomDisplay(viewEvent.zoom_training_dates) : null;
@@ -189,24 +189,44 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
 
       {showMine && (
         <>
+      {/* Onboarding banner */}
+      {eventMember && !onboardingComplete && viewEventId === activeEvent?.id && (
+        <div style={{ background: "#FFF5F0", border: "1px solid #FFD5C0", borderRadius: 16, padding: "1.25rem 1.5rem", marginBottom: "1rem" }}>
+          <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.625rem", fontFamily: SANS }}>
+            Getting Started
+          </div>
+          <div style={{ fontSize: "15px", fontWeight: 800, color: "#111111", fontFamily: SANS, marginBottom: "0.375rem" }}>
+            Complete your setup
+          </div>
+          <div style={{ fontSize: "13px", color: "#555555", fontFamily: SANS, lineHeight: 1.55, marginBottom: "1rem" }}>
+            Step {Math.min(onboardingStep + 1, TOTAL_STEPS)} of {TOTAL_STEPS} — finish setting up your profile and checklist before the conference.
+          </div>
+          <div style={{ background: "#FFE5D5", borderRadius: 8, height: 6, marginBottom: "1rem", overflow: "hidden" }}>
+            <div style={{ background: "#FF4D00", height: "100%", width: `${Math.min((onboardingStep / TOTAL_STEPS) * 100, 100)}%`, borderRadius: 8, transition: "width 0.3s" }} />
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => onOpenPage("onboarding")}
+              style={{ flex: 1, background: "#FF4D00", color: "#fff", border: "none", borderRadius: 10, padding: "10px 0", fontSize: "13px", fontWeight: 700, cursor: "pointer", fontFamily: SANS }}
+            >
+              Continue Setup
+            </button>
+            <button
+              onClick={() => onOpenPage("myteam")}
+              style={{ flex: 1, background: "#fff", color: "#FF4D00", border: "1.5px solid #FFD5C0", borderRadius: 10, padding: "10px 0", fontSize: "13px", fontWeight: 700, cursor: "pointer", fontFamily: SANS }}
+            >
+              View Checklist
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Event header card */}
       <div style={{ background: "#111111", borderRadius: 18, padding: "1.25rem 1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
           <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase" }}>
             Your Event · Active
           </div>
-          {isAdmin && onOpenAdmin && (
-            <button
-              onClick={() => onOpenAdmin?.(viewEvent)}
-              title="Manage event"
-              style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", display: "flex", alignItems: "center" }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-              </svg>
-            </button>
-          )}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
           <div style={{ flex: 1 }}>

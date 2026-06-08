@@ -63,24 +63,24 @@ function DateRangePicker({ startValue, endValue, onStartChange, onEndChange, req
   return (
     <div style={{ marginBottom: "1rem" }}>
       <FieldLabel required={required}>DATES</FieldLabel>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <div>
-          <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginBottom: 4 }}>Start</div>
+          <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginBottom: 4 }}>Start date</div>
           <input
             type="date"
             value={startValue}
             onChange={(e) => onStartChange(e.target.value)}
-            style={baseInputStyle}
+            style={{ ...baseInputStyle, maxWidth: "100%" }}
           />
         </div>
         <div>
-          <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginBottom: 4 }}>End</div>
+          <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginBottom: 4 }}>End date</div>
           <input
             type="date"
             value={endValue}
             min={startValue || undefined}
             onChange={(e) => onEndChange(e.target.value)}
-            style={baseInputStyle}
+            style={{ ...baseInputStyle, maxWidth: "100%" }}
           />
         </div>
       </div>

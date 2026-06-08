@@ -15,7 +15,7 @@ export const TYPE_LABELS = {
 };
 
 const STATUS_STYLE = {
-  active: { label: "Happening now", bg: "#DCFCE7", color: "#166534" },
+  active: { label: "Active", bg: "#DCFCE7", color: "#166534" },
   upcoming: { label: "Upcoming", bg: "#EEF2FC", color: "#1A4FBF" },
   archived: { label: "Past", bg: "#F0EDE8", color: "#8A8498" },
   inactive: { label: "Inactive", bg: "#F0EDE8", color: "#8A8498" },
@@ -118,8 +118,11 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
                         {statusStyle.label}
                       </span>
                       {isMember && (
-                        <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#DCFCE7", color: "#166534" }}>
-                          You're in
+                        <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: "11px", fontWeight: 700, color: "#166534" }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          Enrolled
                         </span>
                       )}
                     </div>

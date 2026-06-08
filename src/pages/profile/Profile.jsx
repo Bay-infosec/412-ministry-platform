@@ -365,6 +365,52 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           Edit profile
         </button>
 
+        {/* App install instructions */}
+        <div style={{ background: "#111111", borderRadius: 14, padding: "1.25rem 1.5rem", marginBottom: "1rem" }}>
+          <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: SANS }}>
+            Install the App
+          </div>
+          <div style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: SANS, marginBottom: "0.875rem" }}>
+            Add to your home screen for the best experience
+          </div>
+          <div style={{ marginBottom: "0.875rem" }}>
+            <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.5rem" }}>
+              iPhone (Safari)
+            </div>
+            {[
+              "Open this page in Safari",
+              "Tap the Share icon at the bottom of the screen",
+              "Scroll down and tap \"Add to Home Screen\"",
+              "Tap Add — done!",
+            ].map((step, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 6 }}>
+                <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#FF4D00", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "10px", fontWeight: 800, color: "#fff", fontFamily: SANS }}>
+                  {i + 1}
+                </div>
+                <div style={{ fontSize: "12px", color: "#B8C0D0", fontFamily: SANS, lineHeight: 1.55, paddingTop: 1 }}>{step}</div>
+              </div>
+            ))}
+          </div>
+          <div>
+            <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.5rem" }}>
+              Android (Chrome)
+            </div>
+            {[
+              "Open this page in Chrome",
+              "Tap the three-dot menu (⋮) in the top right",
+              "Tap \"Add to Home Screen\" or \"Install app\"",
+              "Tap Install — done!",
+            ].map((step, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 6 }}>
+                <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#FF4D00", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "10px", fontWeight: 800, color: "#fff", fontFamily: SANS }}>
+                  {i + 1}
+                </div>
+                <div style={{ fontSize: "12px", color: "#B8C0D0", fontFamily: SANS, lineHeight: 1.55, paddingTop: 1 }}>{step}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Notification toggle */}
         {pushSupported() && notifPerm !== "denied" && (
           <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
