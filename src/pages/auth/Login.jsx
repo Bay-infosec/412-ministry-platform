@@ -71,7 +71,7 @@ export default function Login({ onLoggedIn }) {
       <img
         src="/logo.png"
         alt="412 Ministry"
-        style={{ width: 100, height: 100, borderRadius: 22, objectFit: "cover", marginBottom: "2rem" }}
+        style={{ width: 100, height: 100, borderRadius: 22, objectFit: "cover", marginBottom: "2rem", border: "3px solid rgba(255,255,255,0.55)", boxShadow: "0 0 0 6px rgba(255,255,255,0.15), 0 16px 40px rgba(0,0,0,0.2)" }}
       />
 
       {/* Headline */}
