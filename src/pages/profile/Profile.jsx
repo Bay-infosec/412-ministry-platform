@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
 import { formatPhoneInput, validatePassword } from "../../lib/utils.js";
+import { pushSupported, pushPermission, subscribeToPush, unsubscribeFromPush } from "../../lib/push.js";
 import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, Field, Button, Avatar, SectionLabel, Badge, ProfileTags } from "../../components/ui/index.js";
@@ -160,6 +161,20 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
   const isStaff =
     profile.platform_role === "admin" ||
     profile.platform_role === "moderator";
+
+  const [notifPerm, setNotifPerm] = useState(() => pushPermission());
+  const [notifBusy, setNotifBusy] = useState(false);
+
+  async function toggleNotifications() {
+    setNotifBusy(true);
+    if (notifPerm === "granted") {
+      await unsubscribeFromPush(profile.id, supabase);
+    } else {
+      await subscribeToPush(profile.id, supabase);
+    }
+    setNotifPerm(pushPermission());
+    setNotifBusy(false);
+  }
 
   const uploadPhoto = async (blob) => {
     if (!blob) return;
@@ -347,6 +362,39 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
         >
           Edit profile
         </button>
+
+        {/* Notification toggle */}
+        {pushSupported() && notifPerm !== "denied" && (
+          <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>Push Notifications</div>
+              <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
+                {notifPerm === "granted" ? "Enabled — you'll get announcement alerts" : "Get notified when announcements are posted"}
+              </div>
+            </div>
+            <button
+              onClick={toggleNotifications}
+              disabled={notifBusy}
+              style={{
+                background: notifPerm === "granted" ? "#FF4D00" : "#F0F0F0",
+                color: notifPerm === "granted" ? "#fff" : "#111111",
+                border: "none", borderRadius: 8, padding: "7px 16px",
+                fontSize: "13px", fontWeight: 700, fontFamily: SANS,
+                cursor: notifBusy ? "default" : "pointer",
+                opacity: notifBusy ? 0.5 : 1, transition: "opacity 0.15s",
+                flexShrink: 0,
+              }}
+            >
+              {notifBusy ? "…" : notifPerm === "granted" ? "On" : "Enable"}
+            </button>
+          </div>
+        )}
+        {pushSupported() && notifPerm === "denied" && (
+          <div style={{ background: "#FFF5F0", border: "1px solid #FFD5C0", borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS, marginBottom: 3 }}>Notifications blocked</div>
+            <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>Enable notifications in your browser or phone settings to receive updates.</div>
+          </div>
+        )}
 
         {isStaff && (
           <button

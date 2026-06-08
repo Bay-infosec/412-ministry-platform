@@ -8,6 +8,7 @@ import { Profile } from "./pages/profile/index.js";
 import { BottomNav } from "./components/layout/index.js";
 import { Shell } from "./components/layout/index.js";
 import { SANS, TSEC, ORANGE } from "./lib/constants.js";
+import { registerServiceWorker } from "./lib/push.js";
 import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide, CoordinatorView, MyChecklist, Attendance, ZoomTraining } from "./pages/event/index.js";
 import { OnboardingFlow } from "./pages/event/onboarding/index.js";
 import { AdminShell } from "./pages/admin/index.js";
@@ -419,6 +420,11 @@ export default function App() {
       unreadCount: Math.max(0, (d.unreadCount || 1) - 1),
     }));
   };
+
+  // Register service worker for push notifications (silent, no permission request yet)
+  useEffect(() => {
+    if (phase === "app") registerServiceWorker();
+  }, [phase]);
 
   // App-wide presence — tracks current user as online whenever platform is open
   useEffect(() => {

@@ -31,6 +31,7 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
   });
   const [busy, setBusy] = useState(false);
   const [sendEmailToggle, setSendEmailToggle] = useState(false);
+  const [sendPushToggle, setSendPushToggle] = useState(true);
 
   const buildAudience = () => {
     if (audienceType === "all") return [{ type: "all" }];
@@ -70,6 +71,23 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
 
     setBusy(false);
     if (error) { onToast("Could not save.", "error"); return; }
+
+    // Push notification for published announcements
+    if (status === "published" && sendPushToggle) {
+      const audience = buildAudience();
+      const allProfiles = data.allProfiles || [];
+      const matched = allProfiles.filter((p) =>
+        matchesAudience(audience, { id: p.id, ministry: p.ministry, team_number: p.team_number, event_role: p.event_role, platform_role: p.platform_role })
+      );
+      supabase.functions.invoke("send-push", {
+        body: {
+          title: payload.title,
+          body: payload.body.slice(0, 120),
+          url: "/",
+          ...(matched.length < allProfiles.length && { profile_ids: matched.map((p) => p.id) }),
+        },
+      });
+    }
 
     // Email sending for published announcements
     if (status === "published" && sendEmailToggle) {
@@ -190,21 +208,31 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
       </Card>
 
       {isAdmin && (
-        <div style={{
-          display: "flex", alignItems: "center", gap: 10,
-          padding: "0.75rem 1rem", marginBottom: "0.5rem",
-          background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 10,
-        }}>
-          <input
-            id="send-email-toggle"
-            type="checkbox"
-            checked={sendEmailToggle}
-            onChange={(e) => setSendEmailToggle(e.target.checked)}
-            style={{ width: 16, height: 16, accentColor: "#111111", cursor: "pointer", flexShrink: 0 }}
-          />
-          <label htmlFor="send-email-toggle" style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
-            Also send email to audience
-          </label>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: "0.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0.75rem 1rem", background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 10 }}>
+            <input
+              id="send-push-toggle"
+              type="checkbox"
+              checked={sendPushToggle}
+              onChange={(e) => setSendPushToggle(e.target.checked)}
+              style={{ width: 16, height: 16, accentColor: "#FF4D00", cursor: "pointer", flexShrink: 0 }}
+            />
+            <label htmlFor="send-push-toggle" style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
+              Send push notification to audience
+            </label>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0.75rem 1rem", background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 10 }}>
+            <input
+              id="send-email-toggle"
+              type="checkbox"
+              checked={sendEmailToggle}
+              onChange={(e) => setSendEmailToggle(e.target.checked)}
+              style={{ width: 16, height: 16, accentColor: "#FF4D00", cursor: "pointer", flexShrink: 0 }}
+            />
+            <label htmlFor="send-email-toggle" style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
+              Also send email to audience
+            </label>
+          </div>
         </div>
       )}
 
