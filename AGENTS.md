@@ -93,7 +93,8 @@ Font: system-ui only (no Google Fonts). Remove `useFonts()` / any Google Fonts l
 ## Current State (as of 2026-06-08)
 
 ### Branch: `design-polish`
-Current session changes are ready for verification, commit, and push.
+Latest implementation commit: `1e3d712` (`Finish event flow and restore EmailJS`).
+Verification: 34/34 tests pass, production build passes, and the local login screen has no console errors or horizontal overflow.
 
 ### What's Built ✅
 
