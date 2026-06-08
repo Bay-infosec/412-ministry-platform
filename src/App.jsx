@@ -18,30 +18,31 @@ import { Chat } from "./pages/chat/index.js";
 function LoadingScreen() {
   return (
     <div style={{
-      position: "fixed", inset: 0, background: "#FAFAFA",
+      position: "fixed", inset: 0, background: "#FF4D00",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      gap: 20,
+      gap: 32,
     }}>
-      {/* Logo + spinning ring */}
-      <div style={{ position: "relative", width: 72, height: 72 }}>
-        <div style={{
-          position: "absolute",
-          inset: -10,
-          borderRadius: 26,
-          border: "2.5px solid #E5E5E5",
-          borderTopColor: ORANGE,
-          animation: "spin412 1s linear infinite",
-        }} />
-        <img
-          src="/logo.png"
-          alt="412 Ministry"
-          style={{ width: 72, height: 72, borderRadius: 16, objectFit: "cover", display: "block" }}
-        />
+      <img
+        src="/logo.png"
+        alt="412 Ministry"
+        style={{ width: 120, height: 120, borderRadius: 28, objectFit: "cover", display: "block" }}
+      />
+      {/* Bouncing dots */}
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-end", height: 24 }}>
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} style={{
+            width: 8, height: 8, borderRadius: "50%", background: "#fff",
+            animation: "dot412 1s ease-in-out infinite",
+            animationDelay: `${i * 0.18}s`,
+          }} />
+        ))}
       </div>
-      <div style={{ fontSize: "12px", fontWeight: 600, color: TSEC, fontFamily: SANS, letterSpacing: "0.04em" }}>
-        Loading…
-      </div>
-      <style>{`@keyframes spin412 { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes dot412 {
+          0%, 100% { transform: translateY(0); opacity: 0.4; }
+          50% { transform: translateY(-14px); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
