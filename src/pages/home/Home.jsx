@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "../../lib/supabase.js";
 import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
@@ -69,20 +69,66 @@ function splitZoomDisplay(zoomStr) {
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function HScroll({ children }) {
+  const scrollRef = useRef(null);
+  const [rubber, setRubber] = useState(0);
+  const [springing, setSpringing] = useState(false);
+  const touch = useRef(null);
+
+  function onTouchStart(e) {
+    const el = scrollRef.current;
+    if (!el) return;
+    setSpringing(false);
+    touch.current = {
+      startX: e.touches[0].clientX,
+      maxScroll: el.scrollWidth - el.clientWidth,
+    };
+  }
+
+  function onTouchMove(e) {
+    const el = scrollRef.current;
+    if (!el || !touch.current) return;
+    const { startX, maxScroll } = touch.current;
+    const dx = e.touches[0].clientX - startX;
+    const atLeft = el.scrollLeft <= 0;
+    const atRight = el.scrollLeft >= maxScroll - 1;
+
+    if ((dx > 0 && atLeft) || (dx < 0 && atRight) || maxScroll < 2) {
+      const dampened = dx * 0.28;
+      setRubber(dampened);
+      e.preventDefault();
+    }
+  }
+
+  function onTouchEnd() {
+    setSpringing(true);
+    setRubber(0);
+  }
+
   return (
-    <div style={{
-      display: "flex",
-      overflowX: "auto",
-      gap: 10,
-      margin: "0 -16px",
-      padding: "2px 16px 12px",
-      scrollbarWidth: "none",
-      WebkitOverflowScrolling: "touch",
-      msOverflowStyle: "none",
-    }}>
-      {children}
-      {/* Trailing spacer so last card doesn't clip */}
-      <div style={{ minWidth: 4, flexShrink: 0 }} />
+    <div
+      ref={scrollRef}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      style={{
+        overflowX: "auto",
+        margin: "0 -16px",
+        scrollbarWidth: "none",
+        WebkitOverflowScrolling: "touch",
+        msOverflowStyle: "none",
+      }}
+    >
+      <div style={{
+        display: "flex",
+        gap: 10,
+        padding: "2px 16px 12px",
+        transform: `translateX(${rubber}px)`,
+        transition: springing ? "transform 0.38s cubic-bezier(0.34, 1.4, 0.64, 1)" : "none",
+        willChange: "transform",
+      }}>
+        {children}
+        <div style={{ minWidth: 4, flexShrink: 0 }} />
+      </div>
     </div>
   );
 }
@@ -210,6 +256,16 @@ function MemberCard({ m, onPress }) {
     </button>
   );
 }
+
+// ── Tool icons ────────────────────────────────────────────────────────────────
+
+const ICON_COLOR = "#FF4D00";
+function TeamIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ICON_COLOR} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>; }
+function PrayerIcon() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ICON_COLOR} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>; }
+function FourIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>; }
+function BookIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ICON_COLOR} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>; }
+function ListIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ICON_COLOR} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>; }
+function DashIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ICON_COLOR} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>; }
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -490,6 +546,45 @@ export default function Home({
                 )}
               </a>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Tools ────────────────────────────────────────────────────── */}
+      {eventMember && activeEvent && (
+        <div style={{ marginBottom: "1rem" }}>
+          <SectionLabel>Tools</SectionLabel>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {[
+              { id: "myteam",       label: "My Team",      icon: <TeamIcon />,    dark: false },
+              { id: "prayer_chain", label: "Prayer Chain", icon: <PrayerIcon />,  dark: false },
+              { id: "the_four",     label: "The Four",     icon: <FourIcon />,    dark: true  },
+              { id: "field_guide",  label: "Field Guide",  icon: <BookIcon />,    dark: false },
+              { id: "onboarding",   label: "Onboarding",   icon: <ListIcon />,    dark: false },
+              { id: "coordinator",  label: "My Dashboard", icon: <DashIcon />,    dark: false, coordinatorOnly: true },
+            ]
+              .filter((t) => !t.coordinatorOnly || isCoordinator)
+              .map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => onOpenEventPage?.(t.id)}
+                  style={{
+                    background: t.dark ? "#1B2A4A" : "#fff",
+                    border: t.dark ? "none" : "1px solid #E5E5E5",
+                    borderRadius: 14, padding: "14px 12px",
+                    display: "flex", alignItems: "center", gap: 10,
+                    cursor: "pointer", textAlign: "left",
+                  }}
+                >
+                  <div style={{ width: 32, height: 32, borderRadius: 9, background: t.dark ? "rgba(255,77,0,0.18)" : "#FFF0EA", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {t.icon}
+                  </div>
+                  <span style={{ fontSize: "12px", fontWeight: 800, color: t.dark ? "#fff" : "#1B2A4A", fontFamily: SANS, lineHeight: 1.2 }}>
+                    {t.label}
+                  </span>
+                </button>
+              ))
+            }
           </div>
         </div>
       )}

@@ -194,37 +194,6 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
 
       {showMine && (
         <>
-      {/* Onboarding banner */}
-      {eventMember && !onboardingComplete && viewEventId === activeEvent?.id && (
-        <div style={{ background: "#FFF5F0", border: "1px solid #FFD5C0", borderRadius: 16, padding: "1.25rem 1.5rem", marginBottom: "1rem" }}>
-          <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.625rem", fontFamily: SANS }}>
-            Getting Started
-          </div>
-          <div style={{ fontSize: "15px", fontWeight: 800, color: "#1B2A4A", fontFamily: SANS, marginBottom: "0.375rem" }}>
-            Complete your setup
-          </div>
-          <div style={{ fontSize: "13px", color: "#555555", fontFamily: SANS, lineHeight: 1.55, marginBottom: "1rem" }}>
-            Step {Math.min(onboardingStep + 1, TOTAL_STEPS)} of {TOTAL_STEPS} — finish setting up your profile and checklist before the conference.
-          </div>
-          <div style={{ background: "#FFE5D5", borderRadius: 8, height: 6, marginBottom: "1rem", overflow: "hidden" }}>
-            <div style={{ background: "#FF4D00", height: "100%", width: `${Math.min((onboardingStep / TOTAL_STEPS) * 100, 100)}%`, borderRadius: 8, transition: "width 0.3s" }} />
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button
-              onClick={() => onOpenPage("onboarding")}
-              style={{ flex: 1, background: "#FF4D00", color: "#fff", border: "none", borderRadius: 10, padding: "10px 0", fontSize: "13px", fontWeight: 700, cursor: "pointer", fontFamily: SANS }}
-            >
-              Continue Setup
-            </button>
-            <button
-              onClick={() => onOpenPage("myteam")}
-              style={{ flex: 1, background: "#fff", color: "#FF4D00", border: "1.5px solid #FFD5C0", borderRadius: 10, padding: "10px 0", fontSize: "13px", fontWeight: 700, cursor: "pointer", fontFamily: SANS }}
-            >
-              View Checklist
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Event header card */}
       <div style={{ background: "#1B2A4A", borderRadius: 18, padding: "1.25rem 1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
@@ -365,7 +334,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
             onClick={() => onOpenPage(s.id)}
             style={{
               width: "100%", textAlign: "left", background: "none",
-              border: "none", borderBottom: i < sections.length - 1 ? `1px solid ${BORDER}` : "none",
+              border: "none", borderBottom: `1px solid ${BORDER}`,
               padding: "1rem 1.25rem", cursor: "pointer", fontFamily: SANS,
               display: "flex", alignItems: "center", justifyContent: "space-between",
             }}
@@ -379,6 +348,42 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
             </svg>
           </button>
         ))}
+
+        {/* Onboarding invitation — solid orange, bottom of sections card */}
+        {eventMember && !onboardingComplete && viewEventId === activeEvent?.id && (
+          <div style={{ background: "#FF4D00", padding: "1rem 1.25rem", borderRadius: "0 0 14px 14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.625rem" }}>
+              <div>
+                <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "rgba(255,255,255,0.7)", textTransform: "uppercase", fontFamily: SANS, marginBottom: 3 }}>
+                  Onboarding
+                </div>
+                <div style={{ fontSize: "14px", fontWeight: 800, color: "#fff", fontFamily: SANS }}>
+                  Step {Math.min(onboardingStep + 1, TOTAL_STEPS)} of {TOTAL_STEPS}
+                </div>
+              </div>
+              <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", fontFamily: SANS }}>
+                {checklistDone}/{CHECKLIST_ITEMS.length} checklist
+              </div>
+            </div>
+            <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 6, height: 5, marginBottom: "0.875rem", overflow: "hidden" }}>
+              <div style={{ background: "#fff", height: "100%", borderRadius: 6, width: `${Math.min((onboardingStep / TOTAL_STEPS) * 100, 100)}%`, transition: "width 0.3s" }} />
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => onOpenPage("onboarding")}
+                style={{ flex: 1, background: "#fff", color: "#FF4D00", border: "none", borderRadius: 10, padding: "9px 0", fontSize: "13px", fontWeight: 800, cursor: "pointer", fontFamily: SANS }}
+              >
+                {onboardingStep > 0 ? "Continue Setup →" : "Start Onboarding →"}
+              </button>
+              <button
+                onClick={() => onOpenPage("myteam")}
+                style={{ background: "rgba(0,0,0,0.18)", color: "#fff", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: "13px", fontWeight: 700, cursor: "pointer", fontFamily: SANS }}
+              >
+                Checklist
+              </button>
+            </div>
+          </div>
+        )}
       </Card>}
         </>
       )}

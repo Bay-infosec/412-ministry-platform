@@ -12,7 +12,7 @@ export default function CoordinatorView({ data, onBack, onViewProfile }) {
     if (!activeEvent?.id || !profile?.id) return;
     supabase
       .from("event_members")
-      .select("id, team_number, ministry, event_role, onboarding_visited, onboarding_completed, profiles!event_members_profile_id_fkey(full_name, photo_url, tags, platform_role)")
+      .select("id, profile_id, team_number, ministry, event_role, onboarding_visited, onboarding_completed, profiles!event_members_profile_id_fkey(full_name, photo_url, tags, platform_role)")
       .eq("event_id", activeEvent.id)
       .eq("coordinator_id", profile.id)
       .neq("event_role", "coordinator")
@@ -47,7 +47,7 @@ export default function CoordinatorView({ data, onBack, onViewProfile }) {
           Coordinator
         </div>
         <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
-          My Teams
+          Leaders I Oversee
         </div>
         {teamNums.length > 0 && (
           <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginTop: 4 }}>
