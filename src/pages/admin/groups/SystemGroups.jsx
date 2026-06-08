@@ -11,12 +11,8 @@ const SYSTEM_GROUPS = [
     color: "#111111",
     textColor: "#FF4D00",
     fetchMembers: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, full_name, photo_url")
-        .contains("tags", ["board_member"])
-        .order("full_name");
-      return data || [];
+      const { data } = await supabase.from("profiles").select("id, full_name, photo_url, tags").order("full_name");
+      return (data || []).filter((p) => (p.tags || []).includes("board_member"));
     },
   },
   {
@@ -26,12 +22,8 @@ const SYSTEM_GROUPS = [
     color: "#065F46",
     textColor: "#D1FAE5",
     fetchMembers: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, full_name, photo_url")
-        .contains("tags", ["pastor"])
-        .order("full_name");
-      return data || [];
+      const { data } = await supabase.from("profiles").select("id, full_name, photo_url, tags").order("full_name");
+      return (data || []).filter((p) => (p.tags || []).includes("pastor"));
     },
   },
   {
@@ -41,10 +33,7 @@ const SYSTEM_GROUPS = [
     color: "#059669",
     textColor: "#fff",
     fetchMembers: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, full_name, photo_url")
-        .order("full_name");
+      const { data } = await supabase.from("profiles").select("id, full_name, photo_url").order("full_name");
       return data || [];
     },
   },
@@ -55,11 +44,7 @@ const SYSTEM_GROUPS = [
     color: "#1A4FBF",
     textColor: "#fff",
     fetchMembers: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, full_name, photo_url")
-        .in("platform_role", ["admin", "moderator"])
-        .order("full_name");
+      const { data } = await supabase.from("profiles").select("id, full_name, photo_url").in("platform_role", ["admin", "moderator"]).order("full_name");
       return data || [];
     },
   },
