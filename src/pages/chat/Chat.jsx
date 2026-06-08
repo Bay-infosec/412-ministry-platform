@@ -35,7 +35,7 @@ function GroupAvatar({ name, size = 48 }) {
 
 // ── Main router ───────────────────────────────────────────────────────────────
 
-export default function Chat({ data, onClose, onOpenProfile, onlineUsers = [], onViewProfile }) {
+export default function Chat({ data, onClose, onOpenProfile, onlineUsers = [], onViewProfile, dmTarget, onDmTargetConsumed }) {
   const { profile, activeEvent } = data;
   const myId = profile.id;
   const canCreateGroup = profile.platform_role === "admin" || profile.platform_role === "moderator";
@@ -45,6 +45,14 @@ export default function Chat({ data, onClose, onOpenProfile, onlineUsers = [], o
 
   const openThread = (conv) => { setActiveThread(conv); setView("thread"); };
   const backHome = () => { setActiveThread(null); setView("home"); };
+
+  // Auto-open DM thread when launched from ProfileSheet "Message" button
+  useEffect(() => {
+    if (dmTarget) {
+      onDmTargetConsumed?.();
+      openThread({ type: "dm", other: dmTarget });
+    }
+  }, []);
 
   if (view === "thread" && activeThread) {
     return <ThreadView myId={myId} conv={activeThread} onBack={backHome} onlineUsers={onlineUsers} onViewProfile={onViewProfile} />;

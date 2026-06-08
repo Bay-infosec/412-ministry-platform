@@ -144,6 +144,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
   const [nickname, setNickname] = useState(profile.nickname || "");
   const [phone, setPhone] = useState(profile.phone || "");
   const [ministryRole, setMinistryRole] = useState(profile.ministry_role || "");
+  const [hobby, setHobby] = useState(profile.hobby || "");
   const [churchId, setChurchId] = useState(
     profile.church_id ? profile.church_id : (profile.church_name_custom ? "other" : "")
   );
@@ -216,6 +217,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
       nickname,
       phone,
       ministry_role: ministryRole,
+      hobby,
       photo_url: photoUrl,
       church_id: churchId && churchId !== "other" ? churchId : null,
       church_name_custom: churchId === "other" ? customChurch.trim() : null,
@@ -588,6 +590,12 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           value={ministryRole}
           onChange={setMinistryRole}
           placeholder="e.g. Youth Pastor, Engineer, Nurse"
+        />
+        <Field
+          label="HOBBY"
+          value={hobby}
+          onChange={setHobby}
+          placeholder="e.g. Hiking, Photography, Basketball"
         />
 
         <div style={{ marginBottom: "1rem" }}>

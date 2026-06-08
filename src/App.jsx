@@ -98,6 +98,7 @@ export default function App() {
   const [viewingProfileId, setViewingProfileId] = useState(null);
   const [eventReturnTab, setEventReturnTab] = useState(null);
   const [adminInitProps, setAdminInitProps] = useState(null);
+  const [dmTarget, setDmTarget] = useState(null);
 
   const lastRefreshRef = useRef(0);
 
@@ -628,12 +629,22 @@ export default function App() {
             onlineUsers={onlineUsers}
             onOpenProfile={() => { setProfileReturnTo("chat"); setPage(null); setTab("profile"); }}
             onViewProfile={setViewingProfileId}
+            dmTarget={dmTarget}
+            onDmTargetConsumed={() => setDmTarget(null)}
           />
         )}
         <ProfileSheet
           profileId={viewingProfileId}
           activeEventId={data.activeEvent?.id}
           onClose={() => setViewingProfileId(null)}
+          onMessage={(person) => {
+            setViewingProfileId(null);
+            setProfileReturnTo(null);
+            setChatUnread(false);
+            setPage("chat");
+            // store the DM target so Chat can open the thread directly
+            setDmTarget(person);
+          }}
           onOpenAdmin={data.isAdmin ? (id) => {
             const person = data.allProfiles?.find(p => p.id === id);
             if (person) setAdminInitProps({ screen: "people.detail", profile: person });
