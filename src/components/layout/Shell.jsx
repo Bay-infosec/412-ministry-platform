@@ -15,7 +15,7 @@ export default function Shell({ children, withNav }) {
         style={{
           width: "100%",
           maxWidth: 460,
-          padding: withNav ? "2rem 1rem 6rem" : "2rem 1rem 3rem",
+          padding: withNav ? "3.5rem 1rem 6rem" : "3.5rem 1rem 3rem",
         }}
       >
         {children}

@@ -144,31 +144,46 @@ export default function Home({
   return (
     <Shell withNav>
       {/* ── Header ─────────────────────────────────────────────────── */}
-      <div style={{ fontFamily: SANS, fontSize: "13px", fontWeight: 900, letterSpacing: "0.04em", color: "#111111", marginBottom: "0.5rem" }}>
-        412 <span style={{ color: "#FF4D00" }}>Ministry</span>
-      </div>
-
-      {/* ── Greeting + Chat ────────────────────────────────────────── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.25rem" }}>
-        <div>
-          <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#999999", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-            Good morning
-          </div>
-          <div style={{ fontFamily: SANS, fontSize: "36px", fontWeight: 900, color: "#111111", lineHeight: 1.1, letterSpacing: "-0.04em" }}>
-            {displayName}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+        {/* Brand */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <img
+            src="/logo.png"
+            alt="412 Ministry"
+            style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+          />
+          <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, letterSpacing: "-0.02em", color: "#111111", lineHeight: 1 }}>
+            412 <span style={{ color: "#FF4D00" }}>Ministry</span>
           </div>
         </div>
+
+        {/* Chat button — pill */}
         <button
           onClick={onOpenChat}
-          style={{ position: "relative", width: 40, height: 40, borderRadius: "50%", background: "#FF4D00", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, marginLeft: 12 }}
+          style={{
+            position: "relative", display: "flex", alignItems: "center", gap: 6,
+            background: "#FF4D00", border: "none", borderRadius: 99,
+            padding: "9px 14px 9px 11px", cursor: "pointer", flexShrink: 0,
+          }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
+          <span style={{ fontFamily: SANS, fontSize: "13px", fontWeight: 800, color: "#fff", letterSpacing: "0.01em" }}>Chat</span>
           {chatUnread && (
             <div style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#E53E3E", border: "2px solid #FF4D00" }} />
           )}
         </button>
+      </div>
+
+      {/* ── Greeting ───────────────────────────────────────────────── */}
+      <div style={{ marginBottom: "1.25rem" }}>
+        <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#999999", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+          Good morning
+        </div>
+        <div style={{ fontFamily: SANS, fontSize: "36px", fontWeight: 900, color: "#111111", lineHeight: 1.1, letterSpacing: "-0.04em" }}>
+          {displayName}
+        </div>
       </div>
 
       {/* ── Announcement ───────────────────────────────────────────── */}
