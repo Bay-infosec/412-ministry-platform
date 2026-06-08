@@ -101,6 +101,8 @@ export default function Chat({ data, onClose, onOpenProfile, onlineUsers = [], o
 function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProfile, onNewChat, onOpenThread, onViewProfile }) {
   const [conversations, setConversations] = useState(null);
   const [allMembers, setAllMembers] = useState([]);
+  const [pushIds, setPushIds] = useState(new Set());
+  const [recentIds, setRecentIds] = useState(new Set());
   const [search, setSearch] = useState("");
 
   useEffect(() => { loadConversations(); loadMembers(); }, []);
@@ -197,22 +199,45 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
     if (!activeEvent?.id) return;
     const { data: rows } = await supabase
       .from("event_members")
-      .select("profile_id, profiles!event_members_profile_id_fkey(id, full_name, nickname, photo_url)")
+      .select("profile_id, profiles!event_members_profile_id_fkey(id, full_name, nickname, photo_url, last_seen_at)")
       .eq("event_id", activeEvent.id)
       .neq("profile_id", myId);
-    setAllMembers((rows || []).map((r) => r.profiles).filter(Boolean));
+    const members = (rows || []).map((r) => r.profiles).filter(Boolean);
+    setAllMembers(members);
+
+    // Push-subscribed members
+    const memberIds = members.map((m) => m.id);
+    if (memberIds.length) {
+      const { data: subs } = await supabase
+        .from("push_subscriptions")
+        .select("profile_id")
+        .in("profile_id", memberIds);
+      setPushIds(new Set((subs || []).map((s) => s.profile_id)));
+    }
+
+    // Recently active (last 30 min)
+    const cutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const recent = members.filter((m) => m.last_seen_at && m.last_seen_at > cutoff);
+    setRecentIds(new Set(recent.map((m) => m.id)));
   }
 
   const onlineIds = new Set(onlineUsers.map((u) => u.user_id));
   const memberById = Object.fromEntries(allMembers.map((m) => [m.id, m]));
-  const activeRow = [
-    { user_id: myId, name: profile.full_name, nickname: profile.nickname, photo_url: profile.photo_url, isSelf: true },
-    ...onlineUsers.filter((u) => u.user_id !== myId).map((u) => ({
-      ...u,
-      name: u.full_name || u.name,
-      nickname: memberById[u.user_id]?.nickname || null,
-    })),
-  ];
+
+  // Build tiered active-now row:
+  // 1. Self  2. Currently online  3. Recently active (not online)  4. Has app (not online/recent)
+  const selfEntry = { user_id: myId, name: profile.full_name, nickname: profile.nickname, photo_url: profile.photo_url, isSelf: true, dot: "self" };
+  const onlineEntries = onlineUsers
+    .filter((u) => u.user_id !== myId)
+    .map((u) => ({ ...u, name: u.full_name || u.name, nickname: memberById[u.user_id]?.nickname || null, dot: "online" }));
+  const recentEntries = allMembers
+    .filter((m) => recentIds.has(m.id) && !onlineIds.has(m.id))
+    .map((m) => ({ user_id: m.id, name: m.full_name, nickname: m.nickname, photo_url: m.photo_url, dot: "recent" }));
+  const appEntries = allMembers
+    .filter((m) => pushIds.has(m.id) && !onlineIds.has(m.id) && !recentIds.has(m.id))
+    .map((m) => ({ user_id: m.id, name: m.full_name, nickname: m.nickname, photo_url: m.photo_url, dot: "app" }));
+
+  const activeRow = [selfEntry, ...onlineEntries, ...recentEntries, ...appEntries];
 
   const filtered = search.trim()
     ? allMembers.filter((m) => (m.full_name || "").toLowerCase().includes(search.toLowerCase()))
@@ -269,23 +294,45 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
               Active now
             </div>
             <div style={{ display: "flex", gap: 16, overflowX: "auto", padding: "0 1.25rem 2px", scrollbarWidth: "none" }}>
-              {activeRow.map((u) => (
-                <button
-                  key={u.user_id}
-                  onClick={() => u.isSelf
-                    ? onOpenThread({ type: "dm", other: { id: u.user_id, full_name: u.name, photo_url: u.photo_url, isSelf: true } })
-                    : onViewProfile?.(u.user_id)
-                  }
-                  style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flexShrink: 0, padding: 0 }}
-                >
-                  <div style={{ position: "relative" }}>
-                    <Avatar url={u.photo_url} name={u.name} size={54} />
-                    <div style={{ position: "absolute", bottom: 1, right: 1, width: 14, height: 14, borderRadius: "50%", background: "#22C55E", border: "2.5px solid #fff" }} />
-                  </div>
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: u.isSelf ? "#FF4D00" : "#1B2A4A", fontFamily: SANS, maxWidth: 62, textAlign: "center", lineHeight: 1.3, wordBreak: "break-word" }}>
-                    {u.isSelf ? "You" : (u.nickname || (u.name || "").split(" ")[0])}
-                  </span>
-                </button>
+              {activeRow.map((u) => {
+                const dotColor = u.dot === "online" || u.dot === "self"
+                  ? "#22C55E"
+                  : u.dot === "recent"
+                    ? "#FBBF24"
+                    : "#FF4D00";
+                const dotTitle = u.dot === "online" ? "Online now" : u.dot === "recent" ? "Recently active" : u.dot === "app" ? "Has app" : "You";
+                return (
+                  <button
+                    key={u.user_id}
+                    title={dotTitle}
+                    onClick={() => u.isSelf
+                      ? onOpenThread({ type: "dm", other: { id: u.user_id, full_name: u.name, photo_url: u.photo_url, isSelf: true } })
+                      : onViewProfile?.(u.user_id)
+                    }
+                    style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flexShrink: 0, padding: 0 }}
+                  >
+                    <div style={{ position: "relative" }}>
+                      <Avatar url={u.photo_url} name={u.name} size={54} />
+                      <div style={{
+                        position: "absolute", bottom: 1, right: 1,
+                        width: 14, height: 14, borderRadius: "50%",
+                        background: dotColor, border: "2.5px solid #fff",
+                      }} />
+                    </div>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: u.isSelf ? "#FF4D00" : "#1B2A4A", fontFamily: SANS, maxWidth: 62, textAlign: "center", lineHeight: 1.3, wordBreak: "break-word" }}>
+                      {u.isSelf ? "You" : (u.nickname || (u.name || "").split(" ")[0])}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {/* Legend */}
+            <div style={{ display: "flex", gap: 12, padding: "6px 1.25rem 0", flexWrap: "wrap" }}>
+              {[["#22C55E", "Online"], ["#FBBF24", "Recent"], ["#FF4D00", "Has app"]].map(([color, label]) => (
+                <div key={label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: color, flexShrink: 0 }} />
+                  <span style={{ fontSize: "9px", fontWeight: 700, color: "#CCCCCC", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: SANS }}>{label}</span>
+                </div>
               ))}
             </div>
           </div>

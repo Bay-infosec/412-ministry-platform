@@ -35,7 +35,7 @@ function ViewDropdown({ view, onChange, enrolledEvents }) {
         style={{
           width: "100%",
           appearance: "none", WebkitAppearance: "none",
-          background: "#FFF5F0", border: "1px solid #FFD5C0",
+          background: "#fff", border: "1px solid #E5E5E5",
           borderRadius: 12, padding: "13px 44px 13px 16px",
           fontSize: "15px", fontWeight: 700, color: "#1B2A4A",
           fontFamily: SANS, cursor: "pointer", outline: "none",

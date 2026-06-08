@@ -142,6 +142,9 @@ export default function App() {
         return;
       }
 
+      // Update last seen
+      supabase.from("profiles").update({ last_seen_at: new Date().toISOString() }).eq("id", user.id).then(() => {});
+
       // Load churches
       const { data: churches } = await supabase
         .from("churches")

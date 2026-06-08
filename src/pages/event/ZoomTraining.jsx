@@ -76,11 +76,11 @@ export default function ZoomTraining({ data, onBack }) {
         ))}
       </div>
 
-      <div style={{ background: "#FFF5F0", border: "1px solid #FFD5C0", borderRadius: 12, padding: "1rem 1.25rem" }}>
+      <div style={{ background: "#111", borderRadius: 12, padding: "1rem 1.25rem" }}>
         <div style={{ fontSize: "12px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS, marginBottom: 4 }}>
           Mandatory attendance
         </div>
-        <div style={{ fontSize: "12px", color: "#1B2A4A", fontFamily: SANS, lineHeight: 1.6 }}>
+        <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", fontFamily: SANS, lineHeight: 1.6 }}>
           The zoom training is required for all team leaders. If you cannot attend, please contact a coordinator as soon as possible.
         </div>
       </div>

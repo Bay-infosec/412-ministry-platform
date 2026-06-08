@@ -504,7 +504,7 @@ export default function Home({
           </div>
           <HScroll>
             {teamProgress.map((m) => (
-              <div key={m.id} style={{ border: "1.5px solid #222", borderRadius: 14, padding: "8px 4px 8px", background: "#fff", display: "flex", alignItems: "stretch" }}>
+              <div key={m.id} style={{ border: "1.5px solid #CCCCCC", borderRadius: 14, padding: "8px 4px 8px", background: "#fff", display: "flex", alignItems: "stretch" }}>
                 <MemberCard m={m} onPress={() => onViewProfile?.(m.profile_id)} />
               </div>
             ))}

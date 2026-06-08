@@ -78,9 +78,12 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false, 
 
   const handleAnnouncementsBack = () => {
     if (editingAnn) { setEditingAnn(null); return; }
+    if (initialScreen === "announcements") { onClose(); return; }
     nav("home");
   };
 
+  // When entered directly to a specific screen (e.g. from Updates "Manage"),
+  // back from that entry screen should close the panel, not go to admin home.
   const backTarget = backs[screen];
 
   return (
@@ -96,6 +99,8 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false, 
         <button
           onClick={() => {
             if (screen === "announcements") { handleAnnouncementsBack(); return; }
+            // Direct-entry screens: back closes the panel entirely
+            if (initialScreen && screen === initialScreen) { onClose(); return; }
             backTarget ? nav(backTarget) : onClose();
           }}
           style={{

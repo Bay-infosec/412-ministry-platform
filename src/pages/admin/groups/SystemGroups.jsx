@@ -334,9 +334,9 @@ export default function SystemGroups({ data, onToast }) {
         </div>
       )}
 
-      <div style={{ background: "#FFF5EC", border: "1px solid #FFD5C0", borderRadius: 12, padding: "0.875rem 1.25rem", marginTop: "1.25rem" }}>
+      <div style={{ background: "#111", borderRadius: 12, padding: "0.875rem 1.25rem", marginTop: "1.25rem" }}>
         <div style={{ fontSize: "12px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS, marginBottom: 4 }}>After syncing</div>
-        <div style={{ fontSize: "12px", color: "#1B2A4A", fontFamily: SANS, lineHeight: 1.6 }}>
+        <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", fontFamily: SANS, lineHeight: 1.6 }}>
           Members will see these groups in their messenger automatically. Re-sync any time tags or roles change — sync always reads fresh data from the database.
         </div>
       </div>
