@@ -518,7 +518,7 @@ export default function App() {
   if (phase === "error") return <ErrorScreen message={errMsg} onReset={hardReset} />;
 
   if (phase === "app" && data) {
-    const hasEvent = !!(data.eventMember || data.isModerator);
+    const hasEvent = true;
     const navigate = (t) => { setTab(t); setPage(null); };
 
     return (
@@ -563,6 +563,7 @@ export default function App() {
             data={data}
             readIds={readIds}
             onMarkRead={markRead}
+            onOpenAdmin={data.isModerator ? () => setPage("admin") : null}
           />
         )}
         {tab === "profile" && (

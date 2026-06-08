@@ -23,7 +23,7 @@ function daysUntil(dateStr) {
 
 function ViewDropdown({ view, onChange, enrolledEvents }) {
   const options = [
-    { key: "browse", label: "Events" },
+    { key: "browse", label: "All Events" },
     ...enrolledEvents,
     { key: "past", label: "Past Events" },
   ];
@@ -94,18 +94,26 @@ function PastEvents({ history, activeEvent }) {
 export default function EventHome({ data, onOpenPage, onNavigate }) {
   const { activeEvent, eventMember, profile, isAdmin, history, eventChecklist } = data;
 
-  // Build enrolled event options from history (non-archived)
+  // Build enrolled event options from history (non-archived), sorted by start date
+  function parseEventStart(datesStr) {
+    if (!datesStr) return new Date(9999, 0, 1);
+    const m1 = datesStr.match(/([A-Za-z]+ \d+)[–\-]\d+,?\s*(\d{4})/);
+    const m2 = datesStr.match(/([A-Za-z]+ \d+,\s*\d{4})/);
+    const parsed = m1 ? new Date(`${m1[1]}, ${m1[2]}`) : m2 ? new Date(m2[1]) : null;
+    return parsed && !isNaN(parsed) ? parsed : new Date(9999, 0, 1);
+  }
+
   const enrolledEvents = [];
   const seen = new Set();
   for (const h of (history || [])) {
     if (h.events && h.events.status !== "archived" && !seen.has(h.event_id)) {
       seen.add(h.event_id);
-      enrolledEvents.push({ key: `evt_${h.event_id}`, label: h.events.name, eventId: h.event_id });
+      enrolledEvents.push({ key: `evt_${h.event_id}`, label: h.events.name, eventId: h.event_id, dates: h.events.dates });
     }
   }
+  enrolledEvents.sort((a, b) => parseEventStart(a.dates) - parseEventStart(b.dates));
 
-  const defaultView = enrolledEvents[0]?.key || "browse";
-  const [view, setView] = useState(defaultView);
+  const [view, setView] = useState("browse");
 
   // Resolve which activeEvent data to show for the selected view
   const viewEventId = view.startsWith("evt_") ? view.slice(4) : null;

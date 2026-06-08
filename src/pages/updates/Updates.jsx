@@ -4,7 +4,7 @@ import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel } from "../../components/ui/index.js";
 
-export default function Updates({ data, readIds, onMarkRead }) {
+export default function Updates({ data, readIds, onMarkRead, onOpenAdmin }) {
   const { announcements } = data;
 
   const markRead = async (annId) => {
@@ -20,19 +20,25 @@ export default function Updates({ data, readIds, onMarkRead }) {
 
   return (
     <Shell withNav>
-      <div style={{ marginBottom: "1.5rem" }}>
-        <SectionLabel>412 Ministry</SectionLabel>
-        <div
-          style={{
-            fontFamily: SANS,
-            fontSize: "26px",
-            fontWeight: 900,
-            color: "#111111",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Updates
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.5rem" }}>
+        <div>
+          <SectionLabel>412 Ministry</SectionLabel>
+          <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#111111", letterSpacing: "-0.02em" }}>
+            Updates
+          </div>
         </div>
+        {onOpenAdmin && (
+          <button
+            onClick={onOpenAdmin}
+            style={{
+              background: "#FF4D00", color: "#fff", border: "none", borderRadius: 8,
+              padding: "8px 14px", fontSize: "13px", fontWeight: 700,
+              fontFamily: SANS, cursor: "pointer", flexShrink: 0,
+            }}
+          >
+            Manage
+          </button>
+        )}
       </div>
 
       {(announcements || []).length === 0 ? (
