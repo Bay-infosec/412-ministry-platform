@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { TSEC, BORDER, BG, SANS } from "../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, SectionLabel } from "../../components/ui/index.js";
 import { EventsBrowser, TYPE_LABELS } from "../events/index.js";
+import { CHECKLIST_ITEMS } from "../../lib/checklist.js";
 
 function splitZoomDisplay(zoomStr) {
   if (!zoomStr) return { main: zoomStr, sub: null };
@@ -20,10 +21,10 @@ function daysUntil(dateStr) {
   return Math.ceil((parsed - new Date()) / 86400000);
 }
 
-function ViewDropdown({ view, onChange }) {
+function ViewDropdown({ view, onChange, enrolledEvents }) {
   const options = [
-    { key: "mine", label: "My Event" },
-    { key: "browse", label: "Browse Events" },
+    { key: "browse", label: "Events" },
+    ...enrolledEvents,
     { key: "past", label: "Past Events" },
   ];
   return (
@@ -34,7 +35,7 @@ function ViewDropdown({ view, onChange }) {
         style={{
           width: "100%",
           appearance: "none", WebkitAppearance: "none",
-          background: "#fff", border: "1px solid #E5E5E5",
+          background: "#FFF5F0", border: "1px solid #FFD5C0",
           borderRadius: 12, padding: "13px 44px 13px 16px",
           fontSize: "15px", fontWeight: 700, color: "#111111",
           fontFamily: SANS, cursor: "pointer", outline: "none",
@@ -45,7 +46,7 @@ function ViewDropdown({ view, onChange }) {
         ))}
       </select>
       <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M6 9l6 6 6-6" />
         </svg>
       </div>
@@ -91,18 +92,42 @@ function PastEvents({ history, activeEvent }) {
 }
 
 export default function EventHome({ data, onOpenPage, onNavigate }) {
-  const { activeEvent, eventMember, profile, isAdmin, history } = data;
-  const [view, setView] = useState("mine");
+  const { activeEvent, eventMember, profile, isAdmin, history, eventChecklist } = data;
+
+  // Build enrolled event options from history (non-archived)
+  const enrolledEvents = [];
+  const seen = new Set();
+  for (const h of (history || [])) {
+    if (h.events && h.events.status !== "archived" && !seen.has(h.event_id)) {
+      seen.add(h.event_id);
+      enrolledEvents.push({ key: `evt_${h.event_id}`, label: h.events.name, eventId: h.event_id });
+    }
+  }
+
+  const defaultView = enrolledEvents[0]?.key || "browse";
+  const [view, setView] = useState(defaultView);
+
+  // Resolve which activeEvent data to show for the selected view
+  const viewEventId = view.startsWith("evt_") ? view.slice(4) : null;
+  const viewEvent = viewEventId === activeEvent?.id ? activeEvent : null;
+  const showMine = !!viewEvent;
 
   const isCoordinator = eventMember?.event_role === "coordinator" || isAdmin;
-  const days = daysUntil(activeEvent?.dates);
+  const days = viewEvent ? daysUntil(viewEvent.dates) : null;
+
+  // Checklist + onboarding progress (for onboarding card)
+  const checklistItems = eventChecklist?.items || {};
+  const checklistDone = CHECKLIST_ITEMS.filter((i) => checklistItems[i.id]).length;
+  const onboardingStep = eventMember?.onboarding_step ?? 0;
+  const onboardingComplete = eventMember?.onboarding_completed;
+  const TOTAL_STEPS = 6;
 
   const sections = [
-    ...(eventMember ? [{ id: "onboarding", label: "Onboarding", desc: eventMember.onboarding_completed ? "Review your setup" : "Complete your setup" }] : []),
     { id: "myteam", label: "My Team", desc: eventMember?.team_number ? `Team ${eventMember.team_number} · checklist inside` : "Team assignment & checklist" },
     { id: "prayer_chain", label: "Prayer Chain", desc: "Pray for one another" },
     { id: "the_four", label: "The Four", desc: "Your four essentials" },
     { id: "field_guide", label: "Field Guide", desc: "Resources and references" },
+    ...(eventMember ? [{ id: "onboarding", label: "Onboarding", desc: onboardingComplete ? "Review your setup" : "Complete your setup" }] : []),
   ];
 
   if (isCoordinator) {
@@ -110,12 +135,12 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
     sections.push({ id: "attendance", label: "Attendance", desc: "Check in team members each day" });
   }
 
-  const zoom = activeEvent?.zoom_training_dates ? splitZoomDisplay(activeEvent.zoom_training_dates) : null;
+  const zoom = viewEvent?.zoom_training_dates ? splitZoomDisplay(viewEvent.zoom_training_dates) : null;
   const [zoomOpen, setZoomOpen] = useState(false);
 
   return (
     <Shell withNav>
-      <ViewDropdown view={view} onChange={setView} />
+      <ViewDropdown view={view} onChange={setView} enrolledEvents={enrolledEvents} />
 
       {view === "browse" && (
         <EventsBrowser data={data} onRefresh={onNavigate ? () => onNavigate("event") : undefined} />
@@ -123,13 +148,13 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
 
       {view === "past" && <PastEvents history={history} activeEvent={activeEvent} />}
 
-      {view === "mine" && !activeEvent && (
+      {view.startsWith("evt_") && !viewEvent && (
         <div style={{ fontFamily: SANS, fontSize: "14px", color: TSEC, textAlign: "center", marginTop: "4rem" }}>
-          No active event right now. Check the Browse tab to find an upcoming one to join.
+          Full details not available for this event.
         </div>
       )}
 
-      {view === "mine" && activeEvent && (
+      {showMine && (
         <>
       {/* Event header card */}
       <div style={{ background: "#111111", borderRadius: 18, padding: "1.25rem 1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
@@ -139,10 +164,10 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.03em", marginBottom: "0.25rem" }}>
-              {activeEvent.name}
+              {viewEvent.name}
             </div>
-            {activeEvent.dates && <div style={{ fontSize: "11px", color: "#555555" }}>{activeEvent.dates}</div>}
-            {activeEvent.location && <div style={{ fontSize: "11px", color: "#555555" }}>{activeEvent.location}</div>}
+            {viewEvent.dates && <div style={{ fontSize: "11px", color: "#555555" }}>{viewEvent.dates}</div>}
+            {viewEvent.location && <div style={{ fontSize: "11px", color: "#555555" }}>{viewEvent.location}</div>}
           </div>
           {days !== null && days >= 0 && (
             <div style={{ textAlign: "center", flexShrink: 0, marginLeft: 16 }}>
@@ -157,15 +182,15 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
             </div>
           )}
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10, marginBottom: activeEvent.verse_text ? 10 : 0 }}>
-          {activeEvent.fee && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10, marginBottom: viewEvent.verse_text ? 10 : 0 }}>
+          {viewEvent.fee && (
             <span style={{ background: "#FF4D00", color: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: "10px", fontWeight: 800 }}>
-              Fee: {activeEvent.fee}
+              Fee: {viewEvent.fee}
             </span>
           )}
-          {activeEvent.registration_url && (
+          {viewEvent.registration_url && (
             <a
-              href={activeEvent.registration_url}
+              href={viewEvent.registration_url}
               target="_blank"
               rel="noopener noreferrer"
               style={{ background: "#222222", color: "#FF4D00", borderRadius: 8, padding: "4px 10px", fontSize: "10px", fontWeight: 800, textDecoration: "none" }}
@@ -174,44 +199,56 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
             </a>
           )}
         </div>
-        {activeEvent.verse_text && (
+        {viewEvent.verse_text && (
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "0.75rem" }}>
             <div style={{ fontSize: "13px", color: "#FFF5F0", lineHeight: 1.65, fontStyle: "italic", marginBottom: "0.25rem" }}>
-              "{activeEvent.verse_text}"
+              "{viewEvent.verse_text}"
             </div>
             <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em", color: "#FF4D00", textTransform: "uppercase" }}>
-              {activeEvent.verse}
+              {viewEvent.verse}
             </div>
           </div>
         )}
       </div>
 
-      {/* Onboarding banner */}
-      {eventMember && !eventMember.onboarding_completed && (
-        <button
-          onClick={() => onOpenPage("onboarding")}
-          style={{
-            width: "100%", textAlign: "left", background: "#FF4D00",
-            borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem",
-            border: "none", cursor: "pointer", fontFamily: SANS,
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-          }}
-        >
-          <div>
-            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", color: "#fff", opacity: 0.85 }}>
-              GET STARTED
+      {/* Onboarding card — same theme as Home, above zoom training */}
+      {eventMember && (
+        <div style={{ background: "#FFF5F0", border: "1px solid #FFD5C0", borderRadius: 16, padding: "1.25rem 1.5rem", marginBottom: "1rem" }}>
+          <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+            Onboarding Invitation
+          </div>
+          <div style={{ fontFamily: SANS, fontSize: "14px", color: "#666666", lineHeight: 1.5, marginBottom: 12 }}>
+            Walk through your orientation steps and complete your pre-conference checklist before {viewEvent.name}.
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>Onboarding</span>
+              <span style={{ fontSize: "11px", color: "#999999", fontFamily: SANS }}>
+                {onboardingComplete ? "Complete ✓" : `Step ${Math.min(onboardingStep + 1, TOTAL_STEPS)} of ${TOTAL_STEPS}`}
+              </span>
             </div>
-            <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginTop: 2 }}>
-              Complete your onboarding
-            </div>
-            <div style={{ fontSize: "12px", color: "#fff", opacity: 0.8, marginTop: 2 }}>
-              A few quick steps to get you set up
+            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,77,0,0.12)", overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 3, background: "#FF4D00", width: onboardingComplete ? "100%" : `${Math.round((onboardingStep / TOTAL_STEPS) * 100)}%`, transition: "width 0.4s ease" }} />
             </div>
           </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 6l6 6-6 6" />
-          </svg>
-        </button>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>Pre-Conference Checklist</span>
+              <span style={{ fontSize: "11px", color: "#999999", fontFamily: SANS }}>{checklistDone} / {CHECKLIST_ITEMS.length}</span>
+            </div>
+            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,77,0,0.12)", overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 3, background: "#FF4D00", width: `${Math.round((checklistDone / CHECKLIST_ITEMS.length) * 100)}%`, transition: "width 0.4s ease" }} />
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => onOpenPage("myteam")} style={{ flex: 1, background: "rgba(255,77,0,0.1)", color: "#FF4D00", border: "none", borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 600, fontFamily: SANS, cursor: "pointer" }}>
+              View Checklist
+            </button>
+            <button onClick={() => onOpenPage("onboarding")} style={{ flex: 1, background: "#FF4D00", color: "#fff", border: "none", borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 700, fontFamily: SANS, cursor: "pointer" }}>
+              {onboardingStep > 0 && !onboardingComplete ? "Continue →" : onboardingComplete ? "Review →" : "Start →"}
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Sections */}
