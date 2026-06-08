@@ -1,44 +1,181 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
 import { Card, Field, Button } from "../../../components/ui/index.js";
 import { sendEmail as sendEmailFn, sendAnnouncementEmails } from "../../../lib/email.js";
 import { matchesAudience } from "../../../lib/utils.js";
 
-const AUDIENCE_TYPES = [
-  { value: "all",      label: "Everyone" },
-  { value: "ministry", label: "By Ministry" },
-  { value: "team",     label: "By Team" },
-  { value: "role",     label: "By Role" },
+// All roles in the platform hierarchy
+const ROLE_OPTIONS = [
+  { value: "leader",      label: "Leader (event)" },
+  { value: "coordinator", label: "Coordinator (event)" },
+  { value: "participant", label: "Participant (event)" },
+  { value: "volunteer",   label: "Volunteer (event)" },
+  { value: "member",      label: "Member (platform)" },
+  { value: "moderator",   label: "Moderator (platform)" },
+  { value: "admin",       label: "Admin (platform)" },
 ];
 
-const MINISTRIES = ["EM", "MM"];
-const ROLES = ["leader", "coordinator"];
+const AUDIENCE_TYPES = [
+  { value: "all",    label: "Everyone" },
+  { value: "role",   label: "By Role" },
+  { value: "team",   label: "By Event & Team" },
+  { value: "person", label: "Specific People" },
+];
+
+// ── Person search component ───────────────────────────────────────────────────
+
+function PersonPicker({ allProfiles, selected, onChange }) {
+  const [query, setQuery] = useState("");
+  const inputRef = useRef(null);
+
+  const selectedIds = new Set(selected.map((p) => p.id));
+  const results = query.trim().length > 0
+    ? (allProfiles || []).filter(
+        (p) =>
+          !selectedIds.has(p.id) &&
+          (p.full_name || "").toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 8)
+    : [];
+
+  function add(p) {
+    onChange([...selected, { id: p.id, full_name: p.full_name }]);
+    setQuery("");
+    inputRef.current?.focus();
+  }
+
+  function remove(id) {
+    onChange(selected.filter((p) => p.id !== id));
+  }
+
+  return (
+    <div style={{ marginTop: 8 }}>
+      {/* Selected chips */}
+      {selected.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+          {selected.map((p) => (
+            <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 5, background: "#1B2A4A", color: "#fff", borderRadius: 20, padding: "4px 10px 4px 12px", fontSize: "13px", fontFamily: SANS }}>
+              {p.full_name}
+              <button
+                onClick={() => remove(p.id)}
+                style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", padding: 0, fontSize: 16, lineHeight: 1, marginLeft: 2 }}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Search input */}
+      <div style={{ position: "relative" }}>
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by name…"
+          style={{
+            width: "100%", padding: "10px 12px", borderRadius: 10,
+            border: `1px solid ${BORDER}`, fontSize: "14px", fontFamily: SANS,
+            color: "#1B2A4A", outline: "none", boxSizing: "border-box",
+          }}
+        />
+        {results.length > 0 && (
+          <div style={{
+            position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100,
+            background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 10,
+            marginTop: 4, overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
+          }}>
+            {results.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => add(p)}
+                style={{
+                  width: "100%", background: "none", border: "none", cursor: "pointer",
+                  padding: "10px 14px", textAlign: "left", fontFamily: SANS,
+                  fontSize: "14px", color: "#1B2A4A", borderBottom: `1px solid ${BORDER}`,
+                  display: "flex", alignItems: "center", gap: 8,
+                }}
+              >
+                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#FF4D00", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff", fontFamily: SANS }}>
+                    {(p.full_name || "?")[0]}
+                  </span>
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600 }}>{p.full_name}</div>
+                  {p.email && <div style={{ fontSize: "11px", color: TSEC }}>{p.email}</div>}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {selected.length === 0 && (
+        <div style={{ fontSize: "12px", color: TSEC, marginTop: 6, fontFamily: SANS }}>
+          Start typing to search for people to target.
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main editor ───────────────────────────────────────────────────────────────
 
 export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToast, onCancel }) {
-  const { allEvents, profile } = data;
+  const { allEvents = [], allProfiles = [], profile } = data;
   const activeEventId = data.activeEvent?.id || null;
 
   const [title, setTitle] = useState(ann?.title || "");
   const [body, setBody] = useState(ann?.body || "");
-  const [audienceType, setAudienceType] = useState(() => {
+
+  // Parse existing audience
+  const initAudienceType = () => {
     if (!ann?.audience || ann.audience.length === 0) return "all";
-    return ann.audience[0]?.type || "all";
-  });
+    const t = ann.audience[0]?.type;
+    if (t === "person") return "person";
+    return t || "all";
+  };
+  const [audienceType, setAudienceType] = useState(initAudienceType);
   const [audienceValue, setAudienceValue] = useState(() => {
     if (!ann?.audience || ann.audience.length === 0) return "";
     return ann.audience[0]?.value || "";
   });
+  const [selectedEventId, setSelectedEventId] = useState(() => {
+    if (!ann?.audience || ann.audience.length === 0) return activeEventId || "";
+    return ann.audience[0]?.event_id || activeEventId || "";
+  });
+  const [selectedPeople, setSelectedPeople] = useState(() => {
+    if (!ann?.audience) return [];
+    const people = ann.audience.filter((r) => r.type === "person");
+    return people.map((r) => {
+      const p = (allProfiles || []).find((x) => x.id === r.value);
+      return p ? { id: p.id, full_name: p.full_name } : { id: r.value, full_name: r.value };
+    });
+  });
+
   const [busy, setBusy] = useState(false);
   const [sendEmailToggle, setSendEmailToggle] = useState(false);
   const [sendPushToggle, setSendPushToggle] = useState(true);
 
   const buildAudience = () => {
     if (audienceType === "all") return [{ type: "all" }];
-    if (audienceType === "ministry") return [{ type: "ministry", value: audienceValue }];
-    if (audienceType === "team") return [{ type: "team", value: audienceValue }];
-    if (audienceType === "role") return [{ type: "role", value: audienceValue }];
+    if (audienceType === "role") return audienceValue ? [{ type: "role", value: audienceValue }] : [{ type: "all" }];
+    if (audienceType === "team") return audienceValue ? [{ type: "team", value: audienceValue, event_id: selectedEventId || null }] : [{ type: "all" }];
+    if (audienceType === "person") return selectedPeople.length > 0 ? selectedPeople.map((p) => ({ type: "person", value: p.id })) : [{ type: "all" }];
     return [{ type: "all" }];
+  };
+
+  const audienceSummary = () => {
+    if (audienceType === "all") return "Everyone";
+    if (audienceType === "role") return audienceValue ? `Role: ${audienceValue}` : "Everyone";
+    if (audienceType === "team") {
+      const ev = allEvents.find((e) => e.id === selectedEventId);
+      return audienceValue ? `Team ${audienceValue}${ev ? ` · ${ev.name}` : ""}` : "Everyone";
+    }
+    if (audienceType === "person") return selectedPeople.length > 0 ? `${selectedPeople.length} person${selectedPeople.length !== 1 ? "s" : ""}` : "Everyone";
+    return "Everyone";
   };
 
   const save = async (submitForApproval = false) => {
@@ -75,7 +212,6 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
     // Push notification for published announcements
     if (status === "published" && sendPushToggle) {
       const audience = buildAudience();
-      const allProfiles = data.allProfiles || [];
       const matched = allProfiles.filter((p) =>
         matchesAudience(audience, { id: p.id, ministry: p.ministry, team_number: p.team_number, event_role: p.event_role, platform_role: p.platform_role })
       );
@@ -92,24 +228,14 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
     // Email sending for published announcements
     if (status === "published" && sendEmailToggle) {
       const audience = buildAudience();
-      const allProfiles = data.allProfiles || [];
       const matched = allProfiles.filter((p) =>
-        matchesAudience(audience, {
-          id: p.id,
-          ministry: p.ministry,
-          team_number: p.team_number,
-          event_role: p.event_role,
-        })
+        matchesAudience(audience, { id: p.id, ministry: p.ministry, team_number: p.team_number, event_role: p.event_role, platform_role: p.platform_role })
       );
       (async () => {
         let count = 0;
         for (const p of matched) {
           if (p.email) {
-            const ok = await sendEmailFn(
-              p.email,
-              payload.title,
-              `<p>Hi ${p.full_name || "there"},</p><p><strong>${payload.title}</strong></p><p>${payload.body}</p>`
-            );
+            const ok = await sendEmailFn(p.email, payload.title, `<p>Hi ${p.full_name || "there"},</p><p><strong>${payload.title}</strong></p><p>${payload.body}</p>`);
             if (ok) count++;
           }
         }
@@ -129,8 +255,6 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
 
     onSaved();
   };
-
-  const audienceNeedsValue = audienceType !== "all";
 
   return (
     <div>
@@ -159,76 +283,92 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
         </div>
 
         {/* Audience */}
-        <div style={{ marginBottom: "1rem" }}>
+        <div style={{ marginBottom: "0.5rem" }}>
           <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: TSEC, marginBottom: 6, letterSpacing: "0.04em", fontFamily: SANS }}>
             AUDIENCE
           </label>
-          <select
-            value={audienceType}
-            onChange={(e) => { setAudienceType(e.target.value); setAudienceValue(""); }}
-            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#1B2A4A", background: "#fff", outline: "none" }}
-          >
-            {AUDIENCE_TYPES.map((a) => (
-              <option key={a.value} value={a.value}>{a.label}</option>
-            ))}
-          </select>
 
-          {audienceType === "ministry" && (
-            <select
-              value={audienceValue}
-              onChange={(e) => setAudienceValue(e.target.value)}
-              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#1B2A4A", background: "#fff", outline: "none" }}
-            >
-              <option value="">Select ministry</option>
-              {MINISTRIES.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-          )}
-          {audienceType === "team" && (
-            <input
-              type="number"
-              min={1}
-              max={20}
-              value={audienceValue}
-              onChange={(e) => setAudienceValue(e.target.value)}
-              placeholder="Team number"
-              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#1B2A4A", outline: "none", boxSizing: "border-box" }}
-            />
-          )}
+          {/* Type selector — pill buttons */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+            {AUDIENCE_TYPES.map((a) => (
+              <button
+                key={a.value}
+                onClick={() => { setAudienceType(a.value); setAudienceValue(""); setSelectedPeople([]); }}
+                style={{
+                  background: audienceType === a.value ? "#1B2A4A" : "#F5F5F5",
+                  color: audienceType === a.value ? "#fff" : "#666",
+                  border: "none", borderRadius: 20, padding: "6px 14px",
+                  fontSize: "13px", fontWeight: 600, fontFamily: SANS, cursor: "pointer",
+                }}
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Role selector */}
           {audienceType === "role" && (
             <select
               value={audienceValue}
               onChange={(e) => setAudienceValue(e.target.value)}
-              style={{ width: "100%", marginTop: 8, padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#1B2A4A", background: "#fff", outline: "none" }}
+              style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "14px", fontFamily: SANS, color: "#1B2A4A", background: "#fff", outline: "none" }}
             >
-              <option value="">Select role</option>
-              {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+              <option value="">Select role…</option>
+              {ROLE_OPTIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           )}
+
+          {/* Team — event selector + team number */}
+          {audienceType === "team" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <select
+                value={selectedEventId}
+                onChange={(e) => setSelectedEventId(e.target.value)}
+                style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "14px", fontFamily: SANS, color: "#1B2A4A", background: "#fff", outline: "none" }}
+              >
+                <option value="">Select event…</option>
+                {allEvents.filter((e) => e.status !== "archived").map((e) => (
+                  <option key={e.id} value={e.id}>{e.name}</option>
+                ))}
+              </select>
+              <input
+                type="number"
+                min={1}
+                max={24}
+                value={audienceValue}
+                onChange={(e) => setAudienceValue(e.target.value)}
+                placeholder="Team number"
+                style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "14px", fontFamily: SANS, color: "#1B2A4A", outline: "none", boxSizing: "border-box" }}
+              />
+            </div>
+          )}
+
+          {/* Person search */}
+          {audienceType === "person" && (
+            <PersonPicker
+              allProfiles={allProfiles}
+              selected={selectedPeople}
+              onChange={setSelectedPeople}
+            />
+          )}
+
+          {/* Summary pill */}
+          <div style={{ marginTop: 8, fontSize: "12px", color: TSEC, fontFamily: SANS }}>
+            Sending to: <strong style={{ color: "#1B2A4A" }}>{audienceSummary()}</strong>
+          </div>
         </div>
       </Card>
 
       {isAdmin && (
         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: "0.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0.75rem 1rem", background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 10 }}>
-            <input
-              id="send-push-toggle"
-              type="checkbox"
-              checked={sendPushToggle}
-              onChange={(e) => setSendPushToggle(e.target.checked)}
-              style={{ width: 16, height: 16, accentColor: "#FF4D00", cursor: "pointer", flexShrink: 0 }}
-            />
+            <input id="send-push-toggle" type="checkbox" checked={sendPushToggle} onChange={(e) => setSendPushToggle(e.target.checked)} style={{ width: 16, height: 16, accentColor: "#FF4D00", cursor: "pointer", flexShrink: 0 }} />
             <label htmlFor="send-push-toggle" style={{ fontSize: "14px", color: "#1B2A4A", fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
               Send push notification to audience
             </label>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0.75rem 1rem", background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 10 }}>
-            <input
-              id="send-email-toggle"
-              type="checkbox"
-              checked={sendEmailToggle}
-              onChange={(e) => setSendEmailToggle(e.target.checked)}
-              style={{ width: 16, height: 16, accentColor: "#FF4D00", cursor: "pointer", flexShrink: 0 }}
-            />
+            <input id="send-email-toggle" type="checkbox" checked={sendEmailToggle} onChange={(e) => setSendEmailToggle(e.target.checked)} style={{ width: 16, height: 16, accentColor: "#FF4D00", cursor: "pointer", flexShrink: 0 }} />
             <label htmlFor="send-email-toggle" style={{ fontSize: "14px", color: "#1B2A4A", fontFamily: SANS, cursor: "pointer", fontWeight: 500 }}>
               Also send email to audience
             </label>
@@ -237,32 +377,20 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
       )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {/* Primary action */}
         <button
           onClick={() => save(true)}
           disabled={busy}
-          style={{
-            background: "#FF4D00", color: "#fff", border: "none", borderRadius: 10,
-            padding: "14px", fontSize: "15px", fontWeight: 700, fontFamily: SANS,
-            cursor: "pointer", width: "100%",
-          }}
+          style={{ background: "#FF4D00", color: "#fff", border: "none", borderRadius: 10, padding: "14px", fontSize: "15px", fontWeight: 700, fontFamily: SANS, cursor: "pointer", width: "100%" }}
         >
           {busy ? "Saving…" : isAdmin ? "Publish now" : "Submit for approval"}
         </button>
-
-        {/* Save as draft */}
         <button
           onClick={() => save(false)}
           disabled={busy}
-          style={{
-            background: "#fff", color: "#1B2A4A", border: "1px solid #E5E5E5", borderRadius: 10,
-            padding: "12px", fontSize: "14px", fontWeight: 600, fontFamily: SANS,
-            cursor: "pointer", width: "100%",
-          }}
+          style={{ background: "#fff", color: "#1B2A4A", border: "1px solid #E5E5E5", borderRadius: 10, padding: "12px", fontSize: "14px", fontWeight: 600, fontFamily: SANS, cursor: "pointer", width: "100%" }}
         >
           Save as draft
         </button>
-
         <button
           onClick={onCancel}
           style={{ background: "none", border: "none", color: TSEC, fontSize: "13px", cursor: "pointer", fontFamily: SANS, padding: "8px 0" }}

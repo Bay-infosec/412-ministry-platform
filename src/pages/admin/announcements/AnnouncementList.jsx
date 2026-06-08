@@ -20,14 +20,26 @@ function AudienceChip({ audience }) {
   if (!audience || audience.length === 0) return <span style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>Everyone</span>;
   return (
     <span style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>
-      {audience.map((r) => {
-        if (r.type === "all") return "Everyone";
-        if (r.type === "ministry") return r.value;
-        if (r.type === "team") return `Team ${r.value}`;
-        if (r.type === "role") return r.value;
-        if (r.type === "person") return "Specific person";
-        return r.type;
-      }).join(", ")}
+      {(() => {
+        const personEntries = audience.filter((r) => r.type === "person");
+        if (personEntries.length > 0) {
+          const others = audience.filter((r) => r.type !== "person");
+          const parts = others.map((r) => {
+            if (r.type === "all") return "Everyone";
+            if (r.type === "team") return `Team ${r.value}`;
+            if (r.type === "role") return r.value;
+            return r.type;
+          });
+          parts.push(`${personEntries.length} person${personEntries.length !== 1 ? "s" : ""}`);
+          return parts.join(", ");
+        }
+        return audience.map((r) => {
+          if (r.type === "all") return "Everyone";
+          if (r.type === "team") return `Team ${r.value}`;
+          if (r.type === "role") return r.value;
+          return r.type;
+        }).join(", ");
+      })()}
     </span>
   );
 }
