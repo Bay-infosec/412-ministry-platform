@@ -376,8 +376,71 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
   const isSelf = !isGroup && conv.other?.id === myId;
   const isOnline = !isGroup && !isSelf && onlineUsers.some((u) => u.user_id === conv.other?.id);
   const title = isGroup ? conv.group_name : isSelf ? "My Notes" : conv.other?.full_name;
+  const channelRef = useRef(null);
 
-  useEffect(() => { init(); setShowMembers(false); setGroupMembers(null); }, [conv.id, conv.other?.id]);
+  useEffect(() => {
+    setShowMembers(false);
+    setGroupMembers(null);
+    setMessages(null);
+    setConvId(null);
+
+    let active = true;
+
+    async function run() {
+      let cid = conv.id;
+
+      if (!cid) {
+        const { data: existing } = await supabase
+          .from("conversations")
+          .select("id")
+          .or(`and(participant_a.eq.${myId},participant_b.eq.${conv.other.id}),and(participant_a.eq.${conv.other.id},participant_b.eq.${myId})`)
+          .maybeSingle();
+        cid = existing?.id;
+        if (!cid) {
+          const { data: created } = await supabase
+            .from("conversations")
+            .insert({ participant_a: myId, participant_b: conv.other.id, is_group: false })
+            .select("id").single();
+          cid = created?.id;
+        }
+      }
+
+      if (!cid || !active) return;
+      setConvId(cid);
+      await loadMessages(cid);
+      if (!active) return;
+      if (!isGroup) await markRead(cid);
+
+      if (channelRef.current) supabase.removeChannel(channelRef.current);
+      channelRef.current = supabase
+        .channel(`conv-${cid}-${Date.now()}`)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "dm_messages", filter: `conversation_id=eq.${cid}` }, async (payload) => {
+          if (!active) return;
+          const msg = payload.new;
+          // Skip own messages — they're added optimistically in send()
+          if (msg.profile_id === myId) return;
+          if (isGroup) {
+            const { data: p } = await supabase.from("profiles").select("id, full_name, photo_url").eq("id", msg.profile_id).single();
+            if (p) setSenderMap((prev) => ({ ...prev, [p.id]: p }));
+          } else {
+            markRead(cid);
+          }
+          setMessages((prev) => {
+            if (prev?.some((m) => m.id === msg.id)) return prev;
+            return [...(prev || []), msg];
+          });
+        })
+        .subscribe();
+    }
+
+    run();
+
+    return () => {
+      active = false;
+      if (channelRef.current) { supabase.removeChannel(channelRef.current); channelRef.current = null; }
+    };
+  }, [conv.id, conv.other?.id]);
+
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
   useEffect(() => {
     if (showMembers && convId && !groupMembers && isGroup) loadGroupMembers(convId);
@@ -396,48 +459,6 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
       .in("id", ids)
       .order("full_name");
     setGroupMembers(data || []);
-  }
-
-  async function init() {
-    let cid = conv.id;
-
-    if (!cid) {
-      // DM: find or create conversation
-      const { data: existing } = await supabase
-        .from("conversations")
-        .select("id")
-        .or(`and(participant_a.eq.${myId},participant_b.eq.${conv.other.id}),and(participant_a.eq.${conv.other.id},participant_b.eq.${myId})`)
-        .maybeSingle();
-
-      cid = existing?.id;
-      if (!cid) {
-        const { data: created } = await supabase
-          .from("conversations")
-          .insert({ participant_a: myId, participant_b: conv.other.id, is_group: false })
-          .select("id").single();
-        cid = created?.id;
-      }
-    }
-
-    if (!cid) return;
-    setConvId(cid);
-    await loadMessages(cid);
-    if (!isGroup) await markRead(cid);
-
-    const channel = supabase
-      .channel(`conv-${cid}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "dm_messages", filter: `conversation_id=eq.${cid}` }, async (payload) => {
-        const msg = payload.new;
-        if (msg.profile_id !== myId) {
-          const { data: p } = await supabase.from("profiles").select("id, full_name, photo_url").eq("id", msg.profile_id).single();
-          if (p) setSenderMap((prev) => ({ ...prev, [p.id]: p }));
-          if (!isGroup) markRead(cid);
-        }
-        setMessages((prev) => [...(prev || []), msg]);
-      })
-      .subscribe();
-
-    return () => supabase.removeChannel(channel);
   }
 
   async function loadMessages(cid) {
@@ -465,12 +486,22 @@ function ThreadView({ myId, conv, onBack, onlineUsers }) {
     if (!body || !convId || sending) return;
     setSending(true);
     setInput("");
-    await supabase.from("dm_messages").insert({
+
+    // Show immediately in the UI
+    const tempId = `temp-${Date.now()}`;
+    const tempMsg = { id: tempId, body, profile_id: myId, conversation_id: convId, receiver_id: isGroup ? null : conv.other?.id, created_at: new Date().toISOString(), read_at: null };
+    setMessages((prev) => [...(prev || []), tempMsg]);
+
+    const { data: inserted } = await supabase.from("dm_messages").insert({
       conversation_id: convId,
       profile_id: myId,
       receiver_id: isGroup ? null : conv.other?.id,
       body,
-    });
+    }).select("id, body, profile_id, conversation_id, receiver_id, created_at, read_at").single();
+
+    // Replace temp with real record
+    if (inserted) setMessages((prev) => prev?.map((m) => m.id === tempId ? inserted : m) ?? []);
+
     await supabase.from("conversations").update({ last_message_at: new Date().toISOString() }).eq("id", convId);
     setSending(false);
     setTimeout(() => inputRef.current?.focus(), 50);
