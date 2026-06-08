@@ -37,8 +37,10 @@
       /* Prevent auto-zoom on input focus on iOS */
       input, textarea, select { font-size: 16px !important; }
       * { -webkit-tap-highlight-color: transparent; }
+      /* App background — prevents white flash on rubber-band scroll */
+      html, body { background: #FAFAFA; }
       /* Push content below Dynamic Island / notch */
-      body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+      body { padding-top: env(safe-area-inset-top); }
     </style>
   </head>
   <body>

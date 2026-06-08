@@ -1,4 +1,4 @@
-import { BORDER } from "../../lib/constants.js";
+import { BORDER, SANS } from "../../lib/constants.js";
 
 export default function Avatar({ url, name, size = 44 }) {
   const initials = (name || "")
@@ -38,6 +38,7 @@ export default function Avatar({ url, name, size = 44 }) {
         justifyContent: "center",
         fontWeight: 900,
         fontSize: size * 0.36,
+        fontFamily: SANS,
         flexShrink: 0,
       }}
     >

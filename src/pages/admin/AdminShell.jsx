@@ -90,7 +90,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false, 
     }}>
       <div style={{
         display: "flex", alignItems: "center", gap: 10,
-        padding: "0.875rem 1.25rem", borderBottom: `1px solid ${BORDER}`,
+        padding: "0.875rem 1.25rem", paddingTop: "max(0.875rem, env(safe-area-inset-top))", borderBottom: `1px solid ${BORDER}`,
         background: "#fff", flexShrink: 0,
       }}>
         <button

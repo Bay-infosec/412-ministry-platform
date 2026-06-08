@@ -328,14 +328,9 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
                   </div>
                   <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 3 }}>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                        <span style={{ fontSize: "14px", fontWeight: c.unread > 0 ? 800 : 600, color: "#111111", fontFamily: SANS }}>
-                          {c.type === "group" ? c.group_name : c.other?.full_name}
-                        </span>
-                        {c.type === "dm" && c.other?.nickname && (
-                          <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, fontStyle: "italic" }}>"{c.other.nickname}"</span>
-                        )}
-                      </div>
+                      <span style={{ fontSize: "14px", fontWeight: c.unread > 0 ? 800 : 600, color: "#111111", fontFamily: SANS }}>
+                        {c.type === "group" ? c.group_name : (c.other?.nickname || c.other?.full_name)}
+                      </span>
                       {c.lastMsg && (
                         <span style={{ fontSize: "11px", color: c.unread > 0 ? "#FF4D00" : TSEC, fontFamily: SANS, fontWeight: c.unread > 0 ? 700 : 400, flexShrink: 0, marginLeft: 8 }}>
                           {fmtTime(c.lastMsg.created_at)}
@@ -379,7 +374,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
 
   const isSelf = !isGroup && conv.other?.id === myId;
   const isOnline = !isGroup && !isSelf && onlineUsers.some((u) => u.user_id === conv.other?.id);
-  const title = isGroup ? conv.group_name : isSelf ? "My Notes" : conv.other?.full_name;
+  const title = isGroup ? conv.group_name : isSelf ? "My Notes" : (conv.other?.nickname || conv.other?.full_name);
   const channelRef = useRef(null);
 
   useEffect(() => {
