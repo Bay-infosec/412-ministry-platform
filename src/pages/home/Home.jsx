@@ -1,12 +1,24 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
-import { TSEC, BORDER, BG, SANS } from "../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { SectionLabel } from "../../components/ui/index.js";
 import { DailyVerse, ContactForm } from "../../components/shared/index.js";
 import { CHECKLIST_ITEMS } from "../../lib/checklist.js";
 
-// ── Prayer chain helpers (mirrors PrayerChain.jsx) ────────────────────────────
+const TYPE_LABELS = {
+  conference:        "Conference",
+  youth_conference:  "Youth Conference",
+  annual_conference: "Annual Conference",
+  openmic:           "Open Mic",
+  open_mic:          "Open Mic",
+  mission:           "Mission Trip",
+  zoom_meeting:      "Zoom Meeting",
+  board_meeting:     "Board Meeting",
+  other:             "Event",
+};
+
+// ── Prayer chain helpers ──────────────────────────────────────────────────────
 const CHAIN_START = new Date("2026-07-10");
 const NUM_TEAMS = 12;
 
@@ -21,36 +33,23 @@ function getNextPrayerDate(teamNumber) {
   return null;
 }
 
-function fmtDate(d) {
-  return d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+function fmtShort(d) {
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-function daysUntil(d) {
+function daysUntilMs(d) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   return Math.ceil((d - today) / 86400000);
 }
 
-// Multi-timezone display for zoom meetings stored as PT time
-// e.g. start_date="2026-06-27" + start_time="18:00" → "6:00 PM PT · 7:00 PM MT · 8:00 PM CT · 9:00 PM ET"
-function formatZoomTimezones(startDate, startTime) {
-  if (!startDate || !startTime) return null;
-  const [year, month, day] = startDate.split("-").map(Number);
-  const [hour, min] = startTime.split(":").map(Number);
-  // June–August in Los Angeles = PDT = UTC−7
-  const utcDate = new Date(Date.UTC(year, month - 1, day, hour + 7, min));
-  const zones = [
-    { tz: "America/Los_Angeles", label: "PT" },
-    { tz: "America/Denver",      label: "MT" },
-    { tz: "America/Chicago",     label: "CT" },
-    { tz: "America/New_York",    label: "ET" },
-  ];
-  return zones.map(({ tz, label }) => {
-    const t = utcDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: tz });
-    return `${t} ${label}`;
-  }).join(" · ");
+function daysUntilDate(isoStr) {
+  if (!isoStr) return null;
+  const d = new Date(isoStr + "T00:00:00");
+  if (isNaN(d)) return null;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  return Math.ceil((d - today) / 86400000);
 }
 
-// Parse event.dates string (e.g. "August 5–9, 2026") → days until start
 function daysUntilEvent(dateStr) {
   if (!dateStr) return null;
   const m1 = dateStr.match(/([A-Za-z]+ \d+)[–\-]\d+,?\s*(\d{4})/);
@@ -60,8 +59,6 @@ function daysUntilEvent(dateStr) {
   return Math.ceil((parsed - new Date()) / 86400000);
 }
 
-// Split "June 27 — 6:00 PM PT · 7:00 PM MT · 8:00 PM CT · 9:00 PM ET"
-// into main = "June 27 — 6:00 PM PT" and sub = "7:00 PM MT · 8:00 PM CT · 9:00 PM ET"
 function splitZoomDisplay(zoomStr) {
   if (!zoomStr) return { main: zoomStr, sub: null };
   const parts = zoomStr.split("·").map((s) => s.trim());
@@ -69,55 +66,197 @@ function splitZoomDisplay(zoomStr) {
   return { main: parts[0], sub: parts.slice(1).join(" · ") };
 }
 
-function TileChevron() {
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function HScroll({ children }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CCCCCC" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginLeft: 12 }}>
-      <path d="M9 6l6 6-6 6" />
-    </svg>
+    <div style={{
+      display: "flex",
+      overflowX: "auto",
+      gap: 10,
+      margin: "0 -16px",
+      padding: "2px 16px 12px",
+      scrollbarWidth: "none",
+      WebkitOverflowScrolling: "touch",
+      msOverflowStyle: "none",
+    }}>
+      {children}
+      {/* Trailing spacer so last card doesn't clip */}
+      <div style={{ minWidth: 4, flexShrink: 0 }} />
+    </div>
+  );
+}
+
+function EventCard({ ev, isEnrolled, onClick }) {
+  const days = ev.start_date ? daysUntilDate(ev.start_date) : daysUntilEvent(ev.dates);
+  const isDark = isEnrolled;
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        minWidth: 185, maxWidth: 185,
+        background: isDark ? "#1B2A4A" : "#fff",
+        border: `1px solid ${isDark ? "transparent" : "#E5E5E5"}`,
+        borderRadius: 16, padding: "13px 14px",
+        display: "flex", flexDirection: "column", gap: 6,
+        cursor: "pointer", textAlign: "left", flexShrink: 0,
+        boxShadow: isDark ? "0 2px 10px rgba(27,42,74,0.2)" : "none",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <span style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "#FF4D00" }}>
+          {TYPE_LABELS[ev.type] || "Event"}
+        </span>
+        {isEnrolled && (
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#27AE60" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        )}
+      </div>
+      <div style={{ fontSize: "15px", fontWeight: 900, color: isDark ? "#fff" : "#1B2A4A", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
+        {ev.name}
+      </div>
+      {ev.dates && (
+        <div style={{ fontSize: "11px", color: isDark ? "rgba(255,255,255,0.5)" : "#999", lineHeight: 1.4 }}>
+          {ev.dates}
+        </div>
+      )}
+      {ev.location && (
+        <div style={{ fontSize: "11px", color: isDark ? "rgba(255,255,255,0.35)" : "#bbb" }}>
+          {ev.location}
+        </div>
+      )}
+      {days !== null && days >= 0 && (
+        <div style={{ marginTop: 2, fontSize: "11px", fontWeight: 700, color: "#FF4D00" }}>
+          {days === 0 ? "Today!" : days === 1 ? "Tomorrow" : `In ${days} days`}
+        </div>
+      )}
+    </button>
+  );
+}
+
+function UpcomingCard({ label, title, sub, onClick, tag }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        minWidth: 170, maxWidth: 170,
+        background: "#fff", border: "1px solid #E5E5E5",
+        borderRadius: 14, padding: "13px 14px",
+        display: "flex", flexDirection: "column", gap: 6,
+        cursor: "pointer", textAlign: "left", flexShrink: 0,
+      }}
+    >
+      <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.12em", color: "#FF4D00", textTransform: "uppercase" }}>
+        {label}
+      </div>
+      <div style={{ fontSize: "14px", fontWeight: 800, color: "#1B2A4A", lineHeight: 1.25 }}>
+        {title}
+      </div>
+      {sub && (
+        <div style={{ fontSize: "11px", color: "#999", lineHeight: 1.4 }}>
+          {sub}
+        </div>
+      )}
+      {tag && (
+        <div style={{ marginTop: "auto", fontSize: "9px", fontWeight: 700, background: "#1B2A4A", color: "#fff", borderRadius: 6, padding: "2px 7px", alignSelf: "flex-start" }}>
+          {tag}
+        </div>
+      )}
+    </button>
+  );
+}
+
+function MemberCard({ m }) {
+  const opened = m.onboarding_visited || m.onboarding_completed;
+  const clItems = m.event_checklist?.[0]?.items || {};
+  const fullName = m.profiles?.full_name || "";
+  const parts = fullName.trim().split(" ");
+  const firstName = parts[0] || "";
+  const lastName = parts.slice(1).join(" ") || "";
+
+  // 4 progress stages: started onboarding / finished onboarding / started checklist / finished checklist
+  const doneCount = CHECKLIST_ITEMS.filter((i) => !!clItems[i.id]).length;
+  const stages = [
+    !!opened,
+    !!m.onboarding_completed,
+    doneCount > 0,
+    doneCount >= CHECKLIST_ITEMS.length,
+  ];
+
+  return (
+    <div style={{ minWidth: 78, maxWidth: 78, display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flexShrink: 0 }}>
+      <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#FF4D00", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        {m.profiles?.photo_url
+          ? <img src={m.profiles.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          : <span style={{ fontSize: "18px", fontWeight: 900, color: "#fff", fontFamily: SANS }}>{firstName[0] || "?"}</span>}
+      </div>
+      <div style={{ textAlign: "center", width: "100%" }}>
+        <div style={{ fontSize: "12px", fontWeight: 800, color: "#1B2A4A", lineHeight: 1.1, fontFamily: SANS, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {firstName}
+        </div>
+        <div style={{ fontSize: "10px", color: "#999", lineHeight: 1.1, fontFamily: SANS, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {lastName}
+        </div>
+      </div>
+      <div style={{ fontSize: "9px", fontWeight: 800, color: "#FF4D00", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: SANS }}>
+        T{m.team_number}
+      </div>
+      {!opened ? (
+        <div style={{ fontSize: "8px", fontWeight: 700, color: "#bbb", letterSpacing: "0.04em", fontFamily: SANS, textAlign: "center", lineHeight: 1.2 }}>
+          NOT<br />STARTED
+        </div>
+      ) : (
+        <div style={{ display: "flex", gap: 3 }}>
+          {stages.map((done, i) => (
+            <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: done ? "#FF4D00" : "#E5E5E5" }} />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function Home({
-  data, onNavigate, onOpenChat, onOpenOnboarding, onOpenMyTeam, onOpenUpdates, onOpenEventPage, chatUnread, onlineUsers, readIds, onMarkRead,
+  data, onNavigate, onOpenChat, onOpenOnboarding, onOpenMyTeam, onOpenUpdates, onOpenEventPage, chatUnread, readIds, onMarkRead,
 }) {
-  const { profile, eventMember, eventChecklist, announcements, unreadCount, activeEvent, trainingMaterials } = data;
+  const {
+    profile, eventMember, eventChecklist, announcements, unreadCount,
+    activeEvent, trainingMaterials, publicEvents = [], history = [],
+  } = data;
 
-  const othersOnline = (onlineUsers || []).filter((u) => u.user_id !== profile.id);
   const displayName = profile.nickname || (profile.full_name || "").split(" ")[0];
-
   const [showContact, setShowContact] = useState(false);
 
   async function dismissAnnouncement(annId) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    try {
-      await supabase.from("announcement_reads").insert({ announcement_id: annId, profile_id: user.id });
-    } catch {}
+    try { await supabase.from("announcement_reads").insert({ announcement_id: annId, profile_id: user.id }); } catch {}
     onMarkRead?.(annId);
   }
 
-  // Standalone zoom/board meetings (not part of a conference)
+  // Standalone zoom/board meetings
   const [meetings, setMeetings] = useState([]);
   useEffect(() => {
     supabase
       .from("events")
-      .select("id, name, type, dates, start_date, start_time, location, audience, zoom_url")
+      .select("id, name, type, dates, start_date, start_time, location, zoom_url")
       .in("type", ["zoom_meeting", "board_meeting"])
       .neq("status", "archived")
       .order("start_date", { ascending: true, nullsFirst: false })
       .then(({ data: rows }) => setMeetings(rows || []));
   }, []);
 
-  // Coordinator: fetch team leaders' onboarding + checklist progress
+  // Coordinator team progress
   const isCoordinator = eventMember?.event_role === "coordinator";
   const [teamProgress, setTeamProgress] = useState([]);
   useEffect(() => {
     if (!isCoordinator || !activeEvent || !profile?.id) return;
     supabase
       .from("event_members")
-      .select("id, team_number, onboarding_completed, onboarding_visited, onboarding_step, event_role, profiles!event_members_profile_id_fkey(full_name, photo_url), event_checklist(items)")
+      .select("id, team_number, onboarding_completed, onboarding_visited, onboarding_step, profiles!event_members_profile_id_fkey(full_name, photo_url), event_checklist(items)")
       .eq("event_id", activeEvent.id)
       .eq("coordinator_id", profile.id)
       .neq("event_role", "coordinator")
@@ -125,32 +264,32 @@ export default function Home({
       .then(({ data: rows }) => setTeamProgress(rows || []));
   }, [isCoordinator, activeEvent?.id, profile?.id]);
 
-  // Checklist stats
+  // Derived data
+  const myEventIds = new Set([
+    activeEvent?.id,
+    ...(history || []).map((h) => h.event_id),
+  ].filter(Boolean));
+
+  const myEvents = (publicEvents || []).filter((ev) => myEventIds.has(ev.id));
+
   const checklistItems = eventChecklist?.items || {};
   const checklistDone = CHECKLIST_ITEMS.filter((i) => checklistItems[i.id]).length;
   const onboardingStep = eventMember?.onboarding_step ?? 0;
   const onboardingComplete = eventMember?.onboarding_completed;
   const TOTAL_STEPS = 6;
 
-  // Latest announcement
   const latestAnn = (announcements || []).find(() => true);
-
-  // Next prayer date for this team
   const nextPrayer = getNextPrayerDate(eventMember?.team_number);
-
-  // Upcoming meeting (first one)
   const nextMeeting = meetings[0] || null;
+  const hasUpcoming = nextPrayer || activeEvent?.zoom_training_dates || nextMeeting;
 
   return (
     <Shell withNav>
-      {/* ── Header ─────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: "1.5rem" }}>
-        {/* Brand — own row, above chat */}
+      {/* ── Header ──────────────────────────────────────────────────── */}
+      <div style={{ marginBottom: "1.25rem" }}>
         <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, letterSpacing: "-0.02em", color: "#1B2A4A", lineHeight: 1, marginBottom: "0.875rem" }}>
           412 <span style={{ color: "#FF4D00" }}>Ministry</span>
         </div>
-
-        {/* Greeting + Chat — same row, below brand */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#6B7280", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
@@ -160,8 +299,6 @@ export default function Home({
               {displayName}
             </div>
           </div>
-
-          {/* Chat button — pill */}
           <button
             onClick={onOpenChat}
             style={{
@@ -173,7 +310,7 @@ export default function Home({
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-            <span style={{ fontFamily: SANS, fontSize: "13px", fontWeight: 800, color: "#fff", letterSpacing: "0.01em" }}>Chat</span>
+            <span style={{ fontFamily: SANS, fontSize: "13px", fontWeight: 800, color: "#fff" }}>Chat</span>
             {chatUnread && (
               <div style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#E53E3E", border: "2px solid #FF4D00" }} />
             )}
@@ -181,19 +318,21 @@ export default function Home({
         </div>
       </div>
 
-      {/* ── Announcement ───────────────────────────────────────────── */}
+      {/* ── Announcement banner ─────────────────────────────────────── */}
       {latestAnn && !(readIds || []).includes(latestAnn.id) && (
         <div style={{ position: "relative", marginBottom: "1rem" }}>
           <button
             onClick={onOpenUpdates}
             style={{
-              width: "100%", textAlign: "left", background: "#EEF2FC",
-              borderRadius: 14, padding: "1rem 1.25rem", paddingRight: "2.75rem",
-              border: "none", cursor: "pointer", fontFamily: SANS,
+              width: "100%", textAlign: "left",
+              background: "#fff", borderRadius: 14, padding: "1rem 1.25rem", paddingRight: "2.75rem",
+              border: "none", borderLeft: "3px solid #FF4D00",
+              cursor: "pointer", fontFamily: SANS,
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-              <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em", color: "#1A4FBF", textTransform: "uppercase" }}>
+              <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#FF4D00", textTransform: "uppercase" }}>
                 Announcement
               </div>
               {unreadCount > 0 && (
@@ -202,9 +341,9 @@ export default function Home({
                 </div>
               )}
             </div>
-            <div style={{ fontSize: "14px", fontWeight: 600, color: "#1A3080", marginBottom: 3 }}>{latestAnn.title}</div>
+            <div style={{ fontSize: "14px", fontWeight: 700, color: "#1B2A4A", marginBottom: 3 }}>{latestAnn.title}</div>
             <div style={{
-              fontSize: "13px", color: "#1A3080", lineHeight: 1.5, opacity: 0.8,
+              fontSize: "13px", color: "#666", lineHeight: 1.5,
               display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
             }}>
               {latestAnn.body}
@@ -214,10 +353,10 @@ export default function Home({
             onClick={() => dismissAnnouncement(latestAnn.id)}
             style={{
               position: "absolute", top: 10, right: 10,
-              background: "rgba(26,79,191,0.12)", border: "none", borderRadius: "50%",
+              background: "rgba(0,0,0,0.07)", border: "none", borderRadius: "50%",
               width: 24, height: 24, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#1A4FBF", fontSize: "16px", lineHeight: 1,
+              color: "#999", fontSize: "16px", lineHeight: 1,
             }}
           >
             ×
@@ -225,338 +364,127 @@ export default function Home({
         </div>
       )}
 
-      {/* ── Bible verse ─────────────────────────────────────────────── */}
+      {/* ── Daily verse ─────────────────────────────────────────────── */}
       <DailyVerse />
 
-      {/* ── Onboarding invitation (all leaders) ────────────────────── */}
-      {eventMember && (
-        <div style={{
-          background: "#FFF5F0", border: "1px solid #FFD5C0", borderRadius: 16, padding: "1.25rem 1.5rem",
-          marginBottom: "1rem",
-        }}>
-          <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-            Onboarding Invitation
-          </div>
-          <div style={{ fontFamily: SANS, fontSize: "14px", color: "#666666", lineHeight: 1.5, marginBottom: 12 }}>
-            Walk through your orientation steps and complete your pre-conference checklist before {activeEvent?.name || "the conference"}.
-          </div>
+      {/* ── Your Events ─────────────────────────────────────────────── */}
+      {myEvents.length > 0 && (
+        <div style={{ marginBottom: "0.25rem" }}>
+          <SectionLabel>Your Events</SectionLabel>
+          <HScroll>
+            {myEvents.map((ev) => (
+              <EventCard
+                key={ev.id}
+                ev={ev}
+                isEnrolled
+                onClick={() => ev.id === activeEvent?.id ? onNavigate("event") : onNavigate("events")}
+              />
+            ))}
+          </HScroll>
+        </div>
+      )}
 
-          {/* Onboarding step progress */}
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS }}>
-                Onboarding
-              </span>
-              <span style={{ fontSize: "11px", color: "#6B7280", fontFamily: SANS }}>
-                {onboardingComplete ? "Complete ✓" : `Step ${Math.min(onboardingStep + 1, TOTAL_STEPS)} of ${TOTAL_STEPS}`}
-              </span>
+      {/* ── Onboarding progress (compact) ───────────────────────────── */}
+      {eventMember && !onboardingComplete && (
+        <div style={{ background: "#fff", border: "1px solid #E5E5E5", borderRadius: 14, padding: "0.875rem 1rem", marginBottom: "1rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ fontSize: "12px", fontWeight: 800, color: "#1B2A4A", fontFamily: SANS }}>
+              Onboarding — Step {Math.min(onboardingStep + 1, TOTAL_STEPS)} of {TOTAL_STEPS}
             </div>
-            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,77,0,0.12)", overflow: "hidden" }}>
-              <div style={{
-                height: "100%", borderRadius: 3,
-                background: "#FF4D00",
-                width: onboardingComplete ? "100%" : `${Math.round((onboardingStep / TOTAL_STEPS) * 100)}%`,
-                transition: "width 0.4s ease",
-              }} />
+            <div style={{ fontSize: "11px", color: "#FF4D00", fontFamily: SANS, fontWeight: 700 }}>
+              {checklistDone}/{CHECKLIST_ITEMS.length} checklist
             </div>
           </div>
-
-          {/* Checklist progress */}
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS }}>
-                Pre-Conference Checklist
-              </span>
-              <span style={{ fontSize: "11px", color: "#6B7280", fontFamily: SANS }}>
-                {checklistDone} / {CHECKLIST_ITEMS.length}
-              </span>
-            </div>
-            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,77,0,0.12)", overflow: "hidden" }}>
-              <div style={{
-                height: "100%", borderRadius: 3,
-                background: "#FF4D00",
-                width: `${Math.round((checklistDone / CHECKLIST_ITEMS.length) * 100)}%`,
-                transition: "width 0.4s ease",
-              }} />
-            </div>
+          <div style={{ height: 4, borderRadius: 3, background: "#F0F0F0", overflow: "hidden", marginBottom: 10 }}>
+            <div style={{
+              height: "100%", borderRadius: 3, background: "#FF4D00",
+              width: `${Math.round((onboardingStep / TOTAL_STEPS) * 100)}%`,
+              transition: "width 0.4s ease",
+            }} />
           </div>
-
-          {/* Action buttons */}
           <div style={{ display: "flex", gap: 8 }}>
             <button
               onClick={onOpenMyTeam}
-              style={{
-                flex: 1, background: "rgba(255,77,0,0.1)", color: "#FF4D00", border: "none",
-                borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 600,
-                fontFamily: SANS, cursor: "pointer",
-              }}
+              style={{ flex: 1, background: "#F5F5F5", color: "#FF4D00", border: "none", borderRadius: 10, padding: "9px", fontSize: "12px", fontWeight: 700, fontFamily: SANS, cursor: "pointer" }}
             >
-              View Checklist
+              Checklist
             </button>
             <button
               onClick={onOpenOnboarding}
-              style={{
-                flex: 1, background: "#FF4D00", color: "#fff", border: "none",
-                borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 700,
-                fontFamily: SANS, cursor: "pointer",
-              }}
+              style={{ flex: 1, background: "#FF4D00", color: "#fff", border: "none", borderRadius: 10, padding: "9px", fontSize: "12px", fontWeight: 700, fontFamily: SANS, cursor: "pointer" }}
             >
-              {onboardingStep > 0 && !onboardingComplete ? "Continue →" : "Start →"}
+              {onboardingStep > 0 ? "Continue →" : "Start →"}
             </button>
           </div>
         </div>
       )}
 
-      {/* ── Active event card (same style as Event tab) ─────────────── */}
-      {activeEvent && (
-        <div style={{ background: "#1B2A4A", borderRadius: 18, padding: "1.25rem 1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
-          <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.5rem" }}>
-            Your Event · Active
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.03em", marginBottom: "0.25rem" }}>
-                {activeEvent.name}
-              </div>
-              {activeEvent.dates && <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)" }}>{activeEvent.dates}</div>}
-              {activeEvent.location && <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)" }}>{activeEvent.location}</div>}
-            </div>
-            {(() => {
-              const d = daysUntilEvent(activeEvent.dates);
-              return d !== null && d >= 0 ? (
-                <div style={{ textAlign: "center", flexShrink: 0, marginLeft: 16 }}>
-                  {d === 0 ? (
-                    <div style={{ fontSize: "18px", fontWeight: 900, color: "#FF4D00" }}>It's here!</div>
-                  ) : (
-                    <>
-                      <div style={{ fontSize: "42px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>{d}</div>
-                      <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.55)", fontWeight: 700, letterSpacing: "0.06em" }}>{d === 1 ? "DAY" : "DAYS"}</div>
-                    </>
-                  )}
-                </div>
-              ) : null;
-            })()}
-          </div>
-          {/* Pills row */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10, marginBottom: activeEvent.verse_text ? 10 : 0 }}>
-            {activeEvent.fee && (
-              <span style={{ background: "#FF4D00", color: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: "10px", fontWeight: 800 }}>
-                Fee: {activeEvent.fee}
-              </span>
-            )}
-            {activeEvent.registration_url && (
-              <a
-                href={activeEvent.registration_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ background: "#2A3D63", color: "#FF4D00", borderRadius: 8, padding: "4px 10px", fontSize: "10px", fontWeight: 800, textDecoration: "none" }}
-              >
-                Register →
-              </a>
-            )}
-          </div>
-          {activeEvent.verse_text && (
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "0.75rem" }}>
-              <div style={{ fontSize: "13px", color: "#FFF5F0", lineHeight: 1.65, fontStyle: "italic", marginBottom: "0.25rem" }}>
-                "{activeEvent.verse_text}"
-              </div>
-              <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em", color: "#FF4D00", textTransform: "uppercase" }}>
-                {activeEvent.verse}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Upcoming ───────────────────────────────────────────────── */}
-      {(nextPrayer || activeEvent?.zoom_training_dates || nextMeeting) && (
-        <div style={{ marginBottom: "1rem" }}>
+      {/* ── Upcoming ────────────────────────────────────────────────── */}
+      {hasUpcoming && (
+        <div style={{ marginBottom: "0.25rem" }}>
           <SectionLabel>Upcoming</SectionLabel>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-
-            {/* Prayer countdown */}
+          <HScroll>
             {nextPrayer && (() => {
-              const days = daysUntil(nextPrayer);
-              const isToday = days === 0;
+              const days = daysUntilMs(nextPrayer);
               return (
-                <button
+                <UpcomingCard
+                  label="Prayer Day"
+                  title={days === 0 ? "Today!" : fmtShort(nextPrayer)}
+                  sub={days === 0 ? "Pray for your assigned team" : `In ${days} day${days === 1 ? "" : "s"} · Team ${eventMember?.team_number}`}
+                  tag={activeEvent?.name}
                   onClick={() => onOpenEventPage?.("prayer_chain")}
-                  style={{
-                    width: "100%", textAlign: "left", cursor: "pointer", fontFamily: SANS,
-                    background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
-                    padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between",
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: "#6B7280", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-                      Your Team Prayer Day
-                    </div>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
-                      {fmtDate(nextPrayer)}
-                    </div>
-                    <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
-                      Team {eventMember?.team_number}
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", flexShrink: 0, marginLeft: 16 }}>
-                    <div style={{ textAlign: "right" }}>
-                      {isToday ? (
-                        <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 900, color: "#FF4D00" }}>Today!</div>
-                      ) : (
-                        <>
-                          <div style={{ fontFamily: SANS, fontSize: "32px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1 }}>{days}</div>
-                          <div style={{ fontSize: "10px", color: TSEC, fontWeight: 600, letterSpacing: "0.08em", fontFamily: SANS }}>{days === 1 ? "DAY" : "DAYS"}</div>
-                        </>
-                      )}
-                    </div>
-                    <TileChevron />
-                  </div>
-                </button>
+                />
               );
             })()}
 
-            {/* Zoom training */}
             {activeEvent?.zoom_training_dates && (() => {
               const { main, sub } = splitZoomDisplay(activeEvent.zoom_training_dates);
               return (
-                <button
+                <UpcomingCard
+                  label="Zoom Training"
+                  title={main}
+                  sub={sub || "Mandatory for team leaders"}
+                  tag={activeEvent?.name}
                   onClick={() => onOpenEventPage?.("zoom_training")}
-                  style={{
-                    width: "100%", textAlign: "left", cursor: "pointer", fontFamily: SANS,
-                    background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
-                    padding: "1rem 1.25rem", display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-                  }}
-                >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-                      Leader Zoom Training
-                    </div>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS, marginBottom: 2 }}>
-                      {main}
-                    </div>
-                    {sub && <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 2 }}>{sub}</div>}
-                    <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
-                      Mandatory for all team leaders
-                    </div>
-                  </div>
-                  <TileChevron />
-                </button>
+                />
               );
             })()}
 
-            {/* Standalone meeting */}
-            {nextMeeting && (() => {
-              const Tag = nextMeeting.zoom_url ? "a" : "button";
-              const tagProps = nextMeeting.zoom_url
-                ? { href: nextMeeting.zoom_url, target: "_blank", rel: "noopener noreferrer" }
-                : { onClick: () => onNavigate?.("event") };
-              return (
-                <Tag
-                  {...tagProps}
-                  style={{
-                    width: "100%", textAlign: "left", cursor: "pointer", fontFamily: SANS, textDecoration: "none",
-                    background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
-                    padding: "1rem 1.25rem", display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-                      {nextMeeting.type === "zoom_meeting" ? "Zoom Meeting" : "Meeting"}
-                    </div>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS, marginBottom: 2 }}>
-                      {nextMeeting.name}
-                    </div>
-                    {(nextMeeting.dates || nextMeeting.location) && (
-                      <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
-                        {[nextMeeting.dates, nextMeeting.location].filter(Boolean).join(" · ")}
-                      </div>
-                    )}
-                    {nextMeeting.zoom_url && (
-                      <div style={{ fontSize: "12px", color: "#FF4D00", fontFamily: SANS, fontWeight: 600, marginTop: 4 }}>
-                        Join Zoom →
-                      </div>
-                    )}
-                  </div>
-                  <TileChevron />
-                </Tag>
-              );
-            })()}
-          </div>
+            {nextMeeting && (
+              <UpcomingCard
+                label={nextMeeting.type === "zoom_meeting" ? "Zoom Meeting" : "Meeting"}
+                title={nextMeeting.name}
+                sub={nextMeeting.dates || nextMeeting.location || undefined}
+                tag={nextMeeting.zoom_url ? "Zoom" : undefined}
+                onClick={nextMeeting.zoom_url
+                  ? () => window.open(nextMeeting.zoom_url, "_blank")
+                  : () => onNavigate("events")
+                }
+              />
+            )}
+          </HScroll>
         </div>
       )}
 
       {/* ── Coordinator Dashboard ───────────────────────────────────── */}
       {isCoordinator && teamProgress.length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
-          <SectionLabel>Coordinator Dashboard</SectionLabel>
-          <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden" }}>
-            {teamProgress.map((m, i) => {
-              const opened = m.onboarding_visited === true || m.onboarding_completed === true;
-              const clItems = m.event_checklist?.[0]?.items || {};
-              const checkedCount = CHECKLIST_ITEMS.filter((item) => !!clItems[item.id]).length;
-              return (
-                <div
-                  key={m.id}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 12,
-                    padding: "0.875rem 1.25rem",
-                    borderBottom: i < teamProgress.length - 1 ? `1px solid ${BORDER}` : "none",
-                  }}
-                >
-                  {/* Avatar */}
-                  <div style={{
-                    width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-                    background: "#FAFAFA", overflow: "hidden",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    border: `1px solid ${BORDER}`,
-                  }}>
-                    {m.profiles?.photo_url
-                      ? <img src={m.profiles.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : <span style={{ fontFamily: SANS, fontSize: 14, color: "#6B7280" }}>{m.profiles?.full_name?.charAt(0)}</span>}
-                  </div>
-
-                  {/* Name + team number */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "13px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
-                      {m.profiles?.full_name}
-                    </div>
-                    <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>
-                      Team {m.team_number}
-                    </div>
-                  </div>
-
-                  {/* Progress dots + status label on the right */}
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
-                    {!opened ? (
-                      <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>Not started</div>
-                    ) : (
-                      <>
-                        <div style={{ fontSize: "11px", color: checkedCount === CHECKLIST_ITEMS.length ? "#FF4D00" : "#6B7280", fontFamily: SANS, fontWeight: checkedCount === CHECKLIST_ITEMS.length ? 600 : 400 }}>
-                          {checkedCount === CHECKLIST_ITEMS.length ? "Complete ✓" : `${checkedCount} / ${CHECKLIST_ITEMS.length} done`}
-                        </div>
-                        <div style={{ display: "flex", gap: 5 }}>
-                          {CHECKLIST_ITEMS.map((item) => {
-                            const checked = !!clItems[item.id];
-                            return (
-                              <div key={item.id} style={{
-                                width: 10, height: 10, borderRadius: "50%",
-                                background: checked ? "#FF4D00" : "#E5E5E5", flexShrink: 0,
-                              }} />
-                            );
-                          })}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+            <SectionLabel style={{ marginBottom: 0 }}>My Team</SectionLabel>
+            <button
+              onClick={() => onNavigate("event")}
+              style={{ fontSize: "11px", color: "#FF4D00", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: SANS, padding: 0 }}
+            >
+              Full view →
+            </button>
           </div>
+          <HScroll>
+            {teamProgress.map((m) => <MemberCard key={m.id} m={m} />)}
+          </HScroll>
         </div>
       )}
 
-      {/* ── Training Materials ─────────────────────────────────────── */}
+      {/* ── Training Materials ──────────────────────────────────────── */}
       {(trainingMaterials || []).length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
           <SectionLabel>Training Materials</SectionLabel>
@@ -574,21 +502,14 @@ export default function Home({
                   borderBottom: i < trainingMaterials.length - 1 ? `1px solid ${BORDER}` : "none",
                 }}
               >
-                <div style={{
-                  width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-                  background: "#FAFAFA", display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <div style={{ width: 36, height: 36, borderRadius: 9, flexShrink: 0, background: "#F5F5F5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
                   </svg>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{mat.title}</div>
-                  {mat.body && (
-                    <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                      {mat.body}
-                    </div>
-                  )}
+                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS }}>{mat.title}</div>
+                  {mat.body && <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{mat.body}</div>}
                 </div>
                 {mat.external_url && (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -601,7 +522,7 @@ export default function Home({
         </div>
       )}
 
-      {/* ── Contact ─────────────────────────────────────────────────── */}
+      {/* ── Contact ──────────────────────────────────────────────────── */}
       <button
         onClick={() => setShowContact(true)}
         style={{
@@ -626,7 +547,7 @@ export default function Home({
       </button>
 
       {showContact && <ContactForm profile={profile} onClose={() => setShowContact(false)} />}
+      <div style={{ height: "1rem" }} />
     </Shell>
   );
 }
-

@@ -148,12 +148,14 @@ export default function App() {
         .select("*")
         .order("name");
 
-      // Load active event
-      const { data: activeEvent } = await supabase
+      // Load active event — prefer conference type if multiple are active
+      const { data: activeEventsArr } = await supabase
         .from("events")
         .select("*")
         .eq("status", "active")
-        .single();
+        .order("created_at", { ascending: false });
+      const CONF_TYPES = ["youth_conference", "annual_conference", "conference"];
+      const activeEvent = (activeEventsArr || []).find((e) => CONF_TYPES.includes(e.type)) || (activeEventsArr || [])[0] || null;
 
       // Load event membership
       let eventMember = null;

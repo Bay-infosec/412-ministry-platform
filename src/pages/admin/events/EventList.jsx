@@ -34,9 +34,8 @@ export default function EventList({ data, onSelect, onToast, onRefresh }) {
     const ev = confirm.event;
 
     if (confirm.action === "activate") {
-      await supabase.from("events").update({ status: "archived" }).eq("status", "active");
       await supabase.from("events").update({ status: "active" }).eq("id", ev.id);
-      onToast?.(`"${ev.name}" is now the active event.`);
+      onToast?.(`"${ev.name}" is now active.`);
     } else if (confirm.action === "delete") {
       const { data: mRows } = await supabase.from("event_members").select("id").eq("event_id", ev.id);
       if (mRows?.length) {
@@ -89,7 +88,7 @@ export default function EventList({ data, onSelect, onToast, onRefresh }) {
           title={confirm.action === "activate" ? "Activate Event" : "Delete Event"}
           message={
             confirm.action === "activate"
-              ? `Make "${confirm.event.name}" the active event? Any currently active event will be archived.`
+              ? `Make "${confirm.event.name}" active? Other active events will not be affected.`
               : `Permanently delete "${confirm.event.name}"? All member data for this event will be removed.`
           }
           confirmLabel={confirm.action === "activate" ? "Activate" : "Delete"}

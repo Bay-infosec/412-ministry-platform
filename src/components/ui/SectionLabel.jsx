@@ -1,6 +1,6 @@
 import { SANS } from "../../lib/constants.js";
 
-export default function SectionLabel({ children, color }) {
+export default function SectionLabel({ children, color, style }) {
   return (
     <div
       style={{
@@ -11,6 +11,7 @@ export default function SectionLabel({ children, color }) {
         textTransform: "uppercase",
         marginBottom: "0.5rem",
         fontFamily: SANS,
+        ...style,
       }}
     >
       {children}

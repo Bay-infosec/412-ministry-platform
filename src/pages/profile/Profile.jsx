@@ -178,16 +178,16 @@ function DeleteAccountModal({ onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-          <div style={{ fontSize: "18px", fontWeight: 800, color: "#1B2A4A", fontFamily: SANS, letterSpacing: "-0.02em" }}>Delete Account</div>
+          <div style={{ fontSize: "18px", fontWeight: 800, color: "#1B2A4A", fontFamily: SANS, letterSpacing: "-0.02em" }}>Request Account Removal</div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: TSEC, fontSize: 22, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
         </div>
         <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, lineHeight: 1.65, marginBottom: "1.25rem" }}>
-          Account deletion is handled by an admin to preserve your event history and team records. Contact your admin to request deletion.
+          To remove your account, contact the admin. Your event history and team records will be reviewed before deletion.
         </div>
-        <div style={{ background: "#FFF5F0", border: "1px solid #FFD5C0", borderRadius: 12, padding: "0.875rem 1rem", fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
+        <div style={{ background: "#F5F5F5", borderRadius: 12, padding: "0.875rem 1rem", fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
           tsekvv.tb@gmail.com
         </div>
-        <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 6 }}>Send an email to the admin above and they'll take care of it.</div>
+        <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 6 }}>Email the admin above and they'll handle your request.</div>
       </div>
     </div>
   );
@@ -236,7 +236,8 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
 
-  // Settings modals
+  // Settings page + modals
+  const [settingsPage, setSettingsPage] = useState(false);
   const [showInstall, setShowInstall] = useState(false);
   const [showChangePw, setShowChangePw] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
@@ -295,6 +296,64 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
   const churchName = profile.church_id
     ? (churches || []).find((c) => c.id === profile.church_id)?.name
     : profile.church_name_custom ? `${profile.church_name_custom} (pending)` : null;
+
+  // ── Settings page ──────────────────────────────────────────────────────────
+  if (!editing && settingsPage) {
+    return (
+      <Shell withNav>
+        {showInstall && <InstallAppModal onClose={() => setShowInstall(false)} />}
+        {showChangePw && (
+          <ChangePasswordModal
+            onClose={() => setShowChangePw(false)}
+            onSuccess={() => { setShowChangePw(false); }}
+          />
+        )}
+        {showDeleteAccount && <DeleteAccountModal onClose={() => setShowDeleteAccount(false)} />}
+
+        <button onClick={() => setSettingsPage(false)} style={{ background: "none", border: "none", color: TSEC, fontSize: "14px", cursor: "pointer", padding: "0 0 1rem 0", fontFamily: SANS, display: "block" }}>
+          ‹ Profile
+        </button>
+        <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.02em", marginBottom: "1.5rem" }}>Settings</div>
+
+        <Card style={{ padding: "0 1rem" }}>
+          {pushSupported() ? (
+            <SettingsRow
+              icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={notifPerm === "granted" ? "#FF4D00" : "#6B7280"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" /></svg>}
+              label="Notifications"
+              sub={notifPerm === "denied" ? "Blocked in browser settings" : notifPerm === "granted" ? "Enabled" : "Get notified about announcements"}
+              onClick={notifPerm !== "denied" ? toggleNotifications : undefined}
+              right={
+                notifPerm !== "denied" ? (
+                  <div style={{ width: 44, height: 26, borderRadius: 13, background: notifPerm === "granted" ? "#FF4D00" : "#E5E5E5", position: "relative", transition: "background 0.2s", flexShrink: 0, opacity: notifBusy ? 0.5 : 1 }}>
+                    <div style={{ position: "absolute", top: 3, left: notifPerm === "granted" ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
+                  </div>
+                ) : null
+              }
+            />
+          ) : null}
+          <SettingsRow
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>}
+            label="Change Password"
+            sub="Update your login password"
+            onClick={() => setShowChangePw(true)}
+          />
+          <SettingsRow
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="12" y1="18" x2="12" y2="18" strokeWidth="3" /></svg>}
+            label="Install App"
+            sub="Add to your home screen"
+            onClick={() => setShowInstall(true)}
+          />
+          <SettingsRow
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" /></svg>}
+            label="Request Account Removal"
+            sub="Contact admin to remove your account"
+            onClick={() => setShowDeleteAccount(true)}
+            danger
+          />
+        </Card>
+      </Shell>
+    );
+  }
 
   // ── View mode ──────────────────────────────────────────────────────────────
   if (!editing) {
@@ -368,66 +427,26 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
         )}
 
         {/* Settings */}
-        <SectionLabel style={{ marginBottom: "0.5rem" }}>Settings</SectionLabel>
-        <Card style={{ marginBottom: "1.5rem", padding: "0 1rem" }}>
-          {/* Notifications */}
-          {pushSupported() ? (
-            <SettingsRow
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={notifPerm === "granted" ? "#FF4D00" : "#6B7280"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
-                </svg>
-              }
-              label="Notifications"
-              sub={notifPerm === "denied" ? "Blocked in browser settings" : notifPerm === "granted" ? "Enabled" : "Get notified about announcements"}
-              onClick={notifPerm !== "denied" ? toggleNotifications : undefined}
-              right={
-                pushSupported() && notifPerm !== "denied" ? (
-                  <div style={{ width: 44, height: 26, borderRadius: 13, background: notifPerm === "granted" ? "#FF4D00" : "#E5E5E5", position: "relative", transition: "background 0.2s", flexShrink: 0, opacity: notifBusy ? 0.5 : 1 }}>
-                    <div style={{ position: "absolute", top: 3, left: notifPerm === "granted" ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
-                  </div>
-                ) : null
-              }
-            />
-          ) : null}
-
-          {/* Change password */}
-          <SettingsRow
-            icon={
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
+        {/* Settings nav button */}
+        <button
+          onClick={() => setSettingsPage(true)}
+          style={{ width: "100%", background: "#fff", border: "1px solid #E5E5E5", borderRadius: 10, padding: "13px 16px", cursor: "pointer", fontFamily: SANS, display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: "#F5F5F5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
               </svg>
-            }
-            label="Change Password"
-            sub="Update your login password"
-            onClick={() => setShowChangePw(true)}
-          />
-
-          {/* Install app */}
-          <SettingsRow
-            icon={
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="5" y="2" width="14" height="20" rx="2" /><line x1="12" y1="18" x2="12" y2="18" strokeWidth="3" />
-              </svg>
-            }
-            label="Install App"
-            sub="Add to your home screen"
-            onClick={() => setShowInstall(true)}
-          />
-
-          {/* Delete account */}
-          <SettingsRow
-            icon={
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
-              </svg>
-            }
-            label="Delete Account"
-            sub="Contact admin to remove your account"
-            onClick={() => setShowDeleteAccount(true)}
-            danger
-          />
-        </Card>
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: "15px", fontWeight: 600, color: "#1B2A4A" }}>Settings</div>
+              <div style={{ fontSize: "12px", color: TSEC, marginTop: 1 }}>Notifications, password, app install</div>
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
 
         {/* History */}
         <SectionLabel>My History</SectionLabel>
