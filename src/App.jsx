@@ -566,6 +566,7 @@ export default function App() {
             onlineUsers={onlineUsers}
             readIds={readIds}
             onMarkRead={markRead}
+            onViewProfile={setViewingProfileId}
           />
         )}
         {tab === "event" && !page && (

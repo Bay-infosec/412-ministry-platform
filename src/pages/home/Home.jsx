@@ -87,42 +87,36 @@ function HScroll({ children }) {
   );
 }
 
-function EventCard({ ev, isEnrolled, onClick }) {
+function EventCard({ ev, onClick }) {
   const days = ev.start_date ? daysUntilDate(ev.start_date) : daysUntilEvent(ev.dates);
-  const isDark = isEnrolled;
   return (
     <button
       onClick={onClick}
       style={{
         minWidth: 185, maxWidth: 185,
-        background: isDark ? "#1B2A4A" : "#fff",
-        border: `1px solid ${isDark ? "transparent" : "#E5E5E5"}`,
+        background: "#1B2A4A",
+        border: "none",
         borderRadius: 16, padding: "13px 14px",
         display: "flex", flexDirection: "column", gap: 6,
         cursor: "pointer", textAlign: "left", flexShrink: 0,
-        boxShadow: isDark ? "0 2px 10px rgba(27,42,74,0.2)" : "none",
+        boxShadow: "0 2px 10px rgba(27,42,74,0.2)",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div>
         <span style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "#FF4D00" }}>
           {TYPE_LABELS[ev.type] || "Event"}
         </span>
-        {isEnrolled && (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#27AE60" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        )}
       </div>
-      <div style={{ fontSize: "15px", fontWeight: 900, color: isDark ? "#fff" : "#1B2A4A", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
+      <div style={{ fontSize: "15px", fontWeight: 900, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
         {ev.name}
       </div>
       {ev.dates && (
-        <div style={{ fontSize: "11px", color: isDark ? "rgba(255,255,255,0.5)" : "#999", lineHeight: 1.4 }}>
+        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4 }}>
           {ev.dates}
         </div>
       )}
       {ev.location && (
-        <div style={{ fontSize: "11px", color: isDark ? "rgba(255,255,255,0.35)" : "#bbb" }}>
+        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)" }}>
           {ev.location}
         </div>
       )}
@@ -167,7 +161,7 @@ function UpcomingCard({ label, title, sub, onClick, tag }) {
   );
 }
 
-function MemberCard({ m }) {
+function MemberCard({ m, onPress }) {
   const opened = m.onboarding_visited || m.onboarding_completed;
   const clItems = m.event_checklist?.[0]?.items || {};
   const fullName = m.profiles?.full_name || "";
@@ -185,7 +179,7 @@ function MemberCard({ m }) {
   ];
 
   return (
-    <div style={{ minWidth: 78, maxWidth: 78, display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flexShrink: 0 }}>
+    <button onClick={onPress} style={{ minWidth: 78, maxWidth: 78, display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flexShrink: 0, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
       <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#FF4D00", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         {m.profiles?.photo_url
           ? <img src={m.profiles.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -213,14 +207,14 @@ function MemberCard({ m }) {
           ))}
         </div>
       )}
-    </div>
+    </button>
   );
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function Home({
-  data, onNavigate, onOpenChat, onOpenOnboarding, onOpenMyTeam, onOpenUpdates, onOpenEventPage, chatUnread, readIds, onMarkRead,
+  data, onNavigate, onOpenChat, onOpenOnboarding, onOpenMyTeam, onOpenUpdates, onOpenEventPage, chatUnread, readIds, onMarkRead, onViewProfile,
 }) {
   const {
     profile, eventMember, eventChecklist, announcements, unreadCount,
@@ -237,18 +231,6 @@ export default function Home({
     onMarkRead?.(annId);
   }
 
-  // Standalone zoom/board meetings
-  const [meetings, setMeetings] = useState([]);
-  useEffect(() => {
-    supabase
-      .from("events")
-      .select("id, name, type, dates, start_date, start_time, location, zoom_url")
-      .in("type", ["zoom_meeting", "board_meeting"])
-      .neq("status", "archived")
-      .order("start_date", { ascending: true, nullsFirst: false })
-      .then(({ data: rows }) => setMeetings(rows || []));
-  }, []);
-
   // Coordinator team progress
   const isCoordinator = eventMember?.event_role === "coordinator";
   const [teamProgress, setTeamProgress] = useState([]);
@@ -256,7 +238,7 @@ export default function Home({
     if (!isCoordinator || !activeEvent || !profile?.id) return;
     supabase
       .from("event_members")
-      .select("id, team_number, onboarding_completed, onboarding_visited, onboarding_step, profiles!event_members_profile_id_fkey(full_name, photo_url), event_checklist(items)")
+      .select("id, profile_id, team_number, onboarding_completed, onboarding_visited, onboarding_step, profiles!event_members_profile_id_fkey(full_name, photo_url), event_checklist(items)")
       .eq("event_id", activeEvent.id)
       .eq("coordinator_id", profile.id)
       .neq("event_role", "coordinator")
@@ -280,8 +262,7 @@ export default function Home({
 
   const latestAnn = (announcements || []).find(() => true);
   const nextPrayer = getNextPrayerDate(eventMember?.team_number);
-  const nextMeeting = meetings[0] || null;
-  const hasUpcoming = nextPrayer || activeEvent?.zoom_training_dates || nextMeeting;
+  const hasUpcomingTasks = nextPrayer || activeEvent?.zoom_training_dates;
 
   return (
     <Shell withNav>
@@ -376,7 +357,6 @@ export default function Home({
               <EventCard
                 key={ev.id}
                 ev={ev}
-                isEnrolled
                 onClick={() => ev.id === activeEvent?.id ? onNavigate("event") : onNavigate("events")}
               />
             ))}
@@ -419,10 +399,10 @@ export default function Home({
         </div>
       )}
 
-      {/* ── Upcoming ────────────────────────────────────────────────── */}
-      {hasUpcoming && (
+      {/* ── Upcoming Tasks ──────────────────────────────────────────── */}
+      {hasUpcomingTasks && (
         <div style={{ marginBottom: "0.25rem" }}>
-          <SectionLabel>Upcoming</SectionLabel>
+          <SectionLabel>Upcoming Tasks</SectionLabel>
           <HScroll>
             {nextPrayer && (() => {
               const days = daysUntilMs(nextPrayer);
@@ -450,18 +430,6 @@ export default function Home({
               );
             })()}
 
-            {nextMeeting && (
-              <UpcomingCard
-                label={nextMeeting.type === "zoom_meeting" ? "Zoom Meeting" : "Meeting"}
-                title={nextMeeting.name}
-                sub={nextMeeting.dates || nextMeeting.location || undefined}
-                tag={nextMeeting.zoom_url ? "Zoom" : undefined}
-                onClick={nextMeeting.zoom_url
-                  ? () => window.open(nextMeeting.zoom_url, "_blank")
-                  : () => onNavigate("events")
-                }
-              />
-            )}
           </HScroll>
         </div>
       )}
@@ -470,7 +438,7 @@ export default function Home({
       {isCoordinator && teamProgress.length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-            <SectionLabel style={{ marginBottom: 0 }}>My Team</SectionLabel>
+            <SectionLabel style={{ marginBottom: 0 }}>Coordinator Dashboard</SectionLabel>
             <button
               onClick={() => onNavigate("event")}
               style={{ fontSize: "11px", color: "#FF4D00", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: SANS, padding: 0 }}
@@ -479,7 +447,9 @@ export default function Home({
             </button>
           </div>
           <HScroll>
-            {teamProgress.map((m) => <MemberCard key={m.id} m={m} />)}
+            {teamProgress.map((m) => (
+              <MemberCard key={m.id} m={m} onPress={() => onViewProfile?.(m.profile_id)} />
+            ))}
           </HScroll>
         </div>
       )}

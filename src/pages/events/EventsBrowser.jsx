@@ -22,8 +22,9 @@ const STATUS_STYLE = {
 };
 
 export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
-  const { publicEvents = [], profile, eventMember, activeEvent, history = [] } = data;
+  const { publicEvents = [], profile, eventMember, activeEvent, history = [], allEvents = [], isAdmin } = data;
   const myId = profile.id;
+  const pendingCount = isAdmin ? (allEvents || []).filter((e) => e.status === "inactive").length : 0;
 
   const [requesting, setRequesting] = useState(null);
   const [requestedIds, setRequestedIds] = useState(new Set());
@@ -87,6 +88,17 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
         </div>
       </div>
 
+      {pendingCount > 0 && (
+        <div style={{ background: "#1B2A4A", borderRadius: 12, padding: "0.75rem 1rem", marginBottom: "1rem", display: "flex", alignItems: "center", gap: 10 }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontFamily: SANS }}>
+            <span style={{ fontWeight: 700, color: "#FF4D00" }}>{pendingCount} event{pendingCount !== 1 ? "s" : ""} pending</span> — visible only in admin panel
+          </div>
+        </div>
+      )}
+
       {publicEvents.length === 0 ? (
         <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
           <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#1B2A4A", marginBottom: 8, letterSpacing: "-0.02em" }}>Nothing upcoming yet</div>
@@ -98,7 +110,6 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
             const isMember = myEventIds.has(ev.id);
             const hasRequested = requestedIds.has(ev.id);
             const isExpanded = expandedId === ev.id;
-            const statusStyle = STATUS_STYLE[ev.status] || STATUS_STYLE.upcoming;
             const typeLabel = TYPE_LABELS[ev.type] || "Event";
 
             return (
@@ -117,14 +128,8 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
                       <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.12em", color: "#FF4D00", textTransform: "uppercase" }}>
                         {typeLabel}
                       </span>
-                      <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: statusStyle.bg, color: statusStyle.color }}>
-                        {statusStyle.label}
-                      </span>
                       {isMember && (
-                        <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: "11px", fontWeight: 700, color: "#166534" }}>
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
+                        <span style={{ fontSize: "10px", fontWeight: 700, background: "#1B2A4A", color: "#fff", borderRadius: 6, padding: "2px 8px" }}>
                           Enrolled
                         </span>
                       )}
