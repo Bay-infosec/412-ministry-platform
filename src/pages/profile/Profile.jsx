@@ -8,6 +8,25 @@ import { Card, Field, Button, Avatar, SectionLabel, Badge, ProfileTags } from ".
 
 const CROP_SIZE = 270;
 
+const TYPE_LABELS = {
+  conference: "Conference",
+  youth_conference: "Youth Conference",
+  annual_conference: "Annual Conference",
+  openmic: "Open Mic",
+  open_mic: "Open Mic",
+  mission: "Mission Trip",
+  zoom_meeting: "Zoom Meeting",
+  board_meeting: "Board Meeting",
+  other: "Event",
+};
+
+const ROLE_LABELS = {
+  leader: "Team Leader",
+  coordinator: "Coordinator",
+  participant: "Participant",
+  volunteer: "Volunteer",
+};
+
 // ── Photo crop modal ────────────────────────────────────────────────────────
 
 function PhotoCropModal({ file, onConfirm, onCancel }) {
@@ -62,7 +81,7 @@ function PhotoCropModal({ file, onConfirm, onCancel }) {
         Drag to adjust your photo
       </div>
       <div
-        style={{ width: CROP_SIZE, height: CROP_SIZE, borderRadius: "50%", overflow: "hidden", border: "3px solid #fff", position: "relative", cursor: dragging ? "grabbing" : "grab", flexShrink: 0, background: "#1B2A4A" }}
+        style={{ width: CROP_SIZE, height: CROP_SIZE, borderRadius: "50%", overflow: "hidden", border: "3px solid #fff", position: "relative", cursor: dragging ? "grabbing" : "grab", flexShrink: 0, background: "#111" }}
         onMouseDown={(e) => startDrag(e.clientX, e.clientY)}
         onMouseMove={(e) => moveDrag(e.clientX, e.clientY)}
         onMouseUp={endDrag} onMouseLeave={endDrag}
@@ -91,20 +110,54 @@ function PhotoCropModal({ file, onConfirm, onCancel }) {
 
 // ── Install App modal ────────────────────────────────────────────────────────
 
-function InstallAppModal({ onClose }) {
+function InstallAppModal({ onClose, profileId }) {
+  const [notifPerm, setNotifPerm] = useState(() => pushPermission());
+  const [notifBusy, setNotifBusy] = useState(false);
+
+  async function toggleNotif() {
+    setNotifBusy(true);
+    if (notifPerm === "granted") {
+      await unsubscribeFromPush(profileId, supabase);
+    } else {
+      await subscribeToPush(profileId, supabase);
+    }
+    setNotifPerm(pushPermission());
+    setNotifBusy(false);
+  }
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 998, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
       <div
-        style={{ background: "#1B2A4A", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.5rem 2.5rem", width: "100%", maxWidth: 460, maxHeight: "85vh", overflowY: "auto" }}
+        style={{ background: "#fff", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.5rem 2.5rem", width: "100%", maxWidth: 460, maxHeight: "85vh", overflowY: "auto" }}
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
-          <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS }}>Install the App</div>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 22, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
+          <div style={{ fontSize: "18px", fontWeight: 800, color: "#111", fontFamily: SANS, letterSpacing: "-0.02em" }}>Add to Home Screen</div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: TSEC, fontSize: 22, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
         </div>
-        <div style={{ fontSize: "18px", fontWeight: 800, color: "#fff", fontFamily: SANS, marginBottom: "1.25rem", letterSpacing: "-0.02em" }}>
-          Add to your home screen
-        </div>
+
+        {/* Notifications toggle */}
+        {pushSupported() && (
+          <div style={{ background: "#FAFAFA", border: `1px solid ${BORDER}`, borderRadius: 12, padding: "0.875rem 1rem", marginBottom: "1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div>
+              <div style={{ fontSize: "14px", fontWeight: 700, color: "#111", fontFamily: SANS }}>Push Notifications</div>
+              <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
+                {notifPerm === "denied" ? "Blocked — enable in browser settings" : notifPerm === "granted" ? "Enabled" : "Get notified about announcements"}
+              </div>
+            </div>
+            {notifPerm !== "denied" && (
+              <button
+                onClick={toggleNotif}
+                disabled={notifBusy}
+                style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0, opacity: notifBusy ? 0.5 : 1 }}
+              >
+                <div style={{ width: 44, height: 26, borderRadius: 13, background: notifPerm === "granted" ? "#FF4D00" : "#E5E5E5", position: "relative", transition: "background 0.2s" }}>
+                  <div style={{ position: "absolute", top: 3, left: notifPerm === "granted" ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
+                </div>
+              </button>
+            )}
+          </div>
+        )}
 
         {[
           { platform: "iPhone (Safari)", steps: ["Open this page in Safari", "Tap the Share icon at the bottom", "Scroll down and tap \"Add to Home Screen\"", "Tap Add — done!"] },
@@ -119,7 +172,7 @@ function InstallAppModal({ onClose }) {
                 <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#FF4D00", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "10px", fontWeight: 800, color: "#fff", fontFamily: SANS }}>
                   {i + 1}
                 </div>
-                <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)", fontFamily: SANS, lineHeight: 1.55, paddingTop: 2 }}>{step}</div>
+                <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.55, paddingTop: 2 }}>{step}</div>
               </div>
             ))}
           </div>
@@ -156,7 +209,7 @@ function ChangePasswordModal({ onClose, onSuccess }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
-          <div style={{ fontSize: "18px", fontWeight: 800, color: "#1B2A4A", fontFamily: SANS, letterSpacing: "-0.02em" }}>Change Password</div>
+          <div style={{ fontSize: "18px", fontWeight: 800, color: "#111", fontFamily: SANS, letterSpacing: "-0.02em" }}>Change Password</div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: TSEC, fontSize: 22, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
         </div>
         <Field label="NEW PASSWORD" type="password" value={pw1} onChange={setPw1} placeholder="Min 8 chars, capital, number, symbol" />
@@ -170,7 +223,55 @@ function ChangePasswordModal({ onClose, onSuccess }) {
 
 // ── Delete account modal ─────────────────────────────────────────────────────
 
-function DeleteAccountModal({ onClose }) {
+function DeleteAccountModal({ profile, onClose }) {
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function sendRequest() {
+    setBusy(true);
+    try {
+      // Find any admin
+      const { data: admins } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("platform_role", "admin")
+        .limit(1);
+      const adminId = admins?.[0]?.id;
+      if (!adminId) { onClose(); return; }
+
+      // Find or create DM conversation with admin
+      const myId = profile.id;
+      const { data: existing } = await supabase
+        .from("conversations")
+        .select("id")
+        .or(`and(participant_a.eq.${myId},participant_b.eq.${adminId}),and(participant_a.eq.${adminId},participant_b.eq.${myId})`)
+        .maybeSingle();
+
+      let convId = existing?.id;
+      if (!convId) {
+        const { data: created } = await supabase
+          .from("conversations")
+          .insert({ participant_a: myId, participant_b: adminId, is_group: false })
+          .select("id").single();
+        convId = created?.id;
+      }
+
+      if (convId) {
+        await supabase.from("dm_messages").insert({
+          conversation_id: convId,
+          profile_id: myId,
+          receiver_id: adminId,
+          body: `Hi, I'd like to request account removal for my account (${profile.email || profile.full_name}). Please let me know next steps.`,
+        });
+        await supabase.from("conversations").update({ last_message_at: new Date().toISOString() }).eq("id", convId);
+      }
+      setSent(true);
+    } catch {
+      // silently fail
+    }
+    setBusy(false);
+  }
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 998, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
       <div
@@ -178,16 +279,105 @@ function DeleteAccountModal({ onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-          <div style={{ fontSize: "18px", fontWeight: 800, color: "#1B2A4A", fontFamily: SANS, letterSpacing: "-0.02em" }}>Request Account Removal</div>
+          <div style={{ fontSize: "18px", fontWeight: 800, color: "#111", fontFamily: SANS, letterSpacing: "-0.02em" }}>Request Account Removal</div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: TSEC, fontSize: 22, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
         </div>
-        <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, lineHeight: 1.65, marginBottom: "1.25rem" }}>
-          To remove your account, contact the admin. Your event history and team records will be reviewed before deletion.
+
+        {sent ? (
+          <>
+            <div style={{ textAlign: "center", padding: "1rem 0 1.25rem" }}>
+              <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#FF4D00", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+              </div>
+              <div style={{ fontSize: "16px", fontWeight: 800, color: "#111", fontFamily: SANS, marginBottom: 6 }}>Request sent</div>
+              <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>
+                Your message was sent to the admin. They'll follow up with you in the chat.
+              </div>
+            </div>
+            <button onClick={onClose} style={{ width: "100%", background: "#111", color: "#fff", border: "none", borderRadius: 10, padding: "13px", fontSize: "14px", fontWeight: 700, fontFamily: SANS, cursor: "pointer" }}>
+              Done
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, lineHeight: 1.65, marginBottom: "1.25rem" }}>
+              This will send a message to the admin through the app. Your event history and team records will be reviewed before any account changes are made.
+            </div>
+            <button
+              onClick={sendRequest}
+              disabled={busy}
+              style={{ width: "100%", background: "#111", color: "#fff", border: "none", borderRadius: 10, padding: "13px", fontSize: "14px", fontWeight: 700, fontFamily: SANS, cursor: "pointer", marginBottom: 10, opacity: busy ? 0.6 : 1 }}
+            >
+              {busy ? "Sending…" : "Send removal request"}
+            </button>
+            <button onClick={onClose} style={{ width: "100%", background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "12px", fontSize: "14px", color: TSEC, fontFamily: SANS, cursor: "pointer" }}>
+              Cancel
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Event detail sheet ───────────────────────────────────────────────────────
+
+function EventDetailSheet({ historyEntry, onClose }) {
+  const ev = historyEntry?.events;
+  if (!ev) return null;
+  const typeLabel = TYPE_LABELS[ev.type] || "Event";
+  const roleLabel = ROLE_LABELS[historyEntry.event_role] || historyEntry.event_role || "Participant";
+  const isActive = ev.status === "active";
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 998, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
+      <div
+        style={{ background: "#fff", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.5rem 2.5rem", width: "100%", maxWidth: 460, maxHeight: "80vh", overflowY: "auto" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+          <div>
+            <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.12em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>{typeLabel}</div>
+            <div style={{ fontSize: "20px", fontWeight: 900, color: "#111", fontFamily: SANS, letterSpacing: "-0.02em", lineHeight: 1.2 }}>{ev.name}</div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: TSEC, fontSize: 22, cursor: "pointer", lineHeight: 1, padding: "0 0 0 12px", flexShrink: 0 }}>×</button>
         </div>
-        <div style={{ background: "#F5F5F5", borderRadius: 12, padding: "0.875rem 1rem", fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
-          tsekvv.tb@gmail.com
+
+        {/* Your role badge */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: "1.25rem" }}>
+          <span style={{ fontSize: "11px", fontWeight: 700, background: "#FF4D00", color: "#fff", borderRadius: 99, padding: "4px 10px", fontFamily: SANS }}>
+            {roleLabel}
+          </span>
+          {historyEntry.team_number && (
+            <span style={{ fontSize: "11px", fontWeight: 700, background: "#F0F0F0", color: "#111", borderRadius: 99, padding: "4px 10px", fontFamily: SANS }}>
+              Team {historyEntry.team_number}
+            </span>
+          )}
+          {isActive && (
+            <span style={{ fontSize: "11px", fontWeight: 700, background: "#111", color: "#FF4D00", borderRadius: 99, padding: "4px 10px", fontFamily: SANS }}>
+              Active
+            </span>
+          )}
         </div>
-        <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 6 }}>Email the admin above and they'll handle your request.</div>
+
+        {/* Details */}
+        <div style={{ background: "#FAFAFA", border: `1px solid ${BORDER}`, borderRadius: 12, padding: "0.875rem 1rem", marginBottom: "1rem" }}>
+          {[
+            ev.dates && ["Dates", ev.dates],
+            ev.location && ["Location", ev.location],
+            ev.status && ["Status", ev.status.charAt(0).toUpperCase() + ev.status.slice(1)],
+          ].filter(Boolean).map(([label, val]) => (
+            <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid ${BORDER}` }}>
+              <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{label}</span>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#111", fontFamily: SANS }}>{val}</span>
+            </div>
+          ))}
+        </div>
+
+        {ev.description && (
+          <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, lineHeight: 1.7 }}>
+            {ev.description}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -205,7 +395,7 @@ function SettingsRow({ icon, label, sub, onClick, right, danger }) {
         {icon}
       </div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: "14px", fontWeight: 600, color: danger ? "#DC2626" : "#1B2A4A", fontFamily: SANS }}>{label}</div>
+        <div style={{ fontSize: "14px", fontWeight: 600, color: danger ? "#DC2626" : "#111", fontFamily: SANS }}>{label}</div>
         {sub && <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1 }}>{sub}</div>}
       </div>
       {right || (
@@ -236,13 +426,15 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
 
-  // Settings page + modals
+  // Sub-pages and modals
   const [settingsPage, setSettingsPage] = useState(false);
+  const [historyPage, setHistoryPage] = useState(false);
+  const [historyEventDetail, setHistoryEventDetail] = useState(null);
   const [showInstall, setShowInstall] = useState(false);
   const [showChangePw, setShowChangePw] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
 
-  // Notifications
+  // Notifications (for settings page toggle)
   const [notifPerm, setNotifPerm] = useState(() => pushPermission());
   const [notifBusy, setNotifBusy] = useState(false);
 
@@ -297,23 +489,87 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
     ? (churches || []).find((c) => c.id === profile.church_id)?.name
     : profile.church_name_custom ? `${profile.church_name_custom} (pending)` : null;
 
+  // ── History page ───────────────────────────────────────────────────────────
+  if (historyPage) {
+    return (
+      <Shell withNav>
+        {historyEventDetail && (
+          <EventDetailSheet historyEntry={historyEventDetail} onClose={() => setHistoryEventDetail(null)} />
+        )}
+        <button onClick={() => setHistoryPage(false)} style={{ background: "none", border: "none", color: TSEC, fontSize: "14px", cursor: "pointer", padding: "0 0 1rem 0", fontFamily: SANS, display: "block" }}>
+          ‹ Profile
+        </button>
+        <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#111", letterSpacing: "-0.02em", marginBottom: "1.5rem" }}>My History</div>
+
+        {(!history || history.length === 0) ? (
+          <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, textAlign: "center", marginTop: "3rem" }}>
+            Your event history will appear here.
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            {history.map((h, i) => {
+              const ev = h.events;
+              const isActive = ev?.status === "active";
+              const roleLabel = ROLE_LABELS[h.event_role] || h.event_role || "Participant";
+              return (
+                <button
+                  key={i}
+                  onClick={() => setHistoryEventDetail(h)}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,
+                    padding: "0.875rem 1rem", cursor: "pointer", width: "100%", textAlign: "left", gap: 12,
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: "10px", fontWeight: 800, color: "#FF4D00", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: SANS }}>
+                        {TYPE_LABELS[ev?.type] || "Event"}
+                      </span>
+                      {isActive && (
+                        <span style={{ fontSize: "9px", fontWeight: 800, background: "#FF4D00", color: "#fff", borderRadius: 99, padding: "2px 7px", fontFamily: SANS }}>
+                          ACTIVE
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: "16px", fontWeight: 800, color: "#111", fontFamily: SANS, letterSpacing: "-0.01em", lineHeight: 1.2, marginBottom: 3 }}>
+                      {ev?.name || "Event"}
+                    </div>
+                    <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
+                      {roleLabel}{h.team_number ? ` · Team ${h.team_number}` : ""}
+                      {ev?.dates ? ` · ${ev.dates}` : ""}
+                    </div>
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              );
+            })}
+          </div>
+        )}
+        <div style={{ height: "1rem" }} />
+      </Shell>
+    );
+  }
+
   // ── Settings page ──────────────────────────────────────────────────────────
   if (!editing && settingsPage) {
     return (
       <Shell withNav>
-        {showInstall && <InstallAppModal onClose={() => setShowInstall(false)} />}
+        {showInstall && <InstallAppModal profileId={profile.id} onClose={() => setShowInstall(false)} />}
         {showChangePw && (
           <ChangePasswordModal
             onClose={() => setShowChangePw(false)}
             onSuccess={() => { setShowChangePw(false); }}
           />
         )}
-        {showDeleteAccount && <DeleteAccountModal onClose={() => setShowDeleteAccount(false)} />}
+        {showDeleteAccount && <DeleteAccountModal profile={profile} onClose={() => setShowDeleteAccount(false)} />}
 
         <button onClick={() => setSettingsPage(false)} style={{ background: "none", border: "none", color: TSEC, fontSize: "14px", cursor: "pointer", padding: "0 0 1rem 0", fontFamily: SANS, display: "block" }}>
           ‹ Profile
         </button>
-        <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.02em", marginBottom: "1.5rem" }}>Settings</div>
+        <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#111", letterSpacing: "-0.02em", marginBottom: "1.5rem" }}>Settings</div>
 
         <Card style={{ padding: "0 1rem" }}>
           {pushSupported() ? (
@@ -346,7 +602,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           <SettingsRow
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" /></svg>}
             label="Request Account Removal"
-            sub="Contact admin to remove your account"
+            sub="Message admin to remove your account"
             onClick={() => setShowDeleteAccount(true)}
             danger
           />
@@ -359,15 +615,14 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
   if (!editing) {
     return (
       <Shell withNav>
-        {/* Modals */}
-        {showInstall && <InstallAppModal onClose={() => setShowInstall(false)} />}
+        {showInstall && <InstallAppModal profileId={profile.id} onClose={() => setShowInstall(false)} />}
         {showChangePw && (
           <ChangePasswordModal
             onClose={() => setShowChangePw(false)}
             onSuccess={() => { setShowChangePw(false); setMsg("Password updated."); }}
           />
         )}
-        {showDeleteAccount && <DeleteAccountModal onClose={() => setShowDeleteAccount(false)} />}
+        {showDeleteAccount && <DeleteAccountModal profile={profile} onClose={() => setShowDeleteAccount(false)} />}
 
         {onBack && (
           <button onClick={onBack} style={{ background: "none", border: "none", color: TSEC, fontSize: "14px", cursor: "pointer", padding: "0 0 1rem 0", fontFamily: SANS, display: "block" }}>
@@ -377,7 +632,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
 
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-          <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.02em" }}>My Profile</div>
+          <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#111", letterSpacing: "-0.02em" }}>My Profile</div>
           <button onClick={onSignOut} style={{ background: "none", border: "none", color: TSEC, fontSize: "13px", cursor: "pointer", fontFamily: SANS }}>
             Sign out
           </button>
@@ -386,7 +641,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
         {/* Avatar */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "1.5rem" }}>
           <Avatar url={profile.photo_url} name={profile.full_name} size={96} />
-          <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#1B2A4A", marginTop: "0.75rem" }}>
+          <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#111", marginTop: "0.75rem" }}>
             {profile.full_name}
           </div>
           {profile.nickname && <div style={{ fontSize: "14px", color: TSEC, marginTop: 2 }}>"{profile.nickname}"</div>}
@@ -400,7 +655,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           {[["EMAIL", profile.email], ["PHONE", profile.phone], ["CHURCH", churchName], ["ROLE", profile.ministry_role]].map(([label, val]) => (
             <div key={label} style={{ padding: "0.75rem 0", borderBottom: `0.5px solid ${BORDER}` }}>
               <div style={{ fontSize: "11px", fontWeight: 600, color: TSEC, letterSpacing: "0.04em", marginBottom: 3, fontFamily: SANS }}>{label}</div>
-              <div style={{ fontSize: "15px", color: val ? "#1B2A4A" : "#6B7280" }}>{val || "Not set"}</div>
+              <div style={{ fontSize: "15px", color: val ? "#111" : "#6B7280" }}>{val || "Not set"}</div>
             </div>
           ))}
         </Card>
@@ -426,11 +681,10 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           </button>
         )}
 
-        {/* Settings */}
         {/* Settings nav button */}
         <button
           onClick={() => setSettingsPage(true)}
-          style={{ width: "100%", background: "#fff", border: "1px solid #E5E5E5", borderRadius: 10, padding: "13px 16px", cursor: "pointer", fontFamily: SANS, display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}
+          style={{ width: "100%", background: "#fff", border: "1px solid #E5E5E5", borderRadius: 10, padding: "13px 16px", cursor: "pointer", fontFamily: SANS, display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 34, height: 34, borderRadius: 9, background: "#F5F5F5", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -439,7 +693,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               </svg>
             </div>
             <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: "15px", fontWeight: 600, color: "#1B2A4A" }}>Settings</div>
+              <div style={{ fontSize: "15px", fontWeight: 600, color: "#111" }}>Settings</div>
               <div style={{ fontSize: "12px", color: TSEC, marginTop: 1 }}>Notifications, password, app install</div>
             </div>
           </div>
@@ -448,23 +702,28 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
           </svg>
         </button>
 
-        {/* History */}
-        <SectionLabel>My History</SectionLabel>
-        {history && history.length > 0 ? (
-          history.map((h, i) => (
-            <Card key={i} style={{ marginBottom: "0.875rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 600, color: "#1B2A4A" }}>{h.events?.name || "Event"}</div>
-                <Badge variant={h.events?.status} />
+        {/* History nav button */}
+        <button
+          onClick={() => setHistoryPage(true)}
+          style={{ width: "100%", background: "#fff", border: "1px solid #E5E5E5", borderRadius: 10, padding: "13px 16px", cursor: "pointer", fontFamily: SANS, display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: "#F5F5F5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="12 8 12 12 14 14" /><circle cx="12" cy="12" r="10" />
+              </svg>
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: "15px", fontWeight: 600, color: "#111" }}>My History</div>
+              <div style={{ fontSize: "12px", color: TSEC, marginTop: 1 }}>
+                {history && history.length > 0 ? `${history.length} event${history.length !== 1 ? "s" : ""}` : "Your events will appear here"}
               </div>
-              <div style={{ fontSize: "13px", color: TSEC }}>
-                {h.event_role === "leader" ? "Team leader" : h.event_role} · Team {h.team_number}
-              </div>
-            </Card>
-          ))
-        ) : (
-          <div style={{ fontSize: "14px", color: TSEC }}>Your event history will appear here.</div>
-        )}
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
 
         {msg && <div style={{ fontSize: "13px", color: "#0A7C42", marginTop: "0.5rem", fontFamily: SANS, textAlign: "center" }}>{msg}</div>}
       </Shell>
@@ -478,7 +737,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
         <button onClick={() => { setEditing(false); setMsg(""); }} style={{ background: "none", border: "none", color: TSEC, fontSize: "13px", cursor: "pointer", fontFamily: SANS, padding: 0 }}>
           ← Back
         </button>
-        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.02em" }}>Edit Profile</div>
+        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, color: "#111", letterSpacing: "-0.02em" }}>Edit Profile</div>
         <div style={{ width: 40 }} />
       </div>
 
@@ -508,7 +767,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
 
         <div style={{ marginBottom: "1rem" }}>
           <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: TSEC, marginBottom: 6, letterSpacing: "0.04em", fontFamily: SANS }}>CHURCH</label>
-          <select value={churchId} onChange={(e) => setChurchId(e.target.value)} style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#1B2A4A", background: "#fff", outline: "none" }}>
+          <select value={churchId} onChange={(e) => setChurchId(e.target.value)} style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#111", background: "#fff", outline: "none" }}>
             <option value="">Select your church</option>
             {(churches || []).map((c) => (
               <option key={c.id} value={c.id}>{c.name}{c.city ? ` — ${c.city}` : ""}</option>
@@ -520,7 +779,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
               <input
                 type="text" value={customChurch} onChange={(e) => setCustomChurch(e.target.value)}
                 placeholder="Enter your church name"
-                style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#1B2A4A", background: "#fff", outline: "none", boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, fontSize: "15px", fontFamily: SANS, color: "#111", background: "#fff", outline: "none", boxSizing: "border-box" }}
               />
               <div style={{ fontSize: "11px", color: TSEC, marginTop: 4, fontFamily: SANS }}>Your church will be listed as pending until an admin adds it.</div>
             </div>

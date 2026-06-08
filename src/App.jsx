@@ -257,7 +257,7 @@ export default function App() {
       // Load event history
       const { data: histRows } = await supabase
         .from("event_members")
-        .select("*, events(name, status, dates, type)")
+        .select("*, events(name, status, dates, type, location, description, start_date)")
         .eq("profile_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -601,7 +601,7 @@ export default function App() {
             data={data}
             readIds={readIds}
             onMarkRead={markRead}
-            onOpenAdmin={data.isModerator ? () => setPage("admin") : null}
+            onOpenAdmin={data.isModerator ? () => { setAdminInitProps({ screen: "announcements" }); setPage("admin"); } : null}
           />
         )}
         {tab === "profile" && (

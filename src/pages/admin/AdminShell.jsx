@@ -42,7 +42,7 @@ export default function AdminShell({ data, onClose, onRefresh, isAdmin = false, 
 
   const titles = {
     home: "Admin",
-    "people.list": "People",
+    "people.list": "Users",
     "people.detail": selectedProfile?.full_name || "Person",
     "people.invite": "Invite New Leader",
     "events.list": "Events",
@@ -278,7 +278,7 @@ function AdminHome({ data, onNav, isAdmin }) {
       <EntryCard
         icon={<PeopleIcon />}
         iconBg="#EEF2FC"
-        label="People"
+        label="Users"
         sub="Invite, manage & view all members"
         count={(allProfiles || []).length}
         onClick={() => onNav("people.list")}
