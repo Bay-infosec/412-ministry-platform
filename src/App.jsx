@@ -93,6 +93,7 @@ export default function App() {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [profileReturnTo, setProfileReturnTo] = useState(null);
   const [eventReturnTab, setEventReturnTab] = useState(null);
+  const [adminInitProps, setAdminInitProps] = useState(null);
 
   const lastRefreshRef = useRef(0);
 
@@ -554,7 +555,10 @@ export default function App() {
             data={data}
             onOpenPage={(p) => { setEventReturnTab(null); setPage(p); }}
             onNavigate={navigate}
-            onOpenAdmin={() => setPage("admin")}
+            onOpenAdmin={(event) => {
+              if (event) setAdminInitProps({ screen: "events.detail", event });
+              setPage("admin");
+            }}
           />
         )}
         {tab === "event" && page === "onboarding" && (
@@ -600,9 +604,11 @@ export default function App() {
         {page === "admin" && data.isModerator && (
           <AdminShell
             data={data}
-            onClose={() => setPage(null)}
+            onClose={() => { setPage(null); setAdminInitProps(null); }}
             onRefresh={loadData}
             isAdmin={data.isAdmin}
+            initialScreen={adminInitProps?.screen}
+            initialEvent={adminInitProps?.event}
           />
         )}
         {page === "chat" && (

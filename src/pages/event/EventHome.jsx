@@ -198,7 +198,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
           </div>
           {isAdmin && onOpenAdmin && (
             <button
-              onClick={onOpenAdmin}
+              onClick={() => onOpenAdmin?.(viewEvent)}
               title="Manage event"
               style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", display: "flex", alignItems: "center" }}
             >
