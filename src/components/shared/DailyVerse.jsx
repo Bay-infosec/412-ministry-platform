@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { NAVY, GOLD, TSEC, SERIF, SANS } from "../../lib/constants.js";
+import { SANS } from "../../lib/constants.js";
 
 export default function DailyVerse() {
   const [verse, setVerse] = useState(null);
@@ -35,7 +35,8 @@ export default function DailyVerse() {
   return (
     <div
       style={{
-        background: NAVY,
+        background: "#FFF5F0",
+        border: "1px solid #FFD5C0",
         borderRadius: 16,
         padding: "1.25rem 1.5rem",
         marginBottom: "1rem",
@@ -43,10 +44,10 @@ export default function DailyVerse() {
     >
       <div
         style={{
-          fontSize: "11px",
-          fontWeight: 700,
+          fontSize: "9px",
+          fontWeight: 800,
           letterSpacing: "0.14em",
-          color: GOLD,
+          color: "#FF4D00",
           textTransform: "uppercase",
           marginBottom: "0.75rem",
           fontFamily: SANS,
@@ -56,21 +57,23 @@ export default function DailyVerse() {
       </div>
       <div
         style={{
-          fontFamily: SERIF,
-          fontSize: "15px",
+          fontFamily: SANS,
+          fontSize: "14px",
           fontStyle: "italic",
-          color: "#fff",
+          color: "#111111",
           lineHeight: 1.75,
-          marginBottom: "0.75rem",
+          marginBottom: "0.625rem",
         }}
       >
         "{verse.text}"
       </div>
       <div
         style={{
-          fontSize: "12px",
-          fontWeight: 600,
-          color: GOLD,
+          fontSize: "11px",
+          fontWeight: 800,
+          letterSpacing: "0.06em",
+          color: "#FF4D00",
+          textTransform: "uppercase",
           fontFamily: SANS,
         }}
       >
