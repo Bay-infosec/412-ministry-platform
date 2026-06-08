@@ -29,8 +29,7 @@ export default function DailyVerse() {
     }
   };
 
-  if (loading) return null;
-  if (!verse?.text) return null;
+  if (!verse?.text && !loading) return null;
 
   return (
     <div
@@ -40,8 +39,12 @@ export default function DailyVerse() {
         borderRadius: 16,
         padding: "1.25rem 1.5rem",
         marginBottom: "1rem",
+        minHeight: loading ? 80 : undefined,
+        opacity: loading ? 0 : 1,
+        transition: "opacity 0.3s ease",
       }}
     >
+      {loading && null}
       <div
         style={{
           fontSize: "9px",

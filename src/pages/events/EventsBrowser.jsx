@@ -100,9 +100,9 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
 
             return (
               <div key={ev.id} style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden" }}>
-                {/* Header */}
+                {/* Header — tap goes straight in if already enrolled */}
                 <button
-                  onClick={() => setExpandedId(isExpanded ? null : ev.id)}
+                  onClick={() => isMember && onViewEnrolled ? onViewEnrolled(ev.id) : setExpandedId(isExpanded ? null : ev.id)}
                   style={{
                     width: "100%", background: "none", border: "none", cursor: "pointer",
                     padding: "1rem 1.25rem", textAlign: "left", fontFamily: SANS,
@@ -129,10 +129,16 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
                     {ev.dates && <div style={{ fontSize: "12px", color: TSEC }}>{ev.dates}</div>}
                     {ev.location && <div style={{ fontSize: "12px", color: TSEC }}>{ev.location}</div>}
                   </div>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                    style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0, marginTop: 4 }}>
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
+                  {isMember ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 4 }}>
+                      <path d="M9 6l6 6-6 6" />
+                    </svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                      style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0, marginTop: 4 }}>
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  )}
                 </button>
 
                 {/* Expanded details */}

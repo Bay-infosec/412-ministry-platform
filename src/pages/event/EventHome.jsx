@@ -258,46 +258,6 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
         )}
       </div>
 
-      {/* Onboarding card — same theme as Home, above zoom training */}
-      {eventMember && (
-        <div style={{ background: "#FFF5F0", border: "1px solid #FFD5C0", borderRadius: 16, padding: "1.25rem 1.5rem", marginBottom: "1rem" }}>
-          <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-            Onboarding Invitation
-          </div>
-          <div style={{ fontFamily: SANS, fontSize: "14px", color: "#666666", lineHeight: 1.5, marginBottom: 12 }}>
-            Walk through your orientation steps and complete your pre-conference checklist before {viewEvent.name}.
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>Onboarding</span>
-              <span style={{ fontSize: "11px", color: "#999999", fontFamily: SANS }}>
-                {onboardingComplete ? "Complete ✓" : `Step ${Math.min(onboardingStep + 1, TOTAL_STEPS)} of ${TOTAL_STEPS}`}
-              </span>
-            </div>
-            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,77,0,0.12)", overflow: "hidden" }}>
-              <div style={{ height: "100%", borderRadius: 3, background: "#FF4D00", width: onboardingComplete ? "100%" : `${Math.round((onboardingStep / TOTAL_STEPS) * 100)}%`, transition: "width 0.4s ease" }} />
-            </div>
-          </div>
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>Pre-Conference Checklist</span>
-              <span style={{ fontSize: "11px", color: "#999999", fontFamily: SANS }}>{checklistDone} / {CHECKLIST_ITEMS.length}</span>
-            </div>
-            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,77,0,0.12)", overflow: "hidden" }}>
-              <div style={{ height: "100%", borderRadius: 3, background: "#FF4D00", width: `${Math.round((checklistDone / CHECKLIST_ITEMS.length) * 100)}%`, transition: "width 0.4s ease" }} />
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => onOpenPage("myteam")} style={{ flex: 1, background: "rgba(255,77,0,0.1)", color: "#FF4D00", border: "none", borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 600, fontFamily: SANS, cursor: "pointer" }}>
-              View Checklist
-            </button>
-            <button onClick={() => onOpenPage("onboarding")} style={{ flex: 1, background: "#FF4D00", color: "#fff", border: "none", borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 700, fontFamily: SANS, cursor: "pointer" }}>
-              {onboardingStep > 0 && !onboardingComplete ? "Continue →" : onboardingComplete ? "Review →" : "Start →"}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Sections */}
       <SectionLabel>Sections</SectionLabel>
       <Card style={{ padding: 0, overflow: "hidden", marginBottom: "1rem" }}>
