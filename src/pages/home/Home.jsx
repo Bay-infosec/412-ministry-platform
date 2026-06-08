@@ -210,27 +210,27 @@ export default function Home({
       {/* ── Onboarding invitation (all leaders) ────────────────────── */}
       {eventMember && (
         <div style={{
-          background: "#111111", borderRadius: 16, padding: "1.25rem 1.5rem",
+          background: "#FFF5F0", border: "1px solid #FFD5C0", borderRadius: 16, padding: "1.25rem 1.5rem",
           marginBottom: "1rem",
         }}>
           <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
             Onboarding Invitation
           </div>
-          <div style={{ fontFamily: SANS, fontSize: "15px", color: "#999999", lineHeight: 1.5, marginBottom: 12 }}>
+          <div style={{ fontFamily: SANS, fontSize: "14px", color: "#666666", lineHeight: 1.5, marginBottom: 12 }}>
             Walk through your orientation steps and complete your pre-conference checklist before {activeEvent?.name || "the conference"}.
           </div>
 
           {/* Onboarding step progress */}
           <div style={{ marginBottom: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: SANS }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>
                 Onboarding
               </span>
-              <span style={{ fontSize: "11px", color: "#B8C0D0", fontFamily: SANS }}>
+              <span style={{ fontSize: "11px", color: "#999999", fontFamily: SANS }}>
                 {onboardingComplete ? "Complete ✓" : `Step ${Math.min(onboardingStep + 1, TOTAL_STEPS)} of ${TOTAL_STEPS}`}
               </span>
             </div>
-            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.15)", overflow: "hidden" }}>
+            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,77,0,0.12)", overflow: "hidden" }}>
               <div style={{
                 height: "100%", borderRadius: 3,
                 background: "#FF4D00",
@@ -243,14 +243,14 @@ export default function Home({
           {/* Checklist progress */}
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: SANS }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#111111", fontFamily: SANS }}>
                 Pre-Conference Checklist
               </span>
-              <span style={{ fontSize: "11px", color: "#B8C0D0", fontFamily: SANS }}>
+              <span style={{ fontSize: "11px", color: "#999999", fontFamily: SANS }}>
                 {checklistDone} / {CHECKLIST_ITEMS.length}
               </span>
             </div>
-            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.15)", overflow: "hidden" }}>
+            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,77,0,0.12)", overflow: "hidden" }}>
               <div style={{
                 height: "100%", borderRadius: 3,
                 background: "#FF4D00",
@@ -265,7 +265,7 @@ export default function Home({
             <button
               onClick={onOpenMyTeam}
               style={{
-                flex: 1, background: "rgba(255,255,255,0.12)", color: "#fff", border: "none",
+                flex: 1, background: "rgba(255,77,0,0.1)", color: "#FF4D00", border: "none",
                 borderRadius: 10, padding: "11px", fontSize: "13px", fontWeight: 600,
                 fontFamily: SANS, cursor: "pointer",
               }}
@@ -584,22 +584,22 @@ export default function Home({
       <button
         onClick={() => setShowContact(true)}
         style={{
-          width: "100%", background: "#fff", border: `1px solid ${BORDER}`,
-          borderRadius: 14, padding: "1rem 1.25rem", cursor: "pointer",
-          fontFamily: SANS, display: "flex", alignItems: "center", gap: 12,
+          width: "100%", background: "#111111", border: "none",
+          borderRadius: 16, padding: "1.25rem 1.5rem", cursor: "pointer",
+          fontFamily: SANS, display: "flex", alignItems: "center", gap: 14,
           marginBottom: "0.5rem",
         }}
       >
-        <div style={{ width: 38, height: 38, borderRadius: 10, background: "#FAFAFA", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: "#FF4D00", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
         </div>
         <div style={{ flex: 1, textAlign: "left" }}>
-          <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111" }}>Contact Us</div>
-          <div style={{ fontSize: "12px", color: TSEC, marginTop: 1 }}>Send a message to the 412 team</div>
+          <div style={{ fontSize: "15px", fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>Contact Us</div>
+          <div style={{ fontSize: "12px", color: "#999999", marginTop: 2 }}>Send a message to the 412 team</div>
         </div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={TSEC} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M9 6l6 6-6 6" />
         </svg>
       </button>

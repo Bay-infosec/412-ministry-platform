@@ -20,30 +20,35 @@ function daysUntil(dateStr) {
   return Math.ceil((parsed - new Date()) / 86400000);
 }
 
-function ViewSwitcher({ view, onChange }) {
-  const tabs = [
+function ViewDropdown({ view, onChange }) {
+  const options = [
     { key: "mine", label: "My Event" },
-    { key: "browse", label: "Browse" },
-    { key: "past", label: "Past" },
+    { key: "browse", label: "Browse Events" },
+    { key: "past", label: "Past Events" },
   ];
   return (
-    <div style={{ display: "flex", gap: 4, background: BG, padding: 4, borderRadius: 12, marginBottom: "1.25rem" }}>
-      {tabs.map((t) => (
-        <button
-          key={t.key}
-          onClick={() => onChange(t.key)}
-          style={{
-            flex: 1, border: "none", borderRadius: 9, padding: "0.55rem 0",
-            fontSize: "13px", fontWeight: 700, fontFamily: SANS, cursor: "pointer",
-            background: view === t.key ? "#fff" : "transparent",
-            color: view === t.key ? "#111111" : "#999999",
-            boxShadow: view === t.key ? "0 1px 5px rgba(0,0,0,0.08)" : "none",
-            transition: "background 0.15s, color 0.15s",
-          }}
-        >
-          {t.label}
-        </button>
-      ))}
+    <div style={{ position: "relative", marginBottom: "1.25rem" }}>
+      <select
+        value={view}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          width: "100%",
+          appearance: "none", WebkitAppearance: "none",
+          background: "#fff", border: "1px solid #E5E5E5",
+          borderRadius: 12, padding: "13px 44px 13px 16px",
+          fontSize: "15px", fontWeight: 700, color: "#111111",
+          fontFamily: SANS, cursor: "pointer", outline: "none",
+        }}
+      >
+        {options.map((o) => (
+          <option key={o.key} value={o.key}>{o.label}</option>
+        ))}
+      </select>
+      <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </div>
     </div>
   );
 }
@@ -110,7 +115,7 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
 
   return (
     <Shell withNav>
-      <ViewSwitcher view={view} onChange={setView} />
+      <ViewDropdown view={view} onChange={setView} />
 
       {view === "browse" && (
         <EventsBrowser data={data} onRefresh={onNavigate ? () => onNavigate("event") : undefined} />
