@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { TSEC, BORDER, SANS, SERIF, PROFILE_TAGS } from "../../../lib/constants.js";
-import { Avatar, Badge, Modal, SectionLabel, ProfileTags } from "../../../components/ui/index.js";
+import { TSEC, BORDER, SANS, PROFILE_TAGS } from "../../../lib/constants.js";
+import { Avatar, Modal, SectionLabel, ProfileTags } from "../../../components/ui/index.js";
 
 const inputStyle = {
   width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10,
@@ -9,14 +9,13 @@ const inputStyle = {
   outline: "none", boxSizing: "border-box", background: "#fff",
 };
 
-// No appearance:none — that disables the native picker on iOS
 const selectStyle = { ...inputStyle, cursor: "pointer" };
 
 export default function PersonDetail({ profile, data, onRefresh, onToast, onDone }) {
   const { activeEvent, churches } = data;
   const church = (churches || []).find((c) => c.id === profile.church_id)?.name;
 
-  // Fetch event membership directly from DB — don't rely on allEventMembers prop
+  // Fetch event membership only to know if "Add to event" is available
   const [em, setEm] = useState(null);
   const [emLoading, setEmLoading] = useState(true);
 
@@ -26,7 +25,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
       if (!activeEvent) { setEm(null); setEmLoading(false); return; }
       const { data: row } = await supabase
         .from("event_members")
-        .select("*")
+        .select("id")
         .eq("profile_id", profile.id)
         .eq("event_id", activeEvent.id)
         .maybeSingle();
@@ -38,25 +37,35 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
 
   const [modal, setModal] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [newRole, setNewRole] = useState(profile.platform_role);
   const [tempPw, setTempPw] = useState(null);
 
-  const [editMsg, setEditMsg] = useState(false);
-  const [msg, setMsg] = useState("");
-  const [savingMsg, setSavingMsg] = useState(false);
+  // Platform role (inline chip)
+  const [currentRole, setCurrentRole] = useState(profile.platform_role);
+  const [savingRole, setSavingRole] = useState(null);
 
-  const [editTeam, setEditTeam] = useState(false);
-  const [teamNum, setTeamNum] = useState("");
-  const [ministry, setMinistry] = useState("");
-  const [savingTeam, setSavingTeam] = useState(false);
+  // Profile tags
+  const [tags, setTags] = useState(profile.tags || []);
+  const [savingTag, setSavingTag] = useState(null);
 
+  // Add to event
   const [addRole, setAddRole] = useState("leader");
   const [addTeam, setAddTeam] = useState("");
   const [addMinistry, setAddMinistry] = useState("");
   const [addingToEvent, setAddingToEvent] = useState(false);
 
-  const [tags, setTags] = useState(profile.tags || []);
-  const [savingTag, setSavingTag] = useState(null);
+  async function changeRoleInline(role) {
+    if (role === currentRole) return;
+    setSavingRole(role);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ platform_role: role })
+      .eq("id", profile.id);
+    setSavingRole(null);
+    if (error) { onToast("Could not update role.", "error"); return; }
+    setCurrentRole(role);
+    onToast(`Role changed to ${role} for ${profile.full_name}.`);
+    onRefresh();
+  }
 
   async function toggleTag(key) {
     setSavingTag(key);
@@ -65,27 +74,6 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
     setTags(next);
     setSavingTag(null);
     onRefresh();
-  }
-
-  // Sync editable fields when em loads
-  useEffect(() => {
-    setMsg(em?.personal_message || "");
-    setTeamNum(em?.team_number?.toString() || "");
-    setMinistry(em?.ministry || "");
-  }, [em]);
-
-  async function changeRole() {
-    setBusy(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ platform_role: newRole })
-      .eq("id", profile.id);
-    setBusy(false);
-    setModal(null);
-    if (error) { onToast("Could not update role.", "error"); return; }
-    onToast(`Role changed to ${newRole} for ${profile.full_name}.`);
-    await onRefresh();
-    onDone();
   }
 
   async function resetPassword() {
@@ -97,34 +85,6 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
     setModal(null);
     if (error || !res?.success) { onToast("Password reset failed.", "error"); return; }
     setTempPw(res.temp_password);
-  }
-
-  async function saveMessage() {
-    if (!em) return;
-    setSavingMsg(true);
-    const { error } = await supabase
-      .from("event_members")
-      .update({ personal_message: msg })
-      .eq("id", em.id);
-    setSavingMsg(false);
-    setEditMsg(false);
-    if (error) { onToast("Could not save message.", "error"); return; }
-    onToast("Personal message saved.");
-    onRefresh();
-  }
-
-  async function saveTeam() {
-    if (!em) return;
-    setSavingTeam(true);
-    const { error } = await supabase
-      .from("event_members")
-      .update({ team_number: teamNum ? parseInt(teamNum, 10) : null, ministry: ministry || null })
-      .eq("id", em.id);
-    setSavingTeam(false);
-    setEditTeam(false);
-    if (error) { onToast("Could not save team.", "error"); return; }
-    onToast("Team assignment saved.");
-    onRefresh();
   }
 
   async function addToEvent() {
@@ -159,17 +119,16 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
     await onRefresh();
   }
 
-  async function removeFromEvent() {
-    if (!em) return;
-    setBusy(true);
-    await supabase.from("event_checklist").delete().eq("event_member_id", em.id);
-    await supabase.from("event_members").delete().eq("id", em.id);
-    setBusy(false);
-    setModal(null);
-    setEm(null);
-    onToast(`${profile.full_name} removed from ${activeEvent?.name}.`, "info");
-    await onRefresh();
-  }
+  const ROLE_CHIPS = [
+    { key: "admin",     label: "Admin",     bg: "#111111", color: "#FF4D00" },
+    { key: "moderator", label: "Moderator", bg: "#EEF2FC", color: "#1A4FBF" },
+    { key: "member",    label: "User",      bg: "#F0F0F0", color: "#999999" },
+  ];
+
+  const TAG_CHIPS = [
+    { key: "board_member", label: "412 Ministry", bg: "#111111", color: "#FF4D00" },
+    { key: "pastor",       label: "Pastors",      bg: "#D1FAE5", color: "#065F46" },
+  ];
 
   return (
     <div>
@@ -190,7 +149,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
           <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
             {profile.email}
           </div>
-          <ProfileTags profile={{ ...profile, tags }} eventMember={em} />
+          <ProfileTags profile={{ ...profile, tags }} />
         </div>
       </div>
 
@@ -200,105 +159,6 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
         ["Church", church],
         ["Ministry Role", profile.ministry_role],
       ]} />
-
-      {/* Event-scoped data — grouped under the event name so it's clear none of this is permanent profile info */}
-      {activeEvent && (
-        <>
-          <SectionLabel>{activeEvent.name}</SectionLabel>
-          {emLoading ? (
-            <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem", fontSize: "13px", color: TSEC, fontFamily: SANS }}>
-              Loading…
-            </div>
-          ) : em ? (
-            <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden", marginBottom: "1rem" }}>
-              <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.6, padding: "0.875rem 1.25rem", borderBottom: `1px solid ${BORDER}`, background: "#FAFAFA" }}>
-                Specific to {activeEvent.name} — separate from {(profile.full_name || "").split(" ")[0]}'s permanent profile, and resets for each event they join.
-              </div>
-
-              <InfoRow label="Event Role" value={em.event_role} />
-              <InfoRow label="Onboarding" value={em.onboarding_completed ? "Complete ✓" : "In progress"} />
-              <InfoRow label="Status" value={em.status} last={!editTeam} />
-
-              {/* Team & Ministry */}
-              <div style={{ padding: "1rem 1.25rem", borderBottom: `1px solid ${BORDER}` }}>
-                <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.625rem" }}>
-                  Team & Ministry
-                </div>
-                {!editTeam ? (
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
-                      Team {em.team_number || "—"} · {em.ministry || "No ministry"}
-                    </div>
-                    <button onClick={() => { setTeamNum(em?.team_number?.toString() || ""); setMinistry(em?.ministry || ""); setEditTeam(true); }} style={{ background: "none", border: "none", color: "#FF4D00", fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: SANS }}>
-                      Edit
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <FieldLabel>TEAM NUMBER</FieldLabel>
-                    <input type="number" value={teamNum} onChange={(e) => setTeamNum(e.target.value)} min="1" max="99" placeholder="e.g. 7" style={{ ...inputStyle, marginBottom: "0.75rem" }} />
-                    <FieldLabel>MINISTRY</FieldLabel>
-                    <select value={ministry} onChange={(e) => setMinistry(e.target.value)} style={{ ...selectStyle, marginBottom: "0.875rem" }}>
-                      <option value="">Select ministry</option>
-                      <option value="EM">English Ministry (EM)</option>
-                      <option value="MM">Mongolian Ministry (MM)</option>
-                    </select>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => setEditTeam(false)} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px", fontSize: "14px", color: TSEC, cursor: "pointer", fontFamily: SANS }}>Cancel</button>
-                      <button onClick={saveTeam} disabled={savingTeam} style={{ flex: 1, background: "#111111", border: "none", borderRadius: 10, padding: "10px", fontSize: "14px", fontWeight: 600, color: "#fff", cursor: savingTeam ? "default" : "pointer", fontFamily: SANS, opacity: savingTeam ? 0.7 : 1 }}>
-                        {savingTeam ? "Saving…" : "Save"}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Personal Message */}
-              <div style={{ padding: "1rem 1.25rem" }}>
-                <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: TSEC, textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.625rem" }}>
-                  Personal Message
-                </div>
-                {!editMsg ? (
-                  <>
-                    {em.personal_message ? (
-                      <div style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, lineHeight: 1.65, marginBottom: "0.75rem", whiteSpace: "pre-wrap" }}>
-                        {em.personal_message}
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, marginBottom: "0.75rem" }}>
-                        No message written yet.
-                      </div>
-                    )}
-                    <button onClick={() => { setMsg(em.personal_message || ""); setEditMsg(true); }} style={{ background: "none", border: "none", color: "#FF4D00", fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: SANS, padding: 0 }}>
-                      {em.personal_message ? "Edit →" : "Write a message →"}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <textarea
-                      value={msg}
-                      onChange={(e) => setMsg(e.target.value)}
-                      rows={5}
-                      placeholder="Write a personal message for this leader…"
-                      style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111", resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: "0.75rem" }}
-                    />
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => setEditMsg(false)} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px", fontSize: "14px", color: TSEC, cursor: "pointer", fontFamily: SANS }}>Cancel</button>
-                      <button onClick={saveMessage} disabled={savingMsg} style={{ flex: 1, background: "#111111", border: "none", borderRadius: 10, padding: "10px", fontSize: "14px", fontWeight: 600, color: "#fff", cursor: savingMsg ? "default" : "pointer", fontFamily: SANS, opacity: savingMsg ? 0.7 : 1 }}>
-                        {savingMsg ? "Saving…" : "Save"}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem", fontSize: "14px", color: TSEC, fontFamily: SANS }}>
-              Not enrolled in this event.
-            </div>
-          )}
-        </>
-      )}
 
       {/* Temp password */}
       {tempPw && (
@@ -318,14 +178,37 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
         </div>
       )}
 
-      {/* Profile Tags */}
-      <SectionLabel>Tags</SectionLabel>
+      {/* Unified role & tags chip grid */}
+      <SectionLabel>Role & Tags</SectionLabel>
       <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1.1rem 1.25rem", marginBottom: "1rem" }}>
         <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: "1rem", lineHeight: 1.5 }}>
-          Tap a tag to add or remove it — a person can hold any combination at once (e.g. Moderator <em>and</em> 412 Board). These appear as badges on their profile. Platform role and event role are managed separately below.
+          Platform role is mutually exclusive — tap to switch. Tags can be combined freely.
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {Object.entries(PROFILE_TAGS).map(([key, cfg]) => {
+          {ROLE_CHIPS.map(({ key, label, bg, color }) => {
+            const active = currentRole === key;
+            const isSaving = savingRole === key;
+            return (
+              <button
+                key={key}
+                onClick={() => changeRoleInline(key)}
+                disabled={isSaving || active}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "8px 14px", borderRadius: 99,
+                  cursor: (isSaving || active) ? "default" : "pointer",
+                  border: active ? "none" : `1.5px dashed ${BORDER}`,
+                  background: active ? bg : "#fff",
+                  color: active ? color : TSEC,
+                  fontSize: "13px", fontWeight: 700, fontFamily: SANS, letterSpacing: "0.02em",
+                  opacity: isSaving ? 0.5 : 1, transition: "opacity 0.15s ease",
+                }}
+              >
+                {isSaving ? "…" : active ? "✓ " : ""}{label}
+              </button>
+            );
+          })}
+          {TAG_CHIPS.map(({ key, label, bg, color }) => {
             const active = tags.includes(key);
             const isSaving = savingTag === key;
             return (
@@ -335,16 +218,16 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
                 disabled={isSaving}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
-                  padding: "8px 14px", borderRadius: 99, cursor: isSaving ? "default" : "pointer",
+                  padding: "8px 14px", borderRadius: 99,
+                  cursor: isSaving ? "default" : "pointer",
                   border: active ? "none" : `1.5px dashed ${BORDER}`,
-                  background: active ? cfg.bg : "#fff",
-                  color: active ? cfg.color : TSEC,
+                  background: active ? bg : "#fff",
+                  color: active ? color : TSEC,
                   fontSize: "13px", fontWeight: 700, fontFamily: SANS, letterSpacing: "0.02em",
                   opacity: isSaving ? 0.5 : 1, transition: "opacity 0.15s ease",
                 }}
               >
-                {isSaving ? "…" : active ? "✓" : "+"}
-                {cfg.label}
+                {isSaving ? "…" : active ? "✓ " : "+ "}{label}
               </button>
             );
           })}
@@ -354,31 +237,11 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
       {/* Admin Actions */}
       <SectionLabel>Admin Actions</SectionLabel>
       <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem", marginBottom: "2rem" }}>
-        <ActionRow label="Change platform role" sub={`Currently: ${profile.platform_role}`} onClick={() => { setNewRole(profile.platform_role); setModal("role"); }} />
         {activeEvent && !em && !emLoading && (
           <ActionRow label={`Add to ${activeEvent.name}`} sub="Enroll in active event" onClick={() => setModal("add")} />
         )}
         <ActionRow label="Reset password" sub="Generate new temp password" danger onClick={() => setModal("reset")} />
-        {em && (
-          <ActionRow label={`Remove from ${activeEvent?.name}`} sub="Removes team, message, and checklist" danger onClick={() => setModal("remove")} />
-        )}
       </div>
-
-      {/* Change role modal */}
-      {modal === "role" && (
-        <div style={overlay}>
-          <div style={sheet}>
-            <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111", marginBottom: "0.75rem" }}>Change Platform Role</div>
-            <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, lineHeight: 1.6, marginBottom: "1.25rem" }}>Select a new role for {profile.full_name}.</div>
-            <select value={newRole} onChange={(e) => setNewRole(e.target.value)} style={{ ...selectStyle, marginBottom: "1.5rem" }}>
-              <option value="member">Member</option>
-              <option value="moderator">Moderator</option>
-              <option value="admin">Admin</option>
-            </select>
-            <ModalButtons onCancel={() => setModal(null)} onConfirm={changeRole} confirmLabel={busy ? "Saving…" : "Change Role"} disabled={busy || newRole === profile.platform_role} />
-          </div>
-        </div>
-      )}
 
       {/* Add to event modal */}
       {modal === "add" && activeEvent && (
@@ -420,29 +283,6 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
           busy={busy}
         />
       )}
-
-      {/* Remove from event modal */}
-      {modal === "remove" && (
-        <Modal
-          title="Remove from Event"
-          message={`Remove ${profile.full_name} from ${activeEvent?.name}? This deletes their team assignment, personal message, and checklist.`}
-          confirmLabel="Remove"
-          variant="danger"
-          onCancel={() => setModal(null)}
-          onConfirm={removeFromEvent}
-          busy={busy}
-        />
-      )}
-    </div>
-  );
-}
-
-function InfoRow({ label, value, last }) {
-  if (!value) return null;
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.875rem 1.25rem", borderBottom: last ? "none" : `1px solid ${BORDER}` }}>
-      <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{label}</span>
-      <span style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>{value}</span>
     </div>
   );
 }
