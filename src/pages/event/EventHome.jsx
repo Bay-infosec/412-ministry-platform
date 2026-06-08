@@ -28,7 +28,7 @@ function ViewDropdown({ view, onChange, enrolledEvents }) {
     { key: "past", label: "Past Events" },
   ];
   return (
-    <div style={{ position: "relative", marginBottom: "1.25rem" }}>
+    <div style={{ position: "relative" }}>
       <select
         value={view}
         onChange={(e) => onChange(e.target.value)}
@@ -91,7 +91,7 @@ function PastEvents({ history, activeEvent }) {
   );
 }
 
-export default function EventHome({ data, onOpenPage, onNavigate }) {
+export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin }) {
   const { activeEvent, eventMember, profile, isAdmin, history, eventChecklist } = data;
 
   // Build enrolled event options from history (non-archived), sorted by start date
@@ -113,7 +113,13 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
   }
   enrolledEvents.sort((a, b) => parseEventStart(a.dates) - parseEventStart(b.dates));
 
-  const [view, setView] = useState("browse");
+  const [view, setView] = useState(() => localStorage.getItem("event_default_view") || "browse");
+  const [pinnedView, setPinnedView] = useState(() => localStorage.getItem("event_default_view") || "browse");
+
+  function pinCurrentView() {
+    localStorage.setItem("event_default_view", view);
+    setPinnedView(view);
+  }
 
   // Resolve which activeEvent data to show for the selected view
   const viewEventId = view.startsWith("evt_") ? view.slice(4) : null;
@@ -151,7 +157,20 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
 
   return (
     <Shell withNav>
-      <ViewDropdown view={view} onChange={setView} enrolledEvents={enrolledEvents} />
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "1.25rem" }}>
+        <div style={{ flex: 1 }}>
+          <ViewDropdown view={view} onChange={setView} enrolledEvents={enrolledEvents} />
+        </div>
+        <button
+          onClick={pinCurrentView}
+          title={view === pinnedView ? "This is your default view" : "Set as default entrance"}
+          style={{ flexShrink: 0, width: 44, height: 44, borderRadius: 12, border: "none", background: view === pinnedView ? "#FF4D00" : "#F0F0F0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill={view === pinnedView ? "#fff" : "none"} stroke={view === pinnedView ? "#fff" : "#999999"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+          </svg>
+        </button>
+      </div>
 
       {view === "browse" && (
         <EventsBrowser
@@ -173,8 +192,22 @@ export default function EventHome({ data, onOpenPage, onNavigate }) {
         <>
       {/* Event header card */}
       <div style={{ background: "#111111", borderRadius: 18, padding: "1.25rem 1.5rem", marginBottom: "1rem", fontFamily: SANS }}>
-        <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.5rem" }}>
-          Your Event · Active
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+          <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase" }}>
+            Your Event · Active
+          </div>
+          {isAdmin && onOpenAdmin && (
+            <button
+              onClick={onOpenAdmin}
+              title="Manage event"
+              style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", display: "flex", alignItems: "center" }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+              </svg>
+            </button>
+          )}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
           <div style={{ flex: 1 }}>

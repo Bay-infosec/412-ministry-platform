@@ -410,7 +410,7 @@ export default function Home({
               const { main, sub } = splitZoomDisplay(activeEvent.zoom_training_dates);
               return (
                 <button
-                  onClick={() => onOpenEventPage?.(null)}
+                  onClick={() => onOpenEventPage?.("zoom_training")}
                   style={{
                     width: "100%", textAlign: "left", cursor: "pointer", fontFamily: SANS,
                     background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14,

@@ -8,7 +8,7 @@ import { Profile } from "./pages/profile/index.js";
 import { BottomNav } from "./components/layout/index.js";
 import { Shell } from "./components/layout/index.js";
 import { SANS, TSEC, ORANGE } from "./lib/constants.js";
-import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide, CoordinatorView, MyChecklist, Attendance } from "./pages/event/index.js";
+import { EventHome, MyTeam, PrayerChain, TheFour, FieldGuide, CoordinatorView, MyChecklist, Attendance, ZoomTraining } from "./pages/event/index.js";
 import { OnboardingFlow } from "./pages/event/onboarding/index.js";
 import { AdminShell } from "./pages/admin/index.js";
 import { Chat } from "./pages/chat/index.js";
@@ -92,6 +92,7 @@ export default function App() {
   const [chatUnread, setChatUnread] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [profileReturnTo, setProfileReturnTo] = useState(null);
+  const [eventReturnTab, setEventReturnTab] = useState(null);
 
   const lastRefreshRef = useRef(0);
 
@@ -521,6 +522,16 @@ export default function App() {
     const hasEvent = true;
     const navigate = (t) => { setTab(t); setPage(null); };
 
+    const eventBack = () => {
+      if (eventReturnTab) {
+        const ret = eventReturnTab;
+        setEventReturnTab(null);
+        navigate(ret);
+      } else {
+        setPage(null);
+      }
+    };
+
     return (
       <>
         {tab === "home" && (
@@ -528,10 +539,10 @@ export default function App() {
             data={data}
             onNavigate={navigate}
             onOpenChat={openChat}
-            onOpenOnboarding={() => { setTab("event"); setPage("onboarding"); }}
-            onOpenMyTeam={() => { setTab("event"); setPage("myteam"); }}
+            onOpenOnboarding={() => { setEventReturnTab("home"); setTab("event"); setPage("onboarding"); }}
+            onOpenMyTeam={() => { setEventReturnTab("home"); setTab("event"); setPage("myteam"); }}
             onOpenUpdates={() => navigate("updates")}
-            onOpenEventPage={(p) => { setTab("event"); setPage(p); }}
+            onOpenEventPage={(p) => { setEventReturnTab("home"); setTab("event"); setPage(p); }}
             chatUnread={chatUnread}
             onlineUsers={onlineUsers}
             readIds={readIds}
@@ -541,24 +552,26 @@ export default function App() {
         {tab === "event" && !page && (
           <EventHome
             data={data}
-            onOpenPage={setPage}
+            onOpenPage={(p) => { setEventReturnTab(null); setPage(p); }}
             onNavigate={navigate}
+            onOpenAdmin={() => setPage("admin")}
           />
         )}
         {tab === "event" && page === "onboarding" && (
           <OnboardingFlow
             data={data}
-            onDone={() => { loadData(); setPage(null); }}
-            onExit={() => { loadData(); setPage(null); }}
+            onDone={() => { loadData(); eventBack(); }}
+            onExit={() => { loadData(); eventBack(); }}
           />
         )}
-        {tab === "event" && page === "myteam" && <MyTeam data={data} onBack={() => setPage(null)} />}
-        {tab === "event" && page === "prayer_chain" && <PrayerChain data={data} onBack={() => setPage(null)} />}
-        {tab === "event" && page === "the_four" && <TheFour data={data} onBack={() => setPage(null)} />}
-        {tab === "event" && page === "field_guide" && <FieldGuide data={data} onBack={() => setPage(null)} />}
-        {tab === "event" && page === "coordinator" && <CoordinatorView data={data} onBack={() => setPage(null)} />}
-        {tab === "event" && page === "checklist" && <MyChecklist data={data} onBack={() => setPage(null)} />}
-        {tab === "event" && page === "attendance" && <Attendance data={data} onBack={() => setPage(null)} />}
+        {tab === "event" && page === "zoom_training" && <ZoomTraining data={data} onBack={eventBack} />}
+        {tab === "event" && page === "myteam" && <MyTeam data={data} onBack={eventBack} />}
+        {tab === "event" && page === "prayer_chain" && <PrayerChain data={data} onBack={eventBack} />}
+        {tab === "event" && page === "the_four" && <TheFour data={data} onBack={eventBack} />}
+        {tab === "event" && page === "field_guide" && <FieldGuide data={data} onBack={eventBack} />}
+        {tab === "event" && page === "coordinator" && <CoordinatorView data={data} onBack={eventBack} />}
+        {tab === "event" && page === "checklist" && <MyChecklist data={data} onBack={eventBack} />}
+        {tab === "event" && page === "attendance" && <Attendance data={data} onBack={eventBack} />}
 
         {tab === "updates" && (
           <Updates
