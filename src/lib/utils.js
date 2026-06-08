@@ -28,11 +28,9 @@ export function fmtDate(d) {
 }
 
 export function fmtDateStr(iso) {
-  try {
-    return new Date(iso).toLocaleDateString("en-US", {
-      month: "short", day: "numeric", year: "numeric"
-    });
-  } catch { return ""; }
+  const d = new Date(typeof iso === "string" && iso.length === 10 ? iso + "T12:00:00" : iso);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 export function daysUntil(dateStr) {
@@ -57,7 +55,7 @@ export function matchesAudience(audience, ctx) {
 }
 
 export function generateTempPassword() {
-  const words = ["Grace", "Faith", "Hope", "Light", "Peace", "Joy", "Love", "Truth"];
+  const words = ["Grace", "Faith", "Hope", "Light", "Peace", "Love", "Truth"];
   const word = words[Math.floor(Math.random() * words.length)];
   const num = Math.floor(100 + Math.random() * 900);
   const symbols = ["!", "@", "#", "$"];
