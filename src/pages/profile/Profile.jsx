@@ -606,7 +606,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
             style={{
               padding: "12px 14px",
               borderRadius: 10,
-              background: "#F0EDE8",
+              background: "#F3F4F6",
               fontSize: "15px",
               color: TSEC,
             }}

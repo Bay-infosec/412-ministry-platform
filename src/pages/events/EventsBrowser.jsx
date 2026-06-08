@@ -17,8 +17,8 @@ export const TYPE_LABELS = {
 const STATUS_STYLE = {
   active: { label: "Active", bg: "#DCFCE7", color: "#166534" },
   upcoming: { label: "Upcoming", bg: "#EEF2FC", color: "#1A4FBF" },
-  archived: { label: "Past", bg: "#F0EDE8", color: "#8A8498" },
-  inactive: { label: "Inactive", bg: "#F0EDE8", color: "#8A8498" },
+  archived: { label: "Past", bg: "#F3F4F6", color: "#6B7280" },
+  inactive: { label: "Inactive", bg: "#F3F4F6", color: "#6B7280" },
 };
 
 export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {

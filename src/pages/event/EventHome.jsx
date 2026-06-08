@@ -74,7 +74,7 @@ function PastEvents({ history, activeEvent }) {
             <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.12em", color: "#FF4D00", textTransform: "uppercase" }}>
               {TYPE_LABELS[h.events.type] || "Event"}
             </span>
-            <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#F0EDE8", color: "#8A8498" }}>
+            <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#F3F4F6", color: "#6B7280" }}>
               Past
             </span>
           </div>

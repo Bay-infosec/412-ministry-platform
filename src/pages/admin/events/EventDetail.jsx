@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
+import { TSEC, BORDER, ORANGE, SANS } from "../../../lib/constants.js";
 import { Avatar, Modal } from "../../../components/ui/index.js";
 
 export default function EventDetail({ event, data, onRefresh, onToast, onBack }) {
@@ -261,7 +261,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
     <div>
       {/* Hero */}
       <div style={{ background: "#1B2A4A", borderRadius: 16, padding: "1.25rem", marginBottom: "1.25rem" }}>
-        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: "#EFAB25", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
           {event.status}
         </div>
         <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: 8 }}>
@@ -550,9 +550,9 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
             <textarea value={messageText} onChange={(e) => setMessageText(e.target.value)} placeholder="Write a personal note…" rows={7} style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "12px 14px", fontSize: "14px", fontFamily: SANS, color: "#1B2A4A", resize: "vertical", outline: "none", boxSizing: "border-box", lineHeight: 1.6, marginBottom: "0.75rem" }} />
             {messageText.trim() && (
               <div style={{ background: "#1B2A4A", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "0.75rem", position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", top: 8, left: 14, fontFamily: SANS, fontSize: "60px", color: "#EFAB25", opacity: 0.12, lineHeight: 1, userSelect: "none" }}>"</div>
+                <div style={{ position: "absolute", top: 8, left: 14, fontFamily: SANS, fontSize: "60px", color: ORANGE, opacity: 0.12, lineHeight: 1, userSelect: "none" }}>"</div>
                 <div style={{ fontFamily: SANS, fontSize: "14px", color: "#fff", lineHeight: 1.75, whiteSpace: "pre-wrap", position: "relative" }}>{messageText.trim()}</div>
-                <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#EFAB25", fontFamily: SANS, marginTop: "0.75rem" }}>Preview</div>
+                <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: ORANGE, fontFamily: SANS, marginTop: "0.75rem" }}>Preview</div>
               </div>
             )}
             <div style={{ display: "flex", gap: 8 }}>
@@ -835,8 +835,8 @@ function MemberRow({ member, onRemove, onEditMessage, onSetTeam }) {
         </div>
       </div>
       <span style={{ fontSize: "10px", fontWeight: 700, background: st.bg, color: st.color, borderRadius: 20, padding: "3px 8px", fontFamily: SANS, flexShrink: 0 }}>{st.label}</span>
-      <button onClick={onEditMessage} title={hasMessage ? "Edit personal message" : "Write personal message"} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", color: hasMessage ? "#EFAB25" : BORDER, flexShrink: 0 }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill={hasMessage ? "#EFAB25" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <button onClick={onEditMessage} title={hasMessage ? "Edit personal message" : "Write personal message"} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", color: hasMessage ? ORANGE : BORDER, flexShrink: 0 }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill={hasMessage ? ORANGE : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
       </button>

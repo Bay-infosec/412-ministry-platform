@@ -8,7 +8,7 @@ export const EVENT_TYPES = [
 ];
 
 export function getTypeConfig(type) {
-  if (!type) return { label: "Event", color: "#8A8498", bg: "#F7F4EF" };
+  if (!type) return { label: "Event", color: "#6B7280", bg: "#F3F4F6" };
   const found = EVENT_TYPES.find((t) => t.key === type || t.label === type);
-  return found || { label: type, color: "#8A8498", bg: "#F7F4EF" };
+  return found || { label: type, color: "#6B7280", bg: "#F3F4F6" };
 }
