@@ -318,8 +318,8 @@ export default function Home({
               <div style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.03em", marginBottom: "0.25rem" }}>
                 {activeEvent.name}
               </div>
-              {activeEvent.dates && <div style={{ fontSize: "11px", color: "#555555" }}>{activeEvent.dates}</div>}
-              {activeEvent.location && <div style={{ fontSize: "11px", color: "#555555" }}>{activeEvent.location}</div>}
+              {activeEvent.dates && <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)" }}>{activeEvent.dates}</div>}
+              {activeEvent.location && <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)" }}>{activeEvent.location}</div>}
             </div>
             {(() => {
               const d = daysUntilEvent(activeEvent.dates);
@@ -330,7 +330,7 @@ export default function Home({
                   ) : (
                     <>
                       <div style={{ fontSize: "42px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>{d}</div>
-                      <div style={{ fontSize: "10px", color: "#555555", fontWeight: 700, letterSpacing: "0.06em" }}>{d === 1 ? "DAY" : "DAYS"}</div>
+                      <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.55)", fontWeight: 700, letterSpacing: "0.06em" }}>{d === 1 ? "DAY" : "DAYS"}</div>
                     </>
                   )}
                 </div>
@@ -620,7 +620,7 @@ export default function Home({
           <div style={{ fontSize: "15px", fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>Contact Us</div>
           <div style={{ fontSize: "12px", color: "#999999", marginTop: 2 }}>Send a message to the 412 team</div>
         </div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M9 6l6 6-6 6" />
         </svg>
       </button>

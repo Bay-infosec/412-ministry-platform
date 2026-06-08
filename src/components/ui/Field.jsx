@@ -18,10 +18,10 @@ export default function Field({
     border: `1px solid ${BORDER}`,
     fontSize: "15px",
     fontFamily: SANS,
-    color: readonly ? TSEC : NAVY,
+    color: readonly ? "#6B7280" : NAVY,
     outline: "none",
     boxSizing: "border-box",
-    background: readonly ? "#F7F4EF" : "#fff",
+    background: readonly ? "#F3F4F6" : "#fff",
     resize: "vertical",
   };
 

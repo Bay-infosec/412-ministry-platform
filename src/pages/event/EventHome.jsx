@@ -233,8 +233,8 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
             <div style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.03em", marginBottom: "0.25rem" }}>
               {viewEvent.name}
             </div>
-            {viewEvent.dates && <div style={{ fontSize: "11px", color: "#555555" }}>{viewEvent.dates}</div>}
-            {viewEvent.location && <div style={{ fontSize: "11px", color: "#555555" }}>{viewEvent.location}</div>}
+            {viewEvent.dates && <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)" }}>{viewEvent.dates}</div>}
+            {viewEvent.location && <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)" }}>{viewEvent.location}</div>}
           </div>
           {days !== null && days >= 0 && (
             <div style={{ textAlign: "center", flexShrink: 0, marginLeft: 16 }}>
@@ -243,7 +243,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
               ) : (
                 <>
                   <div style={{ fontSize: "42px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>{days}</div>
-                  <div style={{ fontSize: "10px", color: "#555555", fontWeight: 700, letterSpacing: "0.06em" }}>{days === 1 ? "DAY" : "DAYS"}</div>
+                  <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.55)", fontWeight: 700, letterSpacing: "0.06em" }}>{days === 1 ? "DAY" : "DAYS"}</div>
                 </>
               )}
             </div>

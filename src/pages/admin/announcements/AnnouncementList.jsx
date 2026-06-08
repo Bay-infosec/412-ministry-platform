@@ -120,7 +120,7 @@ export default function AnnouncementList({ data, onNew, onEdit, onToast, isAdmin
                   <button
                     onClick={() => unpublish(ann)}
                     disabled={busy === ann.id + "_unpublish"}
-                    style={{ fontSize: "12px", fontWeight: 600, color: TSEC, background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: SANS }}
+                    style={{ fontSize: "12px", fontWeight: 600, color: "#6B7280", background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: SANS }}
                   >
                     {busy === ann.id + "_unpublish" ? "…" : "Unpublish"}
                   </button>
