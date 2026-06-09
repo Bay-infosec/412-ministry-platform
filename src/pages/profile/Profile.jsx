@@ -742,7 +742,7 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
             <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8" />
             <path d="M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
-          Contact 412 Ministry
+          Contact 412 MINISTRY
         </button>
 
         {msg && <div style={{ fontSize: "13px", color: "#0A7C42", marginTop: "0.5rem", fontFamily: SANS, textAlign: "center" }}>{msg}</div>}

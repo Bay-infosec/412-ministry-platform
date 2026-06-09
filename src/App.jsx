@@ -25,7 +25,7 @@ function LoadingScreen() {
     }}>
       <img
         src="/logo.png"
-        alt="412 Ministry"
+        alt="412 MINISTRY"
         style={{ width: 120, height: 120, borderRadius: 34, clipPath: "inset(0 round 34px)", objectFit: "cover", display: "block" }}
       />
       {/* Bouncing dots */}

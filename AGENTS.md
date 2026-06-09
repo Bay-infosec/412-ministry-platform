@@ -93,7 +93,8 @@ Font: system-ui only (no Google Fonts). Remove `useFonts()` / any Google Fonts l
 ## Current State (as of 2026-06-08)
 
 ### Branch: `design-polish`
-Latest implementation includes direct Home-to-event navigation, a complete forgot-password recovery screen, rounded rendered logos, a larger Home brand wordmark, and the updated Prayer Chain reminder.
+The user merged `design-polish` into `main` on 2026-06-08, then continued work on `design-polish`.
+Latest implementation standardizes the displayed brand as `412 MINISTRY` and requires an explicit Save button before platform-role changes are written.
 Verification: 34/34 tests pass and the production build passes.
 Manual browser verification was unavailable in the 2026-06-08 session because the in-app browser connection was not available.
 
@@ -133,6 +134,7 @@ Manual browser verification was unavailable in the 2026-06-08 session because th
 
 **Admin panel (full)**
 - AdminShell → Users → PersonDetail (tag chips, event-scoped card) → InviteFlow
+- Platform role chips are draft selections; `Save role` performs the database update
 - Admin account removal UI uses a protected `delete-user` edge function
 - EventList → EventDetail (team setup, coordinator picker) → CoLeaderPairing
 - AnnouncementList → AnnouncementEditor (draft → pending_approval → published + email toggle)
@@ -165,7 +167,7 @@ Manual browser verification was unavailable in the 2026-06-08 session because th
 2. **⚠️ Rotate Supabase API keys** — service_role key was in shared PDF.
 3. Manually verify Welcome and Announcement delivery from the deployed design preview.
 4. Manually verify Home → 412 Board Meeting and the emailed forgot-password recovery link on the deployed preview.
-5. Confirm Enkhbayar's Pastor tag in Admin → Users; failed tag writes now show an error instead of appearing successful.
+5. Enkhbayar Ulambayar is confirmed in Supabase with `pastor` and `board_member` tags and is already a participant in the Pastors system group.
 
 ---
 

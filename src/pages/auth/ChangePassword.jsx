@@ -44,7 +44,7 @@ const whiteBtn = {
 const LogoImg = ({ size = 100, style = {} }) => (
   <img
     src="/logo.png"
-    alt="412 Ministry"
+    alt="412 MINISTRY"
     style={{
       width: size, height: size, borderRadius: size * 0.29,
       clipPath: `inset(0 round ${size * 0.29}px)`,
@@ -294,7 +294,7 @@ function ProfileSetupStep({ userId, onDone }) {
         <div style={{ background: "#1B2A4A", borderRadius: 14, padding: "1.25rem", marginBottom: "1.25rem" }}>
           <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", marginBottom: "0.5rem" }}>Add to Your Home Screen</div>
           <div style={{ fontSize: "13px", color: "#B8C0D0", lineHeight: 1.6, marginBottom: "1rem" }}>
-            Install the 412 Ministry app on your phone so you can open it like any other app — no browser needed.
+            Install the 412 MINISTRY app on your phone so you can open it like any other app — no browser needed.
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             <div>
@@ -333,7 +333,7 @@ function WelcomeScreen({ onEnter }) {
         Welcome to
       </div>
       <div style={{ fontSize: "38px", fontWeight: 900, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.03em", marginBottom: "0.25rem" }}>
-        412 Ministry
+        412 MINISTRY
       </div>
       <div style={{ fontSize: "38px", fontWeight: 900, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.03em", marginBottom: "1.5rem" }}>
         Platform.

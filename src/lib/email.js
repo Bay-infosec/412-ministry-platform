@@ -55,7 +55,7 @@ export function sendEmail(to, subject, html, toName = "") {
     announcement_body: body,
     subject,
     message: body,
-    event_name: "412 Ministry",
+    event_name: "412 MINISTRY",
     event_dates: "",
     event_location: "",
     platform_url: window.location.origin,

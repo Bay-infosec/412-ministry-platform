@@ -41,7 +41,7 @@ export default function ResetPassword({ onDone }) {
       <div style={{ width: "100%", maxWidth: 400, background: "#fff", borderRadius: 20, padding: "1.75rem" }}>
         <img
           src="/logo.png"
-          alt="412 Ministry"
+          alt="412 MINISTRY"
           style={{ width: 64, height: 64, borderRadius: 19, clipPath: "inset(0 round 19px)", objectFit: "cover", display: "block", marginBottom: "1.25rem" }}
         />
         <div style={{ fontSize: "25px", fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.03em", marginBottom: 6 }}>
