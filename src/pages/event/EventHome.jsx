@@ -91,7 +91,7 @@ function PastEvents({ history }) {
   );
 }
 
-export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin }) {
+export default function EventHome({ data, initialEventId, onOpenPage, onNavigate, onOpenAdmin }) {
   const { activeEvent, eventMember, profile, isAdmin, history, eventChecklist } = data;
 
   // Build enrolled event options from history (non-archived), sorted by start date
@@ -120,7 +120,10 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
   const savedEventView = localStorage.getItem("event_default_view");
   const validViews = new Set(["browse", "past", ...enrolledEvents.map((event) => event.key)]);
   const hasValidSavedView = validViews.has(savedEventView);
-  const initialEventView = hasValidSavedView
+  const requestedEventView = initialEventId ? `evt_${initialEventId}` : null;
+  const initialEventView = validViews.has(requestedEventView)
+    ? requestedEventView
+    : hasValidSavedView
     ? savedEventView
     : enrolledEvents[0]?.key || "browse";
   const [view, setView] = useState(initialEventView);

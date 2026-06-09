@@ -278,9 +278,9 @@ export default function PrayerChain({ data, onBack }) {
       </div>
 
       {/* Reminder */}
-      <div style={{ background: "#111", borderRadius: 12, padding: "0.875rem 1.25rem", marginBottom: "1.5rem" }}>
-        <div style={{ fontSize: "12px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS, marginBottom: 4 }}>A reminder</div>
-        <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)", fontFamily: SANS, lineHeight: 1.6 }}>
+      <div style={{ background: "#FF4D00", borderRadius: 12, padding: "0.875rem 1.25rem", marginBottom: "1.5rem" }}>
+        <div style={{ fontSize: "12px", fontWeight: 800, color: "#fff", fontFamily: SANS, marginBottom: 4 }}>A reminder</div>
+        <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.84)", fontFamily: SANS, lineHeight: 1.6 }}>
           Assigned days are focused days, not limits. Pray for every team, every day. The chain only works when everyone stays in it.
         </div>
       </div>

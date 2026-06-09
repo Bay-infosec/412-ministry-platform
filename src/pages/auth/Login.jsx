@@ -64,7 +64,7 @@ export default function Login({ onLoggedIn }) {
         <img
           src="/logo.png"
           alt="412 Ministry"
-          style={{ width: 80, height: 80, borderRadius: 18, objectFit: "cover", marginBottom: "1.25rem", border: "2.5px solid rgba(255,77,0,0.6)", boxShadow: "0 0 0 6px rgba(255,77,0,0.12), 0 12px 32px rgba(0,0,0,0.3)" }}
+          style={{ width: 80, height: 80, borderRadius: 23, clipPath: "inset(0 round 23px)", objectFit: "cover", marginBottom: "1.25rem", border: "2.5px solid rgba(255,77,0,0.6)", boxShadow: "0 0 0 6px rgba(255,77,0,0.12), 0 12px 32px rgba(0,0,0,0.3)" }}
         />
         <div style={{ fontSize: "28px", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
           412 <span style={{ color: "#FF4D00" }}>Ministry</span>

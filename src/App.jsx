@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "./lib/supabase.js";
 import { matchesAudience } from "./lib/utils.js";
-import { Login, ChangePassword } from "./pages/auth/index.js";
+import { Login, ChangePassword, ResetPassword } from "./pages/auth/index.js";
 import { Home } from "./pages/home/index.js";
 import { Updates } from "./pages/updates/index.js";
 import { Profile } from "./pages/profile/index.js";
@@ -26,7 +26,7 @@ function LoadingScreen() {
       <img
         src="/logo.png"
         alt="412 Ministry"
-        style={{ width: 120, height: 120, borderRadius: 28, objectFit: "cover", display: "block" }}
+        style={{ width: 120, height: 120, borderRadius: 34, clipPath: "inset(0 round 34px)", objectFit: "cover", display: "block" }}
       />
       {/* Bouncing dots */}
       <div style={{ display: "flex", gap: 10, alignItems: "flex-end", height: 24 }}>
@@ -97,6 +97,7 @@ export default function App() {
   const [profileReturnTo, setProfileReturnTo] = useState(null);
   const [viewingProfileId, setViewingProfileId] = useState(null);
   const [eventReturnTab, setEventReturnTab] = useState(null);
+  const [selectedEventId, setSelectedEventId] = useState(null);
   const [adminInitProps, setAdminInitProps] = useState(null);
   const [dmTarget, setDmTarget] = useState(null);
 
@@ -535,13 +536,24 @@ export default function App() {
   };
 
   useEffect(() => {
+    const recoveryRequested = new URLSearchParams(window.location.search).get("reset") === "1";
     const timer = setTimeout(
       () => setPhase((p) => (p === "loading" ? "login" : p)),
       8000
     );
-    loadData().finally(() => clearTimeout(timer));
+    if (recoveryRequested) {
+      supabase.auth.getSession().then(({ data: sessionData }) => {
+        if (sessionData.session) {
+          clearTimeout(timer);
+          setPhase("resetpw");
+        }
+      });
+    } else {
+      loadData().finally(() => clearTimeout(timer));
+    }
 
     const handleVisibility = () => {
+      if (recoveryRequested) return;
       if (document.visibilityState !== "visible") return;
       const now = Date.now();
       if (now - lastRefreshRef.current < 30000) return;
@@ -550,7 +562,13 @@ export default function App() {
     };
     document.addEventListener("visibilitychange", handleVisibility);
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" && session) {
+        clearTimeout(timer);
+        setData(null);
+        setPhase("resetpw");
+        return;
+      }
       if (!session) {
         setData(null);
         setPhase("login");
@@ -567,11 +585,23 @@ export default function App() {
   if (phase === "loading") return <LoadingScreen />;
   if (phase === "login") return <Login onLoggedIn={loadData} />;
   if (phase === "changepw") return <ChangePassword onDone={loadData} />;
+  if (phase === "resetpw") return (
+    <ResetPassword
+      onDone={() => {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        loadData();
+      }}
+    />
+  );
   if (phase === "error") return <ErrorScreen message={errMsg} onReset={hardReset} />;
 
   if (phase === "app" && data) {
     const hasEvent = true;
-    const navigate = (t) => { setTab(t); setPage(null); };
+    const navigate = (t) => {
+      setSelectedEventId(null);
+      setTab(t);
+      setPage(null);
+    };
 
     const eventBack = () => {
       if (eventReturnTab) {
@@ -593,6 +623,12 @@ export default function App() {
             onOpenOnboarding={() => { setEventReturnTab("home"); setTab("event"); setPage("onboarding"); }}
             onOpenMyTeam={() => { setEventReturnTab("home"); setTab("event"); setPage("myteam"); }}
             onOpenUpdates={() => navigate("updates")}
+            onOpenEvent={(eventId) => {
+              setSelectedEventId(eventId);
+              setEventReturnTab("home");
+              setTab("event");
+              setPage(null);
+            }}
             onOpenEventPage={(p) => { setEventReturnTab("home"); setTab("event"); setPage(p); }}
             chatUnread={chatUnread}
             onlineUsers={onlineUsers}
@@ -604,6 +640,7 @@ export default function App() {
         {tab === "event" && !page && (
           <EventHome
             data={data}
+            initialEventId={selectedEventId}
             onOpenPage={(p) => { setEventReturnTab(null); setPage(p); }}
             onNavigate={navigate}
             onOpenAdmin={(event) => {

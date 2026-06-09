@@ -266,7 +266,7 @@ function BookIcon()   { return <svg width="16" height="16" viewBox="0 0 24 24" f
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function Home({
-  data, onNavigate, onOpenChat, onOpenOnboarding, onOpenMyTeam, onOpenUpdates, onOpenEventPage, chatUnread, readIds, onMarkRead, onViewProfile,
+  data, onNavigate, onOpenChat, onOpenOnboarding, onOpenMyTeam, onOpenUpdates, onOpenEvent, onOpenEventPage, chatUnread, readIds, onMarkRead, onViewProfile,
 }) {
   const {
     profile, eventMember, eventChecklist, announcements, unreadCount,
@@ -328,7 +328,7 @@ export default function Home({
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div style={{ marginBottom: "1.25rem" }}>
         <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, letterSpacing: "-0.02em", color: "#1B2A4A", lineHeight: 1, marginBottom: "0.875rem" }}>
-          412 <span style={{ color: "#FF4D00" }}>Ministry</span>
+          412 <span style={{ color: "#FF4D00", fontSize: "28px" }}>Ministry</span>
         </div>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div>
@@ -416,7 +416,7 @@ export default function Home({
               <EventCard
                 key={ev.id}
                 ev={ev}
-                onClick={() => ev.id === activeEvent?.id ? onNavigate("event") : onNavigate("events")}
+                onClick={() => onOpenEvent?.(ev.id)}
               />
             ))}
           </HScroll>

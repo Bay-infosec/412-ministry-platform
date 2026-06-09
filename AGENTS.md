@@ -93,20 +93,24 @@ Font: system-ui only (no Google Fonts). Remove `useFonts()` / any Google Fonts l
 ## Current State (as of 2026-06-08)
 
 ### Branch: `design-polish`
-Latest implementation includes the event bookmark/onboarding, event-history, profile-tag, pastor-filter, and Contact 412 visibility fixes.
+Latest implementation includes direct Home-to-event navigation, a complete forgot-password recovery screen, rounded rendered logos, a larger Home brand wordmark, and the updated Prayer Chain reminder.
 Verification: 34/34 tests pass and the production build passes.
+Manual browser verification was unavailable in the 2026-06-08 session because the in-app browser connection was not available.
 
 ### What's Built ✅
 
 **Auth & shell**
 - Login (Enter key submits), ChangePassword (password validation enforced)
+- Forgot Password sends a Supabase Auth recovery email; the recovery link now opens a dedicated new-password screen before returning to the app
 - App.jsx: state-based navigation, app-wide presence channel, chat unread badge
 - Shell, BottomNav (4 tabs: Home · Conference · Updates · Profile), BackBtn
-- PWA manifest + full iOS/Android meta tags, favicon set
+- PWA manifest + full iOS/Android meta tags, favicon set; rendered logo instances use rounded clipping
 
 **Home**
 - Dismissible announcement, daily verse, horizontal event/task/coordinator sections
 - Enrolled active events are ordered by soonest start date
+- Event cards open the exact selected event profile, including the 412 Board Meeting
+- The 412 Ministry wordmark gives “Ministry” stronger visual emphasis
 - Tools contains only The Four and Field Guide, using matching white cards
 - Chat button in header (red unread dot / green online dot)
 - Contact 412 Ministry moved to Profile
@@ -123,6 +127,7 @@ Verification: 34/34 tests pass and the production build passes.
 - OnboardingFlow: 6 steps, saves to `event_checklist`, Save & exit, team reveal mechanic
 - MyTeam, CoordinatorView (filters self out, "Not started" badge)
 - PrayerChain: pulls from DB, 2-col grid per team, 12-team schedule Jul 10–Aug 2
+- Prayer Chain reminder uses the solid orange current palette
 - TheFour, FieldGuide (real Drive URL + offline download), MyChecklist
 - Chat: Supabase Realtime, grouped messages, emoji, presence strip, DMs, group threads
 
@@ -159,7 +164,8 @@ Verification: 34/34 tests pass and the production build passes.
 1. Deploy `delete-user`: `npx supabase login`, then `npx supabase functions deploy delete-user --project-ref hoxjardsthjuhbxivken`.
 2. **⚠️ Rotate Supabase API keys** — service_role key was in shared PDF.
 3. Manually verify Welcome and Announcement delivery from the deployed design preview.
-4. Confirm Enkhbayar's Pastor tag in Admin → Users; failed tag writes now show an error instead of appearing successful.
+4. Manually verify Home → 412 Board Meeting and the emailed forgot-password recovery link on the deployed preview.
+5. Confirm Enkhbayar's Pastor tag in Admin → Users; failed tag writes now show an error instead of appearing successful.
 
 ---
 

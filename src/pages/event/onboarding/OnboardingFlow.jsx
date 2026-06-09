@@ -77,7 +77,7 @@ function WelcomePage({ profile, activeEvent, onNext }) {
           }}>
             {activeEvent?.name || "Set Apart 2026"}
           </div>
-          <img src="/logo.png" alt="412 Ministry" style={{ height: 34, width: "auto" }} />
+          <img src="/logo.png" alt="412 Ministry" style={{ width: 34, height: 34, borderRadius: 10, clipPath: "inset(0 round 10px)", objectFit: "cover" }} />
         </div>
 
         <div style={{ textAlign: "center" }}>

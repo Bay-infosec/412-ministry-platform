@@ -46,7 +46,8 @@ const LogoImg = ({ size = 100, style = {} }) => (
     src="/logo.png"
     alt="412 Ministry"
     style={{
-      width: size, height: size, borderRadius: size * 0.22,
+      width: size, height: size, borderRadius: size * 0.29,
+      clipPath: `inset(0 round ${size * 0.29}px)`,
       objectFit: "cover",
       border: "3px solid rgba(255,255,255,0.55)",
       boxShadow: "0 0 0 6px rgba(255,255,255,0.15), 0 16px 40px rgba(0,0,0,0.2)",
