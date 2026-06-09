@@ -1,46 +1,56 @@
-<title>Welcome to 412 Ministry</title>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>412 Ministry</title>
 
-<meta
-  name="description"
-  content="A community of believers growing in faith, building meaningful relationships, and serving Christ together."
-/>
+    <!-- Favicon (browser tab icon) -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
 
-<!-- Open Graph / Facebook Messenger -->
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://412-ministry-platform.vercel.app" />
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#162038" />
 
-<meta
-  property="og:title"
-  content="Welcome to 412 Ministry"
-/>
+    <!-- iOS home screen -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="412 Ministry" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180.png" />
 
-<meta
-  property="og:description"
-  content="A community of believers growing in faith, building meaningful relationships, and serving Christ together."
-/>
+    <!-- Android / general -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="412 Ministry" />
+    <meta name="description" content="412 Ministry Platform — events, teams, and community" />
 
-<meta
-  property="og:image"
-  content="https://412-ministry-platform.vercel.app/preview.png"
-/>
+    <!-- Open Graph / Facebook Messenger link preview -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://412-ministry-platform.vercel.app" />
+    <meta property="og:title" content="412 Ministry" />
+    <meta property="og:description" content="412 Ministry Platform — events, teams, and community" />
+    <meta property="og:image" content="https://412-ministry-platform.vercel.app/preview.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
 
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta property="og:site_name" content="412 Ministry" />
-
-<!-- Twitter / Discord / Slack -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta
-  name="twitter:title"
-  content="Welcome to 412 Ministry"
-/>
-
-<meta
-  name="twitter:description"
-  content="A community of believers growing in faith, building meaningful relationships, and serving Christ together."
-/>
-
-<meta
-  name="twitter:image"
-  content="https://412-ministry-platform.vercel.app/preview.png"
-/>
+    <style>
+      /* Force light UA styling — without this, devices in system dark mode
+         render native inputs/textareas/selects with dark backgrounds and
+         light text, clashing with the app's light design regardless of
+         the inline styles each field sets. */
+      :root { color-scheme: light; }
+      /* Prevent auto-zoom on input focus on iOS */
+      input, textarea, select { font-size: 16px !important; }
+      * { -webkit-tap-highlight-color: transparent; }
+      /* App background — prevents white flash on rubber-band scroll */
+      html, body { background: #FAFAFA; }
+      /* Push content below Dynamic Island / notch */
+      body { padding-top: env(safe-area-inset-top); }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
