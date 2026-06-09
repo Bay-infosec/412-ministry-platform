@@ -141,9 +141,13 @@ export default function EventHome({ data, initialEventId, onOpenPage, onNavigate
         ? activeEvent
         : (history || []).find((h) => h.event_id === viewEventId)?.events || null)
     : null;
+  const viewMembership = viewEventId === activeEvent?.id
+    ? eventMember
+    : (history || []).find((h) => h.event_id === viewEventId) || null;
   const showMine = !!viewEvent;
 
-  const isCoordinator = eventMember?.event_role === "coordinator" || isAdmin;
+  const isTeamLeader = isAdmin || ["leader", "coordinator"].includes(viewMembership?.event_role);
+  const isCoordinator = isAdmin || viewMembership?.event_role === "coordinator";
   const days = viewEvent ? daysUntil(viewEvent.dates) : null;
 
   // Checklist + onboarding progress (for onboarding card)
@@ -158,18 +162,20 @@ export default function EventHome({ data, initialEventId, onOpenPage, onNavigate
 
   const sections = [];
   if (isConference) {
-    sections.push(
-      { id: "myteam",       label: "My Team",       desc: eventMember?.team_number ? `Team ${eventMember.team_number} · checklist inside` : "Team assignment & checklist" },
-      { id: "prayer_chain", label: "Prayer Chain",  desc: "Pray for one another" },
-      { id: "the_four",     label: "The Four",       desc: "Your four essentials" },
-      { id: "field_guide",  label: "Field Guide",    desc: "Resources and references" },
-    );
+    sections.push({ id: "the_four", label: "The Four", desc: "Gospel sharing essentials" });
+    if (isTeamLeader) {
+      sections.unshift(
+        { id: "myteam", label: "My Team", desc: viewMembership?.team_number ? `Team ${viewMembership.team_number} · checklist inside` : "Team assignment & checklist" },
+        { id: "prayer_chain", label: "Prayer Chain", desc: "Pray for one another" },
+      );
+      sections.push({ id: "field_guide", label: "Field Guide", desc: "Team leader resources and references" });
+    }
     if (isCoordinator) {
       sections.push({ id: "coordinator", label: "Coordinator Dashboard", desc: "Overview of teams you oversee" });
     }
   }
 
-  const zoom = viewEvent?.zoom_training_dates ? splitZoomDisplay(viewEvent.zoom_training_dates) : null;
+  const zoom = isTeamLeader && viewEvent?.zoom_training_dates ? splitZoomDisplay(viewEvent.zoom_training_dates) : null;
   const [zoomOpen, setZoomOpen] = useState(false);
 
   return (
@@ -272,7 +278,7 @@ export default function EventHome({ data, initialEventId, onOpenPage, onNavigate
       </div>
 
       {/* Onboarding — directly below event information */}
-      {eventMember && viewEventId === activeEvent?.id && (
+      {isTeamLeader && eventMember && viewEventId === activeEvent?.id && (
         <div style={{ background: "#FF4D00", borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.625rem" }}>
             <div>

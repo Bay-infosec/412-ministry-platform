@@ -198,13 +198,8 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
   }
 
   async function loadMembers() {
-    if (!activeEvent?.id) return;
-    const { data: rows } = await supabase
-      .from("event_members")
-      .select("profile_id, profiles!event_members_profile_id_fkey(id, full_name, nickname, photo_url, last_seen_at)")
-      .eq("event_id", activeEvent.id)
-      .neq("profile_id", myId);
-    const members = (rows || []).map((r) => r.profiles).filter(Boolean);
+    const { data: rows } = await supabase.rpc("get_platform_directory");
+    const members = (rows || []).filter((member) => member.id !== myId);
     setAllMembers(members);
 
     // Push-subscribed members
@@ -787,14 +782,10 @@ function NewChatView({ myId, activeEvent, canCreateGroup, onlineUsers, onSelectP
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    if (!activeEvent?.id) return;
     supabase
-      .from("event_members")
-      .select("profile_id, profiles!event_members_profile_id_fkey(id, full_name, photo_url)")
-      .eq("event_id", activeEvent.id)
-      .neq("profile_id", myId)
-      .then(({ data: rows }) => setPeople((rows || []).map((r) => r.profiles).filter(Boolean)));
-  }, [activeEvent?.id]);
+      .rpc("get_platform_directory")
+      .then(({ data: rows }) => setPeople((rows || []).filter((person) => person.id !== myId)));
+  }, [myId]);
 
   const onlineIds = new Set(onlineUsers.map((u) => u.user_id));
   const filtered = search.trim()
@@ -859,14 +850,10 @@ function GroupCreateView({ myId, activeEvent, onlineUsers, onCreated, onBack }) 
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    if (!activeEvent?.id) return;
     supabase
-      .from("event_members")
-      .select("profile_id, profiles!event_members_profile_id_fkey(id, full_name, photo_url)")
-      .eq("event_id", activeEvent.id)
-      .neq("profile_id", myId)
-      .then(({ data: rows }) => setPeople((rows || []).map((r) => r.profiles).filter(Boolean)));
-  }, [activeEvent?.id]);
+      .rpc("get_platform_directory")
+      .then(({ data: rows }) => setPeople((rows || []).filter((person) => person.id !== myId)));
+  }, [myId]);
 
   const onlineIds = new Set(onlineUsers.map((u) => u.user_id));
   const filtered = search.trim()
