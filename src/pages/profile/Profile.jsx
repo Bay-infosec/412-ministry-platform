@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "../../lib/supabase.js";
 import { formatPhoneInput, validatePassword } from "../../lib/utils.js";
-import { pushSupported, pushPermission, subscribeToPush, unsubscribeFromPush } from "../../lib/push.js";
+import { pushSupported, pushPermission, hasCurrentPushSubscription, subscribeToPush, unsubscribeFromPush } from "../../lib/push.js";
 import { TSEC, BORDER, SANS } from "../../lib/constants.js";
 import { Shell } from "../../components/layout/index.js";
 import { Card, Field, Button, Avatar, SectionLabel, Badge, ProfileTags } from "../../components/ui/index.js";
@@ -113,16 +113,22 @@ function PhotoCropModal({ file, onConfirm, onCancel }) {
 
 function InstallAppModal({ onClose, profileId }) {
   const [notifPerm, setNotifPerm] = useState(() => pushPermission());
+  const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifBusy, setNotifBusy] = useState(false);
+
+  useEffect(() => {
+    hasCurrentPushSubscription().then(setNotifEnabled);
+  }, []);
 
   async function toggleNotif() {
     setNotifBusy(true);
-    if (notifPerm === "granted") {
+    if (notifEnabled) {
       await unsubscribeFromPush(profileId, supabase);
     } else {
       await subscribeToPush(profileId, supabase);
     }
     setNotifPerm(pushPermission());
+    setNotifEnabled(await hasCurrentPushSubscription());
     setNotifBusy(false);
   }
 
@@ -143,7 +149,7 @@ function InstallAppModal({ onClose, profileId }) {
             <div>
               <div style={{ fontSize: "14px", fontWeight: 700, color: "#111", fontFamily: SANS }}>Push Notifications</div>
               <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
-                {notifPerm === "denied" ? "Blocked — enable in browser settings" : notifPerm === "granted" ? "Enabled" : "Get notified about announcements"}
+                {notifPerm === "denied" ? "Blocked — enable in browser settings" : notifEnabled ? "Enabled on this device" : "Get notified on this device"}
               </div>
             </div>
             {notifPerm !== "denied" && (
@@ -152,8 +158,8 @@ function InstallAppModal({ onClose, profileId }) {
                 disabled={notifBusy}
                 style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0, opacity: notifBusy ? 0.5 : 1 }}
               >
-                <div style={{ width: 44, height: 26, borderRadius: 13, background: notifPerm === "granted" ? "#FF4D00" : "#E5E5E5", position: "relative", transition: "background 0.2s" }}>
-                  <div style={{ position: "absolute", top: 3, left: notifPerm === "granted" ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
+                <div style={{ width: 44, height: 26, borderRadius: 13, background: notifEnabled ? "#FF4D00" : "#E5E5E5", position: "relative", transition: "background 0.2s" }}>
+                  <div style={{ position: "absolute", top: 3, left: notifEnabled ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
                 </div>
               </button>
             )}
@@ -438,18 +444,45 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
 
   // Notifications (for settings page toggle)
   const [notifPerm, setNotifPerm] = useState(() => pushPermission());
+  const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifBusy, setNotifBusy] = useState(false);
+  const [notifTestMsg, setNotifTestMsg] = useState("");
 
   const isStaff = profile.platform_role === "admin" || profile.platform_role === "moderator";
 
+  useEffect(() => {
+    hasCurrentPushSubscription().then(setNotifEnabled);
+  }, []);
+
   async function toggleNotifications() {
     setNotifBusy(true);
-    if (notifPerm === "granted") {
+    setNotifTestMsg("");
+    if (notifEnabled) {
       await unsubscribeFromPush(profile.id, supabase);
     } else {
       await subscribeToPush(profile.id, supabase);
     }
     setNotifPerm(pushPermission());
+    setNotifEnabled(await hasCurrentPushSubscription());
+    setNotifBusy(false);
+  }
+
+  async function testNotifications() {
+    setNotifBusy(true);
+    setNotifTestMsg("");
+    const { data: result, error } = await supabase.functions.invoke("send-push", {
+      body: {
+        title: "412 MINISTRY Test Notification",
+        body: "Notifications are enabled on this device.",
+        url: "/",
+        profile_ids: [profile.id],
+      },
+    });
+    if (error || !result?.sent) {
+      setNotifTestMsg("The server could not reach this device. Turn notifications off, then enable them again.");
+    } else {
+      setNotifTestMsg("Test sent. Lock your phone or leave the app, then check Notification Center.");
+    }
     setNotifBusy(false);
   }
 
@@ -576,19 +609,37 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
 
         <Card style={{ padding: "0 1rem" }}>
           {pushSupported() ? (
-            <SettingsRow
-              icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={notifPerm === "granted" ? "#FF4D00" : "#6B7280"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" /></svg>}
-              label="Notifications"
-              sub={notifPerm === "denied" ? "Blocked in browser settings" : notifPerm === "granted" ? "Enabled" : "Get notified about announcements"}
-              onClick={notifPerm !== "denied" ? toggleNotifications : undefined}
-              right={
-                notifPerm !== "denied" ? (
-                  <div style={{ width: 44, height: 26, borderRadius: 13, background: notifPerm === "granted" ? "#FF4D00" : "#E5E5E5", position: "relative", transition: "background 0.2s", flexShrink: 0, opacity: notifBusy ? 0.5 : 1 }}>
-                    <div style={{ position: "absolute", top: 3, left: notifPerm === "granted" ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
-                  </div>
-                ) : null
-              }
-            />
+            <>
+              <SettingsRow
+                icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={notifEnabled ? "#FF4D00" : "#6B7280"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" /></svg>}
+                label="Notifications"
+                sub={notifPerm === "denied" ? "Blocked in browser settings" : notifEnabled ? "Enabled on this device" : "Get notified on this device"}
+                onClick={notifPerm !== "denied" ? toggleNotifications : undefined}
+                right={
+                  notifPerm !== "denied" ? (
+                    <div style={{ width: 44, height: 26, borderRadius: 13, background: notifEnabled ? "#FF4D00" : "#E5E5E5", position: "relative", transition: "background 0.2s", flexShrink: 0, opacity: notifBusy ? 0.5 : 1 }}>
+                      <div style={{ position: "absolute", top: 3, left: notifEnabled ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
+                    </div>
+                  ) : null
+                }
+              />
+              {notifEnabled && (
+                <div style={{ padding: "0.75rem 0 0.9rem 52px", borderBottom: `1px solid ${BORDER}` }}>
+                  <button
+                    onClick={testNotifications}
+                    disabled={notifBusy}
+                    style={{ background: "#111", color: "#fff", border: "none", borderRadius: 9, padding: "9px 13px", fontSize: "12px", fontWeight: 800, fontFamily: SANS, cursor: notifBusy ? "default" : "pointer", opacity: notifBusy ? 0.55 : 1 }}
+                  >
+                    {notifBusy ? "Sending…" : "Send Test Notification"}
+                  </button>
+                  {notifTestMsg && (
+                    <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, lineHeight: 1.45, marginTop: 7, paddingRight: 8 }}>
+                      {notifTestMsg}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           ) : null}
           <SettingsRow
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>}

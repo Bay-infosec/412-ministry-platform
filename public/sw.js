@@ -11,7 +11,7 @@ self.addEventListener("push", (event) => {
       body: data.body || "",
       icon: "/logo.png",
       badge: "/logo.png",
-      tag: data.tag || "412-ministry",
+      tag: data.tag || `412-ministry-${Date.now()}`,
       renotify: true,
       data: { url: data.url || "/" },
     })

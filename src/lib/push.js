@@ -22,6 +22,16 @@ export function pushPermission() {
   return Notification.permission; // 'default' | 'granted' | 'denied'
 }
 
+export async function hasCurrentPushSubscription() {
+  if (!pushSupported()) return false;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    return Boolean(await reg.pushManager.getSubscription());
+  } catch {
+    return false;
+  }
+}
+
 export async function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return null;
   try {
@@ -50,7 +60,7 @@ export async function subscribeToPush(profileId, supabase) {
       }));
 
     const json = sub.toJSON();
-    await supabase.from("push_subscriptions").upsert(
+    const { error } = await supabase.from("push_subscriptions").upsert(
       {
         profile_id: profileId,
         endpoint: json.endpoint,
@@ -59,6 +69,7 @@ export async function subscribeToPush(profileId, supabase) {
       },
       { onConflict: "endpoint" }
     );
+    if (error) throw error;
     return true;
   } catch (e) {
     console.warn("Push subscribe failed:", e);
