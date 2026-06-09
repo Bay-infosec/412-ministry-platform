@@ -99,6 +99,7 @@ Latest implementation gates conference leader content by event role and adds a p
 Verification: 34/34 tests pass and the production build passes.
 Scheduling completed on 2026-06-09: admins can schedule announcements (with optional EmailJS email and push delivery) and schedule inactive events to become active. Supabase cron runs `process-scheduled-content` every minute; the deployed `process-scheduled` Edge Function is JWT-protected and verified with repeated HTTP 200 cron executions.
 One-time Set Apart leader welcome campaign is queued for 2026-06-10 at 7:00 AM Pacific. At execution time it rechecks Supabase Auth and individually emails only leaders/coordinators with no `last_sign_in_at`; signed-in accounts are skipped. Campaign credentials are stored only in the RLS-protected database record, not Git.
+Set Apart Zoom training announcement is queued for 2026-06-10 at 12:00 PM Pacific for all leaders/coordinators. Email delivery is disabled; it will publish in-app and attempt push delivery.
 Production verification: `/preview.png` returns HTTP 200 and the deployed page exposes the new Open Graph/Twitter metadata and navy theme color.
 The deployed bundle `index-U55XT8En.js` contains the leader-role gates and `get_platform_directory()` Messenger search.
 EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test-only displayed password was `TestOnly!412`.
@@ -185,6 +186,10 @@ Set Apart readiness was refined on 2026-06-09: leaders and coordinators are both
 - `process-scheduled` Edge Function version 2 publishes due announcements, sends configured EmailJS/push delivery, activates due events, and runs one-time invite campaigns
 - Invite campaigns skip any account that has signed in before send time
 - Migration `20260609103500_schedule_set_apart_welcome_campaign.sql` creates the private campaign queue; the Set Apart campaign is scheduled for June 10 at 7:00 AM Pacific
+- `send-push` Edge Function version 5 reads VAPID configuration from Edge secrets or the service-role-only `app_runtime_secrets` fallback
+- Push test on 2026-06-09 delivered successfully: 1 sent, 0 failed, 0 stale
+- Only one Set Apart leader currently has a push subscription; in-app announcements still reach all eligible leaders
+- Migration `20260609113000_secure_push_runtime_config.sql` creates the RLS-locked runtime configuration table without committing secret values
 - 15 DB indexes added
 - Social preview uses `public/preview.png` with the ministry community description; browser favicon uses rounded `favicon.svg`
 
@@ -198,9 +203,9 @@ Set Apart readiness was refined on 2026-06-09: leaders and coordinators are both
 
 1. **⚠️ Rotate Supabase API keys** — service_role key was in shared PDF.
 2. After 7:00 AM Pacific on 2026-06-10, inspect `scheduled_invite_campaigns.results` and confirm the Set Apart leader campaign's sent/skipped/failed counts.
-3. Manually schedule one announcement to the admin account with email + push enabled and verify both delivery channels after its scheduled minute.
-4. Manually schedule one inactive test event, verify it remains hidden before publish time, then verify it becomes active.
-5. Manually verify Home → 412 Board Meeting and the emailed forgot-password recovery link on production.
+3. Encourage leaders to install the PWA and enable notifications; only subscribed devices can receive push.
+4. After noon Pacific on 2026-06-10, verify the Zoom announcement published in-app and inspect its `push_sent_at` / `delivery_error`.
+5. Manually schedule one inactive test event, verify it remains hidden before publish time, then verify it becomes active.
 
 ---
 
