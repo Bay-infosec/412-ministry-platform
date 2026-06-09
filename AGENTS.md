@@ -95,7 +95,7 @@ Font: system-ui only (no Google Fonts). Remove `useFonts()` / any Google Fonts l
 ### Branch: `design-polish`
 The user merged `design-polish` into `main` on 2026-06-08, then continued work on `design-polish`.
 Latest production merge: `b596c1e` on `main` (2026-06-09). The navy first-login flow and new social preview are live.
-Latest implementation updates first-login setup styling, makes Messenger fully opaque and Active Now actionable, hides empty conversations until the first message is sent, repairs incomplete duplicate accounts during invitation, and replaces the social preview/favicon metadata.
+Latest implementation gates conference leader content by event role and adds a privacy-limited, platform-wide Messenger directory for every authenticated member.
 Verification: 34/34 tests pass and the production build passes.
 Production verification: `/preview.png` returns HTTP 200 and the deployed page exposes the new Open Graph/Twitter metadata and navy theme color.
 EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test-only displayed password was `TestOnly!412`.
@@ -122,7 +122,9 @@ EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test
 **Conference (EventHome)**
 - Event selector opens the user's soonest enrolled active event
 - Bookmark button lets a user choose the event view that opens first
-- Orange onboarding progress panel appears immediately below event information
+- Team leader onboarding, My Team, Prayer Chain, Field Guide, Zoom training, and coordinator tools require the appropriate event role
+- Regular participants retain general event information and The Four
+- Orange onboarding progress panel appears immediately below event information for team leaders
 - Past Events only contains events whose status is actually `archived`
 - Browse tab = EventsBrowser (public events + join requests)
 - Past tab = archived events from user history
@@ -136,6 +138,8 @@ EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test
 - Chat: Supabase Realtime, grouped messages, emoji, presence strip, DMs, group threads
 - Messenger masks the underlying app at every viewport width; tapping Active Now starts a DM directly
 - Opening a new DM does not create chat history; the conversation is persisted only when the first message is sent
+- Messenger name search and new-message/group pickers cover the full invite-only platform through `get_platform_directory()`
+- The directory exposes only ID, name, nickname, photo, and last-seen time; email and phone remain private
 
 **Admin panel (full)**
 - AdminShell → Users → PersonDetail (tag chips, event-scoped card) → InviteFlow

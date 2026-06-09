@@ -508,6 +508,13 @@ export default function App() {
     return () => supabase.removeChannel(ch);
   }, [data?.profile?.id]);
 
+  useEffect(() => {
+    if (phase !== "app" || tab !== "event" || !page || !data) return;
+    const leaderOnlyPages = new Set(["onboarding", "zoom_training", "myteam", "prayer_chain", "field_guide", "coordinator"]);
+    const hasLeaderAccess = data.isAdmin || ["leader", "coordinator"].includes(data.eventMember?.event_role);
+    if (leaderOnlyPages.has(page) && !hasLeaderAccess) setPage(null);
+  }, [phase, tab, page, data?.isAdmin, data?.eventMember?.event_role]);
+
   // Chat unread badge — listen for new DMs addressed to me
   useEffect(() => {
     if (!data?.profile) return;

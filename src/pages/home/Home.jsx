@@ -284,6 +284,7 @@ export default function Home({
 
   // Coordinator team progress
   const isCoordinator = eventMember?.event_role === "coordinator";
+  const isTeamLeader = data.isAdmin || ["leader", "coordinator"].includes(eventMember?.event_role);
   const [teamProgress, setTeamProgress] = useState([]);
   useEffect(() => {
     if (!isCoordinator || !activeEvent || !profile?.id) return;
@@ -320,8 +321,8 @@ export default function Home({
   const TOTAL_STEPS = 6;
 
   const latestAnn = (announcements || []).find(() => true);
-  const nextPrayer = getNextPrayerDate(eventMember?.team_number);
-  const hasUpcomingTasks = nextPrayer || activeEvent?.zoom_training_dates;
+  const nextPrayer = isTeamLeader ? getNextPrayerDate(eventMember?.team_number) : null;
+  const hasUpcomingTasks = isTeamLeader && (nextPrayer || activeEvent?.zoom_training_dates);
 
   return (
     <Shell withNav>
@@ -361,7 +362,7 @@ export default function Home({
 
       {/* ── Announcement banner ─────────────────────────────────────── */}
       {latestAnn && !(readIds || []).includes(latestAnn.id) && (
-        <div style={{ position: "relative", marginBottom: "1rem" }}>
+        <div style={{ position: "relative", marginBottom: "0.5rem" }}>
           <button
             onClick={onOpenUpdates}
             style={{
@@ -425,7 +426,7 @@ export default function Home({
       )}
 
       {/* ── Onboarding progress (compact) ───────────────────────────── */}
-      {eventMember && !onboardingComplete && (
+      {isTeamLeader && eventMember && !onboardingComplete && (
         <div style={{ background: "#fff", border: "1px solid #E5E5E5", borderRadius: 14, padding: "0.875rem 1rem", marginBottom: "1rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <div style={{ fontSize: "12px", fontWeight: 800, color: "#1B2A4A", fontFamily: SANS }}>
@@ -517,7 +518,7 @@ export default function Home({
       )}
 
       {/* ── Training Materials ──────────────────────────────────────── */}
-      {(trainingMaterials || []).length > 0 && (
+      {isTeamLeader && (trainingMaterials || []).length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
           <SectionLabel>Training Materials</SectionLabel>
           <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden" }}>
@@ -560,8 +561,8 @@ export default function Home({
           <SectionLabel>Tools</SectionLabel>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {[
-              { id: "the_four",    label: "The Four",    icon: <FourIcon /> },
-              { id: "field_guide", label: "Field Guide", icon: <BookIcon /> },
+              { id: "the_four", label: "The Four", icon: <FourIcon /> },
+              ...(isTeamLeader ? [{ id: "field_guide", label: "Field Guide", icon: <BookIcon /> }] : []),
             ]
               .map((t) => (
                 <button
