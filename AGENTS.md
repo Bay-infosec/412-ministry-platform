@@ -97,6 +97,7 @@ The user merged `design-polish` into `main` on 2026-06-08, then continued work o
 Latest production merge: `6e9989b` on `main` (2026-06-09). Member role gates and platform-wide Messenger search are live.
 Latest implementation gates conference leader content by event role and adds a privacy-limited, platform-wide Messenger directory for every authenticated member.
 Verification: 34/34 tests pass and the production build passes.
+Scheduling completed on 2026-06-09: admins can schedule announcements (with optional EmailJS email and push delivery) and schedule inactive events to become active. Supabase cron runs `process-scheduled-content` every minute; the deployed `process-scheduled` Edge Function is JWT-protected and verified with repeated HTTP 200 cron executions.
 Production verification: `/preview.png` returns HTTP 200 and the deployed page exposes the new Open Graph/Twitter metadata and navy theme color.
 The deployed bundle `index-U55XT8En.js` contains the leader-role gates and `get_platform_directory()` Messenger search.
 EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test-only displayed password was `TestOnly!412`.
@@ -155,6 +156,8 @@ Set Apart readiness was refined on 2026-06-09: leaders and coordinators are both
 - Team Setup and Members are collapsible; non-conference events omit onboarding, team, and personal-message controls
 - EventList → EventDetail (team setup, coordinator picker) → CoLeaderPairing
 - AnnouncementList → AnnouncementEditor (draft → pending_approval → published + email toggle)
+- Admin announcements support future publishing with optional EmailJS email and push delivery; scheduled drafts can be edited or returned to ordinary drafts
+- New events can be scheduled to become active automatically; admins can cancel the schedule or publish immediately without affecting other active events
 - ChurchList, TrainingMaterials
 - ModeratorAssignments (event-scoped mods), AuditLog, SystemGroups (4 default group chats)
 
@@ -167,6 +170,7 @@ Set Apart readiness was refined on 2026-06-09: leaders and coordinators are both
 
 **Infrastructure**
 - EmailJS: Welcome template for invitations; Announcement template for announcements and Contact 412 messages
+- Scheduled announcement email uses the existing EmailJS Announcement template; there is no separate bulk-email composer
 - EmailJS source of truth: `docs/email-templates/welcome.html` and `docs/email-templates/announcement.html`
 - Both dashboard templates use email-safe table layouts, current branding, and the variables already sent by `src/lib/email.js`
 - `create-user` edge function version 8 creates accounts without Resend and repairs incomplete Auth/profile records instead of returning a false duplicate error
@@ -174,6 +178,8 @@ Set Apart readiness was refined on 2026-06-09: leaders and coordinators are both
 - Supabase Auth handles forgot-password/reset emails independently of EmailJS
 - RLS: all recursion bugs fixed via SECURITY DEFINER helper fns (`is_platform_admin()`, `get_my_event_ids()`, `get_my_assigned_event_ids()`, `get_my_conversation_ids()`)
 - Admins can read/delete system-group participant rows without joining each group; migration `20260609043000_admin_manage_conversation_participants.sql`
+- Scheduling migration `20260609094500_scheduled_content.sql` adds delivery/schedule fields and an active one-minute `pg_cron` job
+- `process-scheduled` Edge Function version 1 publishes due announcements, sends configured EmailJS/push delivery, and activates due events
 - 15 DB indexes added
 - Social preview uses `public/preview.png` with the ministry community description; browser favicon uses rounded `favicon.svg`
 
@@ -186,8 +192,9 @@ Set Apart readiness was refined on 2026-06-09: leaders and coordinators are both
 ## Next Up
 
 1. **⚠️ Rotate Supabase API keys** — service_role key was in shared PDF.
-3. Manually verify Welcome and Announcement delivery from the deployed design preview.
-4. Manually verify Home → 412 Board Meeting and the emailed forgot-password recovery link on the deployed preview.
+2. Manually schedule one announcement to the admin account with email + push enabled and verify both delivery channels after its scheduled minute.
+3. Manually schedule one inactive test event, verify it remains hidden before publish time, then verify it becomes active.
+4. Manually verify Welcome delivery, Home → 412 Board Meeting, and the emailed forgot-password recovery link on production.
 5. Enkhbayar Ulambayar is confirmed in Supabase with `pastor` and `board_member` tags and is already a participant in the Pastors system group.
 
 ---

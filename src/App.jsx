@@ -312,7 +312,7 @@ export default function App() {
       let eventsQuery = supabase
         .from("events")
         .select("id, name, type, description, dates, location, fee, registration_url, visible_to_public, allow_join_requests, status, start_date, end_date")
-        .neq("status", "archived");
+        .eq("status", "active");
       if (enrolledEventIds.length > 0) {
         eventsQuery = eventsQuery.or(`visible_to_public.eq.true,id.in.(${enrolledEventIds.join(",")})`);
       } else {

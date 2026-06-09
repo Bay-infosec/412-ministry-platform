@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
+import { TSEC, SANS } from "../../../lib/constants.js";
 import { Card, SectionLabel } from "../../../components/ui/index.js";
-import { sendAnnouncementEmails } from "../../../lib/email.js";
 
 const STATUS_COLORS = {
   published:        { bg: "#D1FAE5", color: "#065F46" },
   pending_approval: { bg: "#FEF3C7", color: "#92400E" },
+  scheduled:        { bg: "#DBEAFE", color: "#1D4ED8" },
   draft:            { bg: "#F3F4F6", color: "#374151" },
 };
 
 const STATUS_LABELS = {
   published:        "Published",
   pending_approval: "Pending",
+  scheduled:        "Scheduled",
   draft:            "Draft",
 };
 
@@ -45,30 +46,32 @@ function AudienceChip({ audience }) {
 }
 
 export default function AnnouncementList({ data, onNew, onEdit, onToast, isAdmin }) {
-  const { allAnnouncements = [], activeEvent } = data;
+  const { allAnnouncements = [] } = data;
   const [busy, setBusy] = useState(null);
 
   const grouped = {
     pending_approval: allAnnouncements.filter((a) => a.status === "pending_approval"),
     published:        allAnnouncements.filter((a) => a.status === "published"),
-    draft:            allAnnouncements.filter((a) => a.status === "draft"),
+    scheduled:        allAnnouncements.filter((a) => isScheduled(a)),
+    draft:            allAnnouncements.filter((a) => a.status === "draft" && !isScheduled(a)),
   };
 
   const approve = async (ann) => {
     setBusy(ann.id + "_approve");
-    const { error } = await supabase.from("announcements").update({ status: "published" }).eq("id", ann.id);
+    const { error } = await supabase
+      .from("announcements")
+      .update({ status: "draft", publish_at: new Date().toISOString() })
+      .eq("id", ann.id);
+    if (!error) await supabase.functions.invoke("process-scheduled", { body: {} });
     setBusy(null);
     if (error) { onToast("Could not approve.", "error"); return; }
     onToast(`"${ann.title}" published.`);
     data.allAnnouncements = allAnnouncements.map((a) => a.id === ann.id ? { ...a, status: "published" } : a);
-    if (activeEvent?.id) {
-      sendAnnouncementEmails(ann.audience, ann, activeEvent.id);
-    }
   };
 
   const reject = async (ann) => {
     setBusy(ann.id + "_reject");
-    const { error } = await supabase.from("announcements").update({ status: "draft" }).eq("id", ann.id);
+    const { error } = await supabase.from("announcements").update({ status: "draft", publish_at: null }).eq("id", ann.id);
     setBusy(null);
     if (error) { onToast("Could not reject.", "error"); return; }
     onToast(`"${ann.title}" moved back to draft.`);
@@ -76,25 +79,26 @@ export default function AnnouncementList({ data, onNew, onEdit, onToast, isAdmin
 
   const unpublish = async (ann) => {
     setBusy(ann.id + "_unpublish");
-    const { error } = await supabase.from("announcements").update({ status: "draft" }).eq("id", ann.id);
+    const { error } = await supabase.from("announcements").update({ status: "draft", publish_at: null }).eq("id", ann.id);
     setBusy(null);
     if (error) { onToast("Could not unpublish.", "error"); return; }
     onToast(`"${ann.title}" unpublished.`);
   };
 
-  const renderGroup = (label, items, showApproval) => {
+  const renderGroup = (label, items, showApproval, displayStatus) => {
     if (items.length === 0) return null;
     return (
       <div style={{ marginBottom: "1.25rem" }}>
         <SectionLabel>{label}</SectionLabel>
         {items.map((ann) => {
-          const sc = STATUS_COLORS[ann.status] || STATUS_COLORS.draft;
+          const statusKey = displayStatus || ann.status;
+          const sc = STATUS_COLORS[statusKey] || STATUS_COLORS.draft;
           return (
             <Card key={ann.id} style={{ marginBottom: "0.75rem", padding: "1rem 1.25rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
                 <div style={{ fontFamily: SANS, fontSize: "14px", fontWeight: 600, color: "#1B2A4A", flex: 1 }}>{ann.title}</div>
                 <span style={{ fontSize: "10px", fontWeight: 700, background: sc.bg, color: sc.color, borderRadius: 20, padding: "2px 8px", fontFamily: SANS, flexShrink: 0 }}>
-                  {STATUS_LABELS[ann.status]}
+                  {STATUS_LABELS[statusKey]}
                 </span>
               </div>
               <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.5, marginBottom: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
@@ -103,6 +107,13 @@ export default function AnnouncementList({ data, onNew, onEdit, onToast, isAdmin
               <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginBottom: 10 }}>
                 To: <AudienceChip audience={ann.audience} />
               </div>
+              {statusKey === "scheduled" && (
+                <div style={{ fontSize: "11px", color: "#1D4ED8", fontWeight: 700, fontFamily: SANS, marginBottom: 10 }}>
+                  Publishes {formatScheduleDate(ann.publish_at)}
+                  {ann.send_email ? " · email" : ""}
+                  {ann.send_push ? " · push" : ""}
+                </div>
+              )}
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button
                   onClick={() => onEdit(ann)}
@@ -165,10 +176,25 @@ export default function AnnouncementList({ data, onNew, onEdit, onToast, isAdmin
       ) : (
         <>
           {renderGroup("Pending Approval", grouped.pending_approval, true)}
+          {renderGroup("Scheduled", grouped.scheduled, false, "scheduled")}
           {renderGroup("Published", grouped.published, false)}
           {renderGroup("Drafts", grouped.draft, false)}
         </>
       )}
     </div>
   );
+}
+
+function isScheduled(announcement) {
+  return announcement.status === "draft" && Boolean(announcement.publish_at);
+}
+
+function formatScheduleDate(value) {
+  return new Date(value).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }

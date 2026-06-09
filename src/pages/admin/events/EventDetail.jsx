@@ -107,7 +107,11 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
 
   async function publishEvent() {
     setPublishing(true);
-    await supabase.from("events").update({ status: "active" }).eq("id", event.id);
+    await supabase.from("events").update({
+      status: "active",
+      publish_at: null,
+      published_at: new Date().toISOString(),
+    }).eq("id", event.id);
     setPublishing(false); setPublishModal(false);
     onToast(`${event.name} is now the active event.`);
     onRefresh(); onBack?.();
@@ -115,8 +119,8 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
 
   async function duplicateEvent() {
     setDuplicating(true);
-    const { id, created_at, status, ...fields } = event;
-    await supabase.from("events").insert({ ...fields, status: "inactive" });
+    const { id, created_at, status, publish_at, published_at, ...fields } = event;
+    await supabase.from("events").insert({ ...fields, status: "inactive", publish_at: null, published_at: null });
     setDuplicating(false);
     onToast(`Duplicated "${event.name}" as inactive.`);
     await onRefresh(); onBack?.();
@@ -267,7 +271,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       {/* Hero */}
       <div style={{ background: "#1B2A4A", borderRadius: 16, padding: "1.25rem", marginBottom: "1.25rem" }}>
         <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-          {event.status}
+          {event.status === "inactive" && event.publish_at ? "scheduled" : event.status}
         </div>
         <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: 8 }}>
           {event.name}
@@ -275,6 +279,11 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
         {[event.dates, event.location].filter(Boolean).map((v, i) => (
           <div key={i} style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS }}>{v}</div>
         ))}
+        {event.status === "inactive" && event.publish_at && (
+          <div style={{ fontSize: "12px", color: "#FFB896", fontFamily: SANS, fontWeight: 700, marginTop: 4 }}>
+            Publishes {new Date(event.publish_at).toLocaleString()}
+          </div>
+        )}
         <div style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS, marginTop: 4 }}>
           {members.length} enrolled{isConference && event.team_count ? ` · ${event.team_count} teams` : ""}
         </div>
@@ -286,7 +295,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
         </button>
         <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
           {event.status === "inactive" && (
-            <button onClick={() => setPublishModal(true)} style={actionBtn("#22C55E")}>Publish</button>
+            <button onClick={() => setPublishModal(true)} style={actionBtn("#22C55E")}>Publish now</button>
           )}
           <button onClick={duplicateEvent} disabled={duplicating} style={actionBtn()}>
             {duplicating ? "…" : "Duplicate"}

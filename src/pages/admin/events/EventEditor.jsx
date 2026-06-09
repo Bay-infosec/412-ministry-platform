@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
 import { Card, Field } from "../../../components/ui/index.js";
 import { EVENT_TYPES } from "../../../lib/eventTypes.js";
 
@@ -41,6 +41,24 @@ function formatTimeLabel(timeStr) {
   const period = h >= 12 ? "PM" : "AM";
   const hour = h % 12 || 12;
   return `${hour}:${String(m).padStart(2, "0")} ${period}`;
+}
+
+function toLocalDateTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function formatScheduleDate(value) {
+  return new Date(value).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 // ── Field components ──────────────────────────────────────────────────────────
@@ -250,6 +268,7 @@ function EventForm({ type, onBack, onSaved, onToast }) {
     has_teams: type.key === "youth_conference",
     visible_to_public: false,
     allow_join_requests: false,
+    publish_at: "",
   });
   const [busy, setBusy] = useState(false);
 
@@ -264,6 +283,12 @@ function EventForm({ type, onBack, onSaved, onToast }) {
     }
     if (type.key === "zoom_meeting" && !fields.zoom_url.trim()) {
       onToast("Zoom link is required.", "error"); return;
+    }
+    if (fields.publish_at) {
+      const publishDate = new Date(fields.publish_at);
+      if (Number.isNaN(publishDate.getTime()) || publishDate.getTime() <= Date.now()) {
+        onToast("Scheduled publish time must be in the future.", "error"); return;
+      }
     }
 
     // Build human-readable dates string
@@ -293,6 +318,7 @@ function EventForm({ type, onBack, onSaved, onToast }) {
       audience: fields.audience || "all",
       visible_to_public: fields.visible_to_public,
       allow_join_requests: fields.allow_join_requests,
+      publish_at: fields.publish_at ? new Date(fields.publish_at).toISOString() : null,
     };
     const { error } = await supabase.from("events").insert(payload);
     setBusy(false);
@@ -301,7 +327,11 @@ function EventForm({ type, onBack, onSaved, onToast }) {
       onToast("Could not create event: " + (error.message || "unknown error"), "error");
       return;
     }
-    onToast(`"${payload.name}" created as inactive.`);
+    onToast(
+      payload.publish_at
+        ? `"${payload.name}" scheduled for ${formatScheduleDate(payload.publish_at)}.`
+        : `"${payload.name}" created as inactive.`
+    );
     onSaved();
   }
 
@@ -429,10 +459,26 @@ function EventForm({ type, onBack, onSaved, onToast }) {
           />
         )}
 
+        <div style={{ marginBottom: "0.25rem" }}>
+          <FieldLabel>SCHEDULE PUBLISH DATE & TIME</FieldLabel>
+          <input
+            type="datetime-local"
+            value={fields.publish_at}
+            min={toLocalDateTime(new Date().toISOString())}
+            onChange={(event) => set("publish_at")(event.target.value)}
+            style={baseInputStyle}
+          />
+          <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 6 }}>
+            Optional. The event becomes active automatically using your device's local time.
+          </div>
+        </div>
+
       </Card>
 
       <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, textAlign: "center", marginBottom: "1rem" }}>
-        Saved as <strong>inactive</strong> — publish when ready.
+        {fields.publish_at
+          ? <>Saved as <strong>scheduled</strong> — it stays hidden until publish time.</>
+          : <>Saved as <strong>inactive</strong> — publish when ready.</>}
       </div>
       <button
         onClick={save}

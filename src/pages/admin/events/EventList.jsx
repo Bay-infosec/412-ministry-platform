@@ -6,6 +6,7 @@ import { getTypeConfig } from "../../../lib/eventTypes.js";
 
 const STATUS_COLORS = {
   active:   { bg: "#E6F4EF", color: "#166534", label: "Active" },
+  scheduled:{ bg: "#DBEAFE", color: "#1D4ED8", label: "Scheduled" },
   inactive: { bg: "#FEF3C7", color: "#92400E", label: "Inactive" },
   archived: { bg: "#F3F4F6", color: "#6B7280", label: "Archived" },
 };
@@ -24,8 +25,11 @@ export default function EventList({ data, onSelect, onToast, onRefresh }) {
   }
 
   const sorted = [...allEvents].sort((a, b) => {
-    const order = { active: 0, inactive: 1, archived: 2 };
-    return (order[a.status] ?? 3) - (order[b.status] ?? 3);
+    const statusFor = (event) => isEventScheduled(event) ? "scheduled" : event.status;
+    const order = { active: 0, scheduled: 1, inactive: 2, archived: 3 };
+    const statusDiff = (order[statusFor(a)] ?? 4) - (order[statusFor(b)] ?? 4);
+    if (statusDiff !== 0) return statusDiff;
+    return new Date(a.publish_at || a.start_date || 0) - new Date(b.publish_at || b.start_date || 0);
   });
 
   async function handleConfirm() {
@@ -34,7 +38,11 @@ export default function EventList({ data, onSelect, onToast, onRefresh }) {
     const ev = confirm.event;
 
     if (confirm.action === "activate") {
-      await supabase.from("events").update({ status: "active" }).eq("id", ev.id);
+      await supabase.from("events").update({
+        status: "active",
+        publish_at: null,
+        published_at: new Date().toISOString(),
+      }).eq("id", ev.id);
       onToast?.(`"${ev.name}" is now active.`);
     } else if (confirm.action === "delete") {
       const { data: mRows } = await supabase.from("event_members").select("id").eq("event_id", ev.id);
@@ -52,14 +60,23 @@ export default function EventList({ data, onSelect, onToast, onRefresh }) {
   }
 
   async function duplicate(ev) {
-    const { id, created_at, status, ...fields } = ev;
-    await supabase.from("events").insert({ ...fields, status: "inactive" });
+    const { id, created_at, status, publish_at, published_at, ...fields } = ev;
+    await supabase.from("events").insert({ ...fields, status: "inactive", publish_at: null, published_at: null });
     onToast?.(`Duplicated "${ev.name}".`);
+    onRefresh?.();
+  }
+
+  async function cancelSchedule(ev) {
+    await supabase.from("events").update({ publish_at: null }).eq("id", ev.id);
+    onToast?.(`Schedule canceled for "${ev.name}".`, "info");
     onRefresh?.();
   }
 
   function getActions(ev) {
     const actions = [];
+    if (isEventScheduled(ev)) {
+      actions.push({ key: "cancel", label: "Cancel", bg: "#6B7280", color: "#fff", onPress: () => cancelSchedule(ev) });
+    }
     if (ev.status === "inactive" || ev.status === "archived") {
       actions.push({ key: "activate", label: "Activate", bg: "#22C55E", color: "#fff", onPress: () => setConfirm({ action: "activate", event: ev }) });
     }
@@ -103,7 +120,8 @@ export default function EventList({ data, onSelect, onToast, onRefresh }) {
 }
 
 function EventCard({ ev }) {
-  const s = STATUS_COLORS[ev.status] || STATUS_COLORS.archived;
+  const scheduled = isEventScheduled(ev);
+  const s = STATUS_COLORS[scheduled ? "scheduled" : ev.status] || STATUS_COLORS.archived;
   const tc = getTypeConfig(ev.type);
   return (
     <div style={{
@@ -128,6 +146,11 @@ function EventCard({ ev }) {
       {ev.location && (
         <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 6 }}>{ev.location}</div>
       )}
+      {scheduled && (
+        <div style={{ fontSize: "11px", color: "#1D4ED8", fontWeight: 700, fontFamily: SANS, marginBottom: 6 }}>
+          Publishes {formatScheduleDate(ev.publish_at)}
+        </div>
+      )}
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
         <span style={{
           fontSize: "10px", fontWeight: 700, background: tc.bg, color: tc.color,
@@ -141,6 +164,20 @@ function EventCard({ ev }) {
       </div>
     </div>
   );
+}
+
+function isEventScheduled(event) {
+  return event.status === "inactive" && Boolean(event.publish_at);
+}
+
+function formatScheduleDate(value) {
+  return new Date(value).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 function SwipeCard({ children, actions, onTap }) {

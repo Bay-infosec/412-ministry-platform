@@ -1,9 +1,7 @@
 import { useState, useRef } from "react";
 import { supabase } from "../../../lib/supabase.js";
 import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
-import { Card, Field, Button } from "../../../components/ui/index.js";
-import { sendEmail as sendEmailFn, sendAnnouncementEmails } from "../../../lib/email.js";
-import { matchesAudience } from "../../../lib/utils.js";
+import { Card, Field } from "../../../components/ui/index.js";
 
 // All roles in the platform hierarchy
 const ROLE_OPTIONS = [
@@ -156,8 +154,9 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
   });
 
   const [busy, setBusy] = useState(false);
-  const [sendEmailToggle, setSendEmailToggle] = useState(false);
-  const [sendPushToggle, setSendPushToggle] = useState(true);
+  const [sendEmailToggle, setSendEmailToggle] = useState(ann?.send_email || false);
+  const [sendPushToggle, setSendPushToggle] = useState(ann?.send_push ?? true);
+  const [scheduledAt, setScheduledAt] = useState(() => toLocalDateTime(ann?.publish_at));
 
   const buildAudience = () => {
     if (audienceType === "all") return [{ type: "all" }];
@@ -178,25 +177,40 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
     return "Everyone";
   };
 
-  const save = async (submitForApproval = false) => {
+  const save = async (mode) => {
     if (!title.trim()) { onToast("Title is required.", "error"); return; }
     if (!body.trim())  { onToast("Body is required.", "error"); return; }
+    if (mode === "schedule") {
+      const scheduleDate = new Date(scheduledAt);
+      if (!scheduledAt || Number.isNaN(scheduleDate.getTime())) {
+        onToast("Choose a valid schedule date and time.", "error");
+        return;
+      }
+      if (scheduleDate.getTime() <= Date.now()) {
+        onToast("Schedule time must be in the future.", "error");
+        return;
+      }
+    }
 
     setBusy(true);
+    const publishAt = mode === "publish"
+      ? new Date().toISOString()
+      : mode === "schedule"
+        ? new Date(scheduledAt).toISOString()
+        : null;
     const payload = {
       title: title.trim(),
       body: body.trim(),
       audience: buildAudience(),
-      event_id: activeEventId,
+      event_id: audienceType === "team" ? selectedEventId || activeEventId : activeEventId,
+      publish_at: publishAt,
+      send_email: isAdmin && sendEmailToggle,
+      send_push: isAdmin ? sendPushToggle : true,
+      delivery_error: null,
     };
 
-    let status;
-    if (submitForApproval) {
-      status = isAdmin ? "published" : "pending_approval";
-    } else {
-      status = "draft";
-    }
-    payload.status = status;
+    payload.status = mode === "submit" ? "pending_approval" : "draft";
+    if (mode === "publish" || mode === "schedule") payload.approved_by = profile.id;
 
     let error;
     if (ann?.id) {
@@ -206,53 +220,24 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
       ({ error } = await supabase.from("announcements").insert(payload));
     }
 
-    setBusy(false);
-    if (error) { onToast("Could not save.", "error"); return; }
-
-    // Push notification for published announcements
-    if (status === "published" && sendPushToggle) {
-      const audience = buildAudience();
-      const matched = allProfiles.filter((p) =>
-        matchesAudience(audience, { id: p.id, ministry: p.ministry, team_number: p.team_number, event_role: p.event_role, platform_role: p.platform_role })
-      );
-      supabase.functions.invoke("send-push", {
-        body: {
-          title: payload.title,
-          body: payload.body.slice(0, 120),
-          url: "/",
-          ...(matched.length < allProfiles.length && { profile_ids: matched.map((p) => p.id) }),
-        },
-      });
+    if (error) {
+      setBusy(false);
+      onToast("Could not save.", "error");
+      return;
     }
 
-    // Email sending for published announcements
-    if (status === "published" && sendEmailToggle) {
-      const audience = buildAudience();
-      const matched = allProfiles.filter((p) =>
-        matchesAudience(audience, { id: p.id, ministry: p.ministry, team_number: p.team_number, event_role: p.event_role, platform_role: p.platform_role })
-      );
-      (async () => {
-        let count = 0;
-        for (const p of matched) {
-          if (p.email) {
-            const ok = await sendEmailFn(p.email, payload.title, `<p>Hi ${p.full_name || "there"},</p><p><strong>${payload.title}</strong></p><p>${payload.body}</p>`);
-            if (ok) count++;
-          }
-        }
-        onToast(`Announcement published · email sent to ${count} ${count === 1 ? "person" : "people"}`);
-      })();
+    if (mode === "publish") {
+      const { error: processorError } = await supabase.functions.invoke("process-scheduled", { body: {} });
+      onToast(processorError ? "Announcement queued and will publish within one minute." : "Announcement published!");
+    } else if (mode === "schedule") {
+      onToast(`Announcement scheduled for ${formatScheduleDate(publishAt)}.`);
+    } else if (mode === "submit") {
+      onToast("Submitted for admin approval.");
     } else {
-      const msg = status === "published"
-        ? "Announcement published!"
-        : status === "pending_approval"
-          ? "Submitted for admin approval."
-          : "Saved as draft.";
-      onToast(msg);
-      if (status === "published" && activeEventId) {
-        sendAnnouncementEmails(buildAudience(), { title: payload.title, body: payload.body }, activeEventId);
-      }
+      onToast("Saved as draft.");
     }
 
+    setBusy(false);
     onSaved();
   };
 
@@ -373,19 +358,44 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
               Also send email to audience
             </label>
           </div>
+          <div style={{ padding: "0.85rem 1rem", background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 10 }}>
+            <label htmlFor="announcement-schedule" style={{ display: "block", fontSize: "11px", fontWeight: 800, color: TSEC, letterSpacing: "0.08em", fontFamily: SANS, marginBottom: 6 }}>
+              SCHEDULE DATE & TIME
+            </label>
+            <input
+              id="announcement-schedule"
+              type="datetime-local"
+              value={scheduledAt}
+              min={toLocalDateTime(new Date().toISOString())}
+              onChange={(event) => setScheduledAt(event.target.value)}
+              style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 9, padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: "#1B2A4A", boxSizing: "border-box", background: "#fff" }}
+            />
+            <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 6 }}>
+              Uses your device's local time. Email and push options above will run at the same time.
+            </div>
+          </div>
         </div>
       )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <button
-          onClick={() => save(true)}
+          onClick={() => save(isAdmin ? "publish" : "submit")}
           disabled={busy}
           style={{ background: "#FF4D00", color: "#fff", border: "none", borderRadius: 10, padding: "14px", fontSize: "15px", fontWeight: 700, fontFamily: SANS, cursor: "pointer", width: "100%" }}
         >
           {busy ? "Saving…" : isAdmin ? "Publish now" : "Submit for approval"}
         </button>
+        {isAdmin && (
+          <button
+            onClick={() => save("schedule")}
+            disabled={busy || !scheduledAt}
+            style={{ background: "#1B2A4A", color: "#fff", border: "none", borderRadius: 10, padding: "13px", fontSize: "14px", fontWeight: 700, fontFamily: SANS, cursor: busy || !scheduledAt ? "not-allowed" : "pointer", width: "100%", opacity: busy || !scheduledAt ? 0.45 : 1 }}
+          >
+            Schedule announcement
+          </button>
+        )}
         <button
-          onClick={() => save(false)}
+          onClick={() => save("draft")}
           disabled={busy}
           style={{ background: "#fff", color: "#1B2A4A", border: "1px solid #E5E5E5", borderRadius: 10, padding: "12px", fontSize: "14px", fontWeight: 600, fontFamily: SANS, cursor: "pointer", width: "100%" }}
         >
@@ -400,4 +410,22 @@ export default function AnnouncementEditor({ data, ann, isAdmin, onSaved, onToas
       </div>
     </div>
   );
+}
+
+function toLocalDateTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function formatScheduleDate(value) {
+  return new Date(value).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
