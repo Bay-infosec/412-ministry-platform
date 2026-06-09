@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
 import { TSEC, BORDER, ORANGE, SANS } from "../../../lib/constants.js";
 import { Avatar, Modal } from "../../../components/ui/index.js";
+import { CHECKLIST_ITEMS } from "../../../lib/checklist.js";
 
 export default function EventDetail({ event, data, onRefresh, onToast, onBack }) {
   const { allProfiles } = data;
@@ -29,6 +30,8 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
   const [teamModal, setTeamModal] = useState(null);
   const [teamInput, setTeamInput] = useState("");
   const [savingTeam, setSavingTeam] = useState(false);
+  const [teamSetupOpen, setTeamSetupOpen] = useState(false);
+  const [membersOpen, setMembersOpen] = useState(false);
 
   // Edit modal — coordinator slots + team chips
   const [editCoordCount, setEditCoordCount] = useState(0);
@@ -48,7 +51,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
     setLoading(true);
     const { data: rows } = await supabase
       .from("event_members")
-      .select("*, profiles!event_members_profile_id_fkey(id, full_name, photo_url, email, platform_role)")
+      .select("*, profiles!event_members_profile_id_fkey(id, full_name, photo_url, email, platform_role, password_changed, last_seen_at), event_checklist(items)")
       .eq("event_id", event.id)
       .order("team_number");
     setMembers(rows || []);
@@ -69,7 +72,9 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       .insert({ event_id: event.id, profile_id: profile.id, event_role: addRole, status: "accepted", onboarding_completed: false, onboarding_visited: false })
       .select().single();
     if (error) { onToast("Could not add member.", "error"); return; }
-    await supabase.from("event_checklist").insert({ event_member_id: newEm.id, items: {} });
+    if (isConference) {
+      await supabase.from("event_checklist").insert({ event_member_id: newEm.id, items: {} });
+    }
     onToast(`${profile.full_name} added to ${event.name}.`);
     setModal(null); setAddQuery("");
     await fetchMembers(); onRefresh();
@@ -101,7 +106,6 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
 
   async function publishEvent() {
     setPublishing(true);
-    await supabase.from("events").update({ status: "archived" }).eq("status", "active");
     await supabase.from("events").update({ status: "active" }).eq("id", event.id);
     setPublishing(false); setPublishModal(false);
     onToast(`${event.name} is now the active event.`);
@@ -271,7 +275,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
           <div key={i} style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS }}>{v}</div>
         ))}
         <div style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS, marginTop: 4 }}>
-          {members.length} enrolled · {event.team_count || "?"} teams
+          {members.length} enrolled{isConference && event.team_count ? ` · ${event.team_count} teams` : ""}
         </div>
         <button
           onClick={openEditModal}
@@ -296,14 +300,30 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       </div>
 
       {/* Onboarding progress */}
-      {!loading && members.length > 0 && (() => {
-        const complete   = members.filter((m) => m.onboarding_completed).length;
-        const inProgress = members.filter((m) => !m.onboarding_completed && m.onboarding_visited).length;
-        const notStarted = members.filter((m) => !m.onboarding_completed && !m.onboarding_visited).length;
+      {isConference && !loading && members.length > 0 && (() => {
+        const leaders = members.filter((m) => m.event_role === "leader");
+        const complete   = leaders.filter((m) => m.onboarding_completed).length;
+        const inProgress = leaders.filter((m) => !m.onboarding_completed && m.onboarding_visited).length;
+        const notStarted = leaders.filter((m) => !m.onboarding_completed && !m.onboarding_visited).length;
+        const accountReady = leaders.filter((m) => m.profiles?.password_changed).length;
+        const loggedIn = leaders.filter((m) => m.profiles?.last_seen_at).length;
+        const checklistComplete = leaders.filter((m) => checklistProgress(m).done === CHECKLIST_ITEMS.length).length;
         return (
           <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
             <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.75rem" }}>
-              Onboarding · {members.length} members
+              Team leader readiness · {leaders.length} leaders
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 8 }}>
+              {[
+                { label: "Logged in", count: loggedIn },
+                { label: "Account set", count: accountReady },
+                { label: "Checklist", count: checklistComplete },
+              ].map(({ label, count }) => (
+                <div key={label} style={{ background: "#1B2A4A", borderRadius: 10, padding: "0.625rem", textAlign: "center" }}>
+                  <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 800, color: "#FF4D00", lineHeight: 1 }}>{count}/{leaders.length}</div>
+                  <div style={{ fontFamily: SANS, fontSize: "9px", fontWeight: 700, color: "#fff", marginTop: 4, lineHeight: 1.3 }}>{label}</div>
+                </div>
+              ))}
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               {[
@@ -329,10 +349,8 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       {/* Team Setup */}
       {isConference && event.team_count > 0 && (
         <div style={{ marginBottom: "1.25rem" }}>
-          <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: "#E8621A", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.625rem" }}>
-            Team Setup
-          </div>
-          {Array.from({ length: event.team_count }, (_, i) => i + 1).map((teamNum) => {
+          <SectionToggle label="Team Setup" detail={`${event.team_count} teams`} open={teamSetupOpen} onClick={() => setTeamSetupOpen((open) => !open)} />
+          {teamSetupOpen && Array.from({ length: event.team_count }, (_, i) => i + 1).map((teamNum) => {
             const teamLeaders = members.filter((m) => m.team_number === teamNum && m.event_role === "leader");
             const ministry = teamLeaders[0]?.ministry || null;
             const coordId = teamLeaders[0]?.coordinator_id;
@@ -409,19 +427,22 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       )}
 
       {/* Members */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: "#E8621A", textTransform: "uppercase", fontFamily: SANS }}>
-          Members
-        </div>
-        <button
-          onClick={() => setModal("add")}
-          style={{ background: "#FF4D00", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: "13px", fontWeight: 600, fontFamily: SANS, cursor: "pointer" }}
-        >
-          + Add
-        </button>
+      <div style={{ marginBottom: "0.75rem" }}>
+        <SectionToggle label="Members" detail={`${members.length} enrolled`} open={membersOpen} onClick={() => setMembersOpen((open) => !open)} action={
+          <button
+            onClick={(clickEvent) => {
+              clickEvent.stopPropagation();
+              setAddRole(isConference ? "leader" : "participant");
+              setModal("add");
+            }}
+            style={{ background: "#FF4D00", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: "13px", fontWeight: 700, fontFamily: SANS, cursor: "pointer" }}
+          >
+            + Add
+          </button>
+        } />
       </div>
 
-      {loading ? (
+      {membersOpen && (loading ? (
         <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, padding: "2rem 0", textAlign: "center" }}>Loading members…</div>
       ) : members.length === 0 ? (
         <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, padding: "2rem 0", textAlign: "center" }}>No members yet.</div>
@@ -449,14 +470,15 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                   key={m.id}
                   member={m}
                   onRemove={() => setPendingRemove(m)}
-                  onEditMessage={() => { setEditingMessage(m); setMessageText(m.personal_message || ""); }}
-                  onSetTeam={() => { setTeamModal(m); setTeamInput(m.team_number?.toString() || ""); }}
+                  onEditMessage={isConference ? () => { setEditingMessage(m); setMessageText(m.personal_message || ""); } : null}
+                  onSetTeam={isConference ? () => { setTeamModal(m); setTeamInput(m.team_number?.toString() || ""); } : null}
+                  showConferenceStatus={isConference}
                 />
               ))}
             </div>
           ))}
         </div>
-      )}
+      ))}
 
       {/* Add member modal */}
       {modal === "add" && (
@@ -464,7 +486,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
           <div style={{ ...sheetStyle, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
             <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#1B2A4A", marginBottom: "0.75rem" }}>Add Member</div>
             <div style={{ display: "flex", gap: 6, marginBottom: "0.75rem" }}>
-              {["leader", "coordinator"].map((r) => (
+              {(isConference ? ["leader", "coordinator"] : ["participant", "volunteer"]).map((r) => (
                 <button key={r} onClick={() => setAddRole(r)} style={{ flex: 1, padding: "8px", borderRadius: 8, border: `1.5px solid ${addRole === r ? "#FF4D00" : BORDER}`, background: addRole === r ? "#FFF5EC" : "#fff", color: addRole === r ? "#FF4D00" : TSEC, fontSize: "13px", fontWeight: 600, fontFamily: SANS, cursor: "pointer", textTransform: "capitalize" }}>
                   {r}
                 </button>
@@ -542,7 +564,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       )}
 
       {/* Personal message editor */}
-      {editingMessage && (
+      {isConference && editingMessage && (
         <div style={overlayStyle}>
           <div style={{ ...sheetStyle, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
             <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#1B2A4A", marginBottom: 4 }}>Personal Message</div>
@@ -582,7 +604,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
         <Modal title="Archive Event" message={`Archive "${event.name}"? It will no longer appear as the active event.`} confirmLabel="Archive" variant="danger" onCancel={() => setArchiveModal(false)} onConfirm={archiveEvent} busy={archiving} />
       )}
       {publishModal && (
-        <Modal title="Publish Event" message={`Make "${event.name}" the active event? Any currently active event will be automatically archived.`} confirmLabel="Publish" onCancel={() => setPublishModal(false)} onConfirm={publishEvent} busy={publishing} />
+        <Modal title="Publish Event" message={`Make "${event.name}" active? Other active events will not be affected.`} confirmLabel="Publish" onCancel={() => setPublishModal(false)} onConfirm={publishEvent} busy={publishing} />
       )}
       {deleteModal && (
         <Modal title="Delete Event" message={`Permanently delete "${event.name}"? This cannot be undone.`} confirmLabel="Delete" variant="danger" onCancel={() => setDeleteModal(false)} onConfirm={deleteEvent} busy={deleting} />
@@ -818,10 +840,11 @@ function onboardingStatus(member) {
   return "not_started";
 }
 
-function MemberRow({ member, onRemove, onEditMessage, onSetTeam }) {
+function MemberRow({ member, onRemove, onEditMessage, onSetTeam, showConferenceStatus }) {
   const p = member.profiles || {};
   const st = ONBOARDING_STATUS[onboardingStatus(member)];
   const hasMessage = !!member.personal_message;
+  const progress = checklistProgress(member);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12, padding: "0.75rem 1rem" }}>
       <Avatar url={p.photo_url} name={p.full_name} size={38} />
@@ -829,18 +852,53 @@ function MemberRow({ member, onRemove, onEditMessage, onSetTeam }) {
         <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.full_name}</div>
         <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1, display: "flex", alignItems: "center", gap: 6 }}>
           <span>{member.event_role}{member.ministry ? ` · ${member.ministry}` : ""}</span>
-          <button onClick={onSetTeam} style={{ background: "#F0F0F0", border: "none", borderRadius: 4, padding: "1px 6px", fontSize: "11px", fontWeight: 700, color: "#555", cursor: "pointer", fontFamily: SANS }}>
-            T{member.team_number ?? "–"}
-          </button>
+          {onSetTeam && (
+            <button onClick={onSetTeam} style={{ background: "#F0F0F0", border: "none", borderRadius: 4, padding: "1px 6px", fontSize: "11px", fontWeight: 700, color: "#555", cursor: "pointer", fontFamily: SANS }}>
+              T{member.team_number ?? "–"}
+            </button>
+          )}
         </div>
+        {showConferenceStatus && (
+          <div style={{ fontSize: "10px", color: TSEC, fontFamily: SANS, marginTop: 4 }}>
+            {p.last_seen_at ? "Logged in" : "Never logged in"} · {p.password_changed ? "Account set" : "Temp password"} · Checklist {progress.done}/{progress.total}
+          </div>
+        )}
       </div>
-      <span style={{ fontSize: "10px", fontWeight: 700, background: st.bg, color: st.color, borderRadius: 20, padding: "3px 8px", fontFamily: SANS, flexShrink: 0 }}>{st.label}</span>
-      <button onClick={onEditMessage} title={hasMessage ? "Edit personal message" : "Write personal message"} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", color: hasMessage ? ORANGE : BORDER, flexShrink: 0 }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill={hasMessage ? ORANGE : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-      </button>
+      {showConferenceStatus && <span style={{ fontSize: "10px", fontWeight: 700, background: st.bg, color: st.color, borderRadius: 20, padding: "3px 8px", fontFamily: SANS, flexShrink: 0 }}>{st.label}</span>}
+      {onEditMessage && (
+        <button onClick={onEditMessage} title={hasMessage ? "Edit personal message" : "Write personal message"} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", color: hasMessage ? ORANGE : BORDER, flexShrink: 0 }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill={hasMessage ? ORANGE : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </button>
+      )}
       <button onClick={onRemove} style={{ background: "none", border: "none", cursor: "pointer", color: "#DC2626", fontSize: "13px", fontFamily: SANS, padding: "4px", flexShrink: 0 }}>✕</button>
+    </div>
+  );
+}
+
+function checklistProgress(member) {
+  const items = Array.isArray(member.event_checklist)
+    ? member.event_checklist[0]?.items
+    : member.event_checklist?.items;
+  const values = items || {};
+  return {
+    done: CHECKLIST_ITEMS.filter((item) => values[item.id]).length,
+    total: CHECKLIST_ITEMS.length,
+  };
+}
+
+function SectionToggle({ label, detail, open, onClick, action }) {
+  return (
+    <div style={{ width: "100%", background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12, padding: "0.5rem 0.625rem", display: "flex", alignItems: "center", gap: 8 }}>
+      <button onClick={onClick} aria-expanded={open} style={{ flex: 1, minWidth: 0, background: "none", border: "none", padding: "0.25rem", display: "flex", alignItems: "center", gap: 10, cursor: "pointer", textAlign: "left" }}>
+        <span style={{ width: 24, height: 24, borderRadius: 7, background: "#F0F0F0", color: "#555", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: SANS, fontSize: "15px", fontWeight: 800, transform: open ? "rotate(90deg)" : "none", transition: "transform 0.18s" }}>›</span>
+        <span style={{ flex: 1 }}>
+          <span style={{ display: "block", fontSize: "11px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS }}>{label}</span>
+          <span style={{ display: "block", fontSize: "11px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>{detail}</span>
+        </span>
+      </button>
+      {action}
     </div>
   );
 }

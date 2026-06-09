@@ -689,13 +689,15 @@ export default function App() {
             onBack={profileReturnTo === "chat" ? () => { setProfileReturnTo(null); openChat(); } : null}
           />
         )}
-        <BottomNav
-          active={tab}
-          onNavigate={navigate}
-          hasEvent={hasEvent}
-          unreadCount={data.unreadCount}
-          profilePhotoUrl={data.profile.photo_url}
-        />
+        {page !== "onboarding" && (
+          <BottomNav
+            active={tab}
+            onNavigate={navigate}
+            hasEvent={hasEvent}
+            unreadCount={data.unreadCount}
+            profilePhotoUrl={data.profile.photo_url}
+          />
+        )}
         {page === "admin" && data.isModerator && (
           <AdminShell
             data={data}

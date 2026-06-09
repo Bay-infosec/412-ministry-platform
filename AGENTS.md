@@ -102,6 +102,7 @@ The deployed bundle `index-U55XT8En.js` contains the leader-role gates and `get_
 EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test-only displayed password was `TestOnly!412`.
 EmailJS Welcome and Announcement templates were redesigned on 2026-06-09 to match the current navy/orange/white app. Dashboard versions are saved; source HTML is in `docs/email-templates/`.
 Repository cleanup completed on 2026-06-09: removed unused CSS/components/barrels/duplicate assets and 63 unused test packages. Local footprint dropped from 160 MB to 89 MB; 34/34 tests and the production build still pass.
+Final conference/admin fixes completed on 2026-06-09: `delete-user` Edge Function deployed, team-leader readiness now shows login/account/onboarding/checklist status, Team Setup and Members are collapsible, board meetings omit conference-only controls, and onboarding navigation no longer covers its action button.
 
 ### What's Built ✅
 
@@ -147,7 +148,9 @@ Repository cleanup completed on 2026-06-09: removed unused CSS/components/barrel
 **Admin panel (full)**
 - AdminShell → Users → PersonDetail (tag chips, event-scoped card) → InviteFlow
 - Platform role chips are draft selections; `Save role` performs the database update
-- Admin account removal UI uses a protected `delete-user` edge function
+- Admin account removal UI uses the deployed, protected `delete-user` edge function
+- Conference admin event details show team-leader login, account setup, onboarding, and checklist readiness
+- Team Setup and Members are collapsible; non-conference events omit onboarding, team, and personal-message controls
 - EventList → EventDetail (team setup, coordinator picker) → CoLeaderPairing
 - AnnouncementList → AnnouncementEditor (draft → pending_approval → published + email toggle)
 - ChurchList, TrainingMaterials
@@ -173,7 +176,6 @@ Repository cleanup completed on 2026-06-09: removed unused CSS/components/barrel
 - Social preview uses `public/preview.png` with the ministry community description; browser favicon uses rounded `favicon.svg`
 
 ### Known Issues
-- `delete-user` is committed locally but must be deployed after authenticating the Supabase CLI.
 - `CLAUDE.md` still documents the older Resend flow; `AGENTS.md` is the current EmailJS handoff.
 - `npm audit` reports two moderate development-server advisories through Vite 5/esbuild. The available fix requires a Vite 8 major upgrade; do not apply it without a dedicated compatibility pass.
 
@@ -181,8 +183,7 @@ Repository cleanup completed on 2026-06-09: removed unused CSS/components/barrel
 
 ## Next Up
 
-1. Deploy `delete-user`: `npx supabase login`, then `npx supabase functions deploy delete-user --project-ref hoxjardsthjuhbxivken`.
-2. **⚠️ Rotate Supabase API keys** — service_role key was in shared PDF.
+1. **⚠️ Rotate Supabase API keys** — service_role key was in shared PDF.
 3. Manually verify Welcome and Announcement delivery from the deployed design preview.
 4. Manually verify Home → 412 Board Meeting and the emailed forgot-password recovery link on the deployed preview.
 5. Enkhbayar Ulambayar is confirmed in Supabase with `pastor` and `board_member` tags and is already a participant in the Pastors system group.
@@ -425,7 +426,7 @@ All recursion-safe via SECURITY DEFINER helper functions:
 ### Edge functions (Supabase)
 - `create-user` — creates or repairs the auth user and generates a temporary password; the client sends the Welcome email through EmailJS after success
 - `reset-password` — generates new temp password
-- `delete-user` — protected admin-only account deletion; deployment is still pending Supabase CLI authentication
+- `delete-user` — deployed protected admin-only account deletion
 
 ### Key gotchas
 - FK joins: always use explicit key (`profiles!event_members_profile_id_fkey`) to avoid PostgREST ambiguity errors

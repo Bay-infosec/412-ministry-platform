@@ -27,6 +27,8 @@ function PrimaryBtn({ children, onClick, disabled, gold }) {
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.35 : 1,
         marginTop: "1rem",
+        position: "relative",
+        zIndex: 2,
       }}
     >
       {children}
@@ -245,19 +247,19 @@ function RequirementsPage({ profile, onNext }) {
       <StepBody>Please read and acknowledge the following before continuing.</StepBody>
       <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1rem" }}>
         {REQUIREMENTS.map((req, i) => (
-          <Card key={req.id} style={{ padding: "1rem 1.25rem" }}>
+          <div key={req.id} style={{ padding: "1.15rem 1.25rem", background: i === 0 ? "#FF4D00" : "#1B2A4A", borderRadius: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: "11px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS }}>
-                {String(i + 1).padStart(2, "0")}
+              <span style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(255,255,255,0.16)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 900, color: "#fff", fontFamily: SANS, flexShrink: 0 }}>
+                {i + 1}
               </span>
-              <span style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
+              <span style={{ fontSize: "15px", fontWeight: 800, color: "#fff", fontFamily: SANS }}>
                 {req.title}
               </span>
             </div>
-            <p style={{ fontSize: "13px", color: TSEC, lineHeight: 1.6, margin: 0, fontFamily: SANS }}>
+            <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.82)", lineHeight: 1.65, margin: 0, fontFamily: SANS }}>
               {req.body}
             </p>
-          </Card>
+          </div>
         ))}
       </div>
       <button
@@ -321,7 +323,12 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
     }, 500);
   }
 
-  const firstName = coLeader?.full_name?.split(" ")[0] || "them";
+  const firstName = cleanDisplayValue(coLeader?.full_name)?.split(" ")[0] || "them";
+  const coLeaderName = cleanDisplayValue(coLeader?.full_name);
+  const coLeaderRole = cleanDisplayValue(coLeader?.ministry_role);
+  const coLeaderPhone = cleanDisplayValue(coLeader?.phone);
+  const coLeaderEmail = cleanDisplayValue(coLeader?.email);
+  const coLeaderChurch = cleanDisplayValue(coLeader?.churches?.name);
 
   return (
     <>
@@ -410,7 +417,7 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
             {transitioning ? "Revealing…" : "Reveal your co-leader →"}
           </button>
         </div>
-      ) : coLeader ? (
+      ) : coLeader && coLeaderName ? (
         /* ── Revealed card ── */
         <div className="reveal-card" style={{
           background: "#1B2A4A", borderRadius: 20, padding: "2rem 1.75rem",
@@ -434,54 +441,54 @@ function TeamRevealPage({ eventMember, coLeader, onNext }) {
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               {coLeader.photo_url ? (
-                <img src={coLeader.photo_url} alt={coLeader.full_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img src={coLeader.photo_url} alt={coLeaderName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
                 <span style={{ fontFamily: SANS, fontSize: 36, fontWeight: 900, color: "#FF4D00" }}>
-                  {coLeader.full_name?.charAt(0)}
+                  {coLeaderName.charAt(0)}
                 </span>
               )}
             </div>
           </div>
 
           <div style={{ fontFamily: SANS, fontSize: "28px", fontWeight: 900, color: "#fff", lineHeight: 1.2, marginBottom: 4, letterSpacing: "-0.02em" }}>
-            {coLeader.full_name}
+            {coLeaderName}
           </div>
-          {coLeader.ministry_role && (
+          {coLeaderRole && (
             <div style={{ fontSize: "13px", color: "#B8C0D0", fontFamily: SANS, marginBottom: "1.25rem" }}>
-              {coLeader.ministry_role}
+              {coLeaderRole}
             </div>
           )}
 
           {/* Contact info rows */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: "1.25rem" }}>
-            {coLeader.phone && (
-              <a href={`tel:${coLeader.phone}`} style={{ textDecoration: "none" }}>
+            {coLeaderPhone && (
+              <a href={`tel:${coLeaderPhone}`} style={{ textDecoration: "none" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px" }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                     <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 012 1.18 2 2 0 014 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9a16 16 0 006.91 6.91l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
                   </svg>
-                  <span style={{ fontSize: "13px", color: "#fff", fontFamily: SANS }}>{coLeader.phone}</span>
+                  <span style={{ fontSize: "13px", color: "#fff", fontFamily: SANS }}>{coLeaderPhone}</span>
                 </div>
               </a>
             )}
-            {coLeader.email && (
-              <a href={`mailto:${coLeader.email}`} style={{ textDecoration: "none" }}>
+            {coLeaderEmail && (
+              <a href={`mailto:${coLeaderEmail}`} style={{ textDecoration: "none" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px" }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                     <polyline points="22,6 12,13 2,6" />
                   </svg>
-                  <span style={{ fontSize: "13px", color: "#fff", fontFamily: SANS }}>{coLeader.email}</span>
+                  <span style={{ fontSize: "13px", color: "#fff", fontFamily: SANS }}>{coLeaderEmail}</span>
                 </div>
               </a>
             )}
-            {coLeader.churches?.name && (
+            {coLeaderChurch && (
               <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px" }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                   <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
                   <polyline points="9 22 9 12 15 12 15 22" />
                 </svg>
-                <span style={{ fontSize: "13px", color: "#fff", fontFamily: SANS }}>{coLeader.churches.name}</span>
+                <span style={{ fontSize: "13px", color: "#fff", fontFamily: SANS }}>{coLeaderChurch}</span>
               </div>
             )}
           </div>
@@ -720,9 +727,16 @@ export default function OnboardingFlow({ data, onDone, onExit }) {
         </button>
       </div>
       <ProgressDots step={step} total={6} />
-      <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: "70vh" }}>
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: "calc(100dvh - 8.5rem)", paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
         {steps[step]}
       </div>
     </Shell>
   );
+}
+
+function cleanDisplayValue(value) {
+  if (value == null) return null;
+  const text = String(value).trim();
+  if (!text || ["null", "undefined", "n/a", "none"].includes(text.toLowerCase())) return null;
+  return text;
 }
