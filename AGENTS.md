@@ -101,6 +101,7 @@ Production verification: `/preview.png` returns HTTP 200 and the deployed page e
 The deployed bundle `index-U55XT8En.js` contains the leader-role gates and `get_platform_directory()` Messenger search.
 EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test-only displayed password was `TestOnly!412`.
 EmailJS Welcome and Announcement templates were redesigned on 2026-06-09 to match the current navy/orange/white app. Dashboard versions are saved; source HTML is in `docs/email-templates/`.
+Repository cleanup completed on 2026-06-09: removed unused CSS/components/barrels/duplicate assets and 63 unused test packages. Local footprint dropped from 160 MB to 89 MB; 34/34 tests and the production build still pass.
 
 ### What's Built ✅
 
@@ -174,6 +175,7 @@ EmailJS Welcome and Announcement templates were redesigned on 2026-06-09 to matc
 ### Known Issues
 - `delete-user` is committed locally but must be deployed after authenticating the Supabase CLI.
 - `CLAUDE.md` still documents the older Resend flow; `AGENTS.md` is the current EmailJS handoff.
+- `npm audit` reports two moderate development-server advisories through Vite 5/esbuild. The available fix requires a Vite 8 major upgrade; do not apply it without a dedicated compatibility pass.
 
 ---
 
