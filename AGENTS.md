@@ -94,9 +94,10 @@ Font: system-ui only (no Google Fonts). Remove `useFonts()` / any Google Fonts l
 
 ### Branch: `design-polish`
 The user merged `design-polish` into `main` on 2026-06-08, then continued work on `design-polish`.
-Latest production merge: `e35cfe6` on `main` (2026-06-09). The next release finalizes the navy first-login flow and the new social preview.
+Latest production merge: `b596c1e` on `main` (2026-06-09). The navy first-login flow and new social preview are live.
 Latest implementation updates first-login setup styling, makes Messenger fully opaque and Active Now actionable, hides empty conversations until the first message is sent, repairs incomplete duplicate accounts during invitation, and replaces the social preview/favicon metadata.
 Verification: 34/34 tests pass and the production build passes.
+Production verification: `/preview.png` returns HTTP 200 and the deployed page exposes the new Open Graph/Twitter metadata and navy theme color.
 EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test-only displayed password was `TestOnly!412`.
 
 ### What's Built ✅
