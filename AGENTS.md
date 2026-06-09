@@ -94,10 +94,11 @@ Font: system-ui only (no Google Fonts). Remove `useFonts()` / any Google Fonts l
 
 ### Branch: `design-polish`
 The user merged `design-polish` into `main` on 2026-06-08, then continued work on `design-polish`.
-Latest production merge: `b596c1e` on `main` (2026-06-09). The navy first-login flow and new social preview are live.
+Latest production merge: `6e9989b` on `main` (2026-06-09). Member role gates and platform-wide Messenger search are live.
 Latest implementation gates conference leader content by event role and adds a privacy-limited, platform-wide Messenger directory for every authenticated member.
 Verification: 34/34 tests pass and the production build passes.
 Production verification: `/preview.png` returns HTTP 200 and the deployed page exposes the new Open Graph/Twitter metadata and navy theme color.
+The deployed bundle `index-U55XT8En.js` contains the leader-role gates and `get_platform_directory()` Messenger search.
 EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test-only displayed password was `TestOnly!412`.
 
 ### What's Built ✅
