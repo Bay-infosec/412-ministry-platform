@@ -103,6 +103,7 @@ EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test
 EmailJS Welcome and Announcement templates were redesigned on 2026-06-09 to match the current navy/orange/white app. Dashboard versions are saved; source HTML is in `docs/email-templates/`.
 Repository cleanup completed on 2026-06-09: removed unused CSS/components/barrels/duplicate assets and 63 unused test packages. Local footprint dropped from 160 MB to 89 MB; 34/34 tests and the production build still pass.
 Final conference/admin fixes completed on 2026-06-09: `delete-user` Edge Function deployed, team-leader readiness now shows login/account/onboarding/checklist status, Team Setup and Members are collapsible, board meetings omit conference-only controls, and onboarding navigation no longer covers its action button.
+Set Apart readiness was refined on 2026-06-09: leaders and coordinators are both counted as the 24 team leaders, the readiness panel lists every name/role/team, and status follows `No login` → `Not started` → four yellow checklist dots → green `Ready`.
 
 ### What's Built ✅
 
@@ -150,6 +151,7 @@ Final conference/admin fixes completed on 2026-06-09: `delete-user` Edge Functio
 - Platform role chips are draft selections; `Save role` performs the database update
 - Admin account removal UI uses the deployed, protected `delete-user` edge function
 - Conference admin event details show team-leader login, account setup, onboarding, and checklist readiness
+- Set Apart readiness includes both `leader` and `coordinator` event roles and shows each person's name instead of count-only summaries
 - Team Setup and Members are collapsible; non-conference events omit onboarding, team, and personal-message controls
 - EventList → EventDetail (team setup, coordinator picker) → CoLeaderPairing
 - AnnouncementList → AnnouncementEditor (draft → pending_approval → published + email toggle)

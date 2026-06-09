@@ -32,6 +32,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
   const [savingTeam, setSavingTeam] = useState(false);
   const [teamSetupOpen, setTeamSetupOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
+  const [readinessOpen, setReadinessOpen] = useState(true);
 
   // Edit modal — coordinator slots + team chips
   const [editCoordCount, setEditCoordCount] = useState(0);
@@ -301,45 +302,32 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
 
       {/* Onboarding progress */}
       {isConference && !loading && members.length > 0 && (() => {
-        const leaders = members.filter((m) => m.event_role === "leader");
-        const complete   = leaders.filter((m) => m.onboarding_completed).length;
-        const inProgress = leaders.filter((m) => !m.onboarding_completed && m.onboarding_visited).length;
-        const notStarted = leaders.filter((m) => !m.onboarding_completed && !m.onboarding_visited).length;
-        const accountReady = leaders.filter((m) => m.profiles?.password_changed).length;
-        const loggedIn = leaders.filter((m) => m.profiles?.last_seen_at).length;
-        const checklistComplete = leaders.filter((m) => checklistProgress(m).done === CHECKLIST_ITEMS.length).length;
+        const leaders = members
+          .filter((m) => ["leader", "coordinator"].includes(m.event_role))
+          .sort((a, b) => {
+            const teamDiff = (a.team_number ?? 999) - (b.team_number ?? 999);
+            if (teamDiff !== 0) return teamDiff;
+            return (a.profiles?.full_name || "").localeCompare(b.profiles?.full_name || "");
+          });
+        const ready = leaders.filter((m) => readinessState(m).key === "ready").length;
         return (
-          <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.75rem" }}>
-              Team leader readiness · {leaders.length} leaders
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 8 }}>
-              {[
-                { label: "Logged in", count: loggedIn },
-                { label: "Account set", count: accountReady },
-                { label: "Checklist", count: checklistComplete },
-              ].map(({ label, count }) => (
-                <div key={label} style={{ background: "#1B2A4A", borderRadius: 10, padding: "0.625rem", textAlign: "center" }}>
-                  <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 800, color: "#FF4D00", lineHeight: 1 }}>{count}/{leaders.length}</div>
-                  <div style={{ fontFamily: SANS, fontSize: "9px", fontWeight: 700, color: "#fff", marginTop: 4, lineHeight: 1.3 }}>{label}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {[
-                { label: "Complete",    count: complete,   bg: "#D1FAE5", color: "#065F46" },
-                { label: "In progress", count: inProgress, bg: "#FEF3C7", color: "#92400E" },
-                { label: "Not started", count: notStarted, bg: "#FEE2E2", color: "#991B1B" },
-              ].map(({ label, count, bg, color }) => (
-                <div key={label} style={{ flex: 1, background: bg, borderRadius: 10, padding: "0.625rem", textAlign: "center" }}>
-                  <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 700, color, lineHeight: 1 }}>{count}</div>
-                  <div style={{ fontFamily: SANS, fontSize: "10px", fontWeight: 600, color, marginTop: 3, lineHeight: 1.3 }}>{label}</div>
-                </div>
-              ))}
-            </div>
-            {notStarted > 0 && (
-              <div style={{ fontSize: "12px", color: "#991B1B", fontFamily: SANS, marginTop: "0.75rem" }}>
-                ⚠ {notStarted} member{notStarted !== 1 ? "s have" : " has"} not opened onboarding yet.
+          <div style={{ marginBottom: "1.25rem" }}>
+            <SectionToggle
+              label="Team Leader Readiness"
+              detail={`${ready} ready · ${leaders.length} total`}
+              open={readinessOpen}
+              onClick={() => setReadinessOpen((open) => !open)}
+            />
+            {readinessOpen && (
+              <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderTop: "none", borderRadius: "0 0 14px 14px", overflow: "hidden" }}>
+                {leaders.map((member, index) => (
+                  <ReadinessRow
+                    key={member.id}
+                    member={member}
+                    compact={false}
+                    borderBottom={index < leaders.length - 1}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -828,23 +816,9 @@ const cancelBtn = {
   color: "#888", cursor: "pointer", fontFamily: SANS,
 };
 
-const ONBOARDING_STATUS = {
-  complete:    { label: "Complete",    bg: "#D1FAE5", color: "#065F46" },
-  in_progress: { label: "In progress", bg: "#FEF3C7", color: "#92400E" },
-  not_started: { label: "Not started", bg: "#FEE2E2", color: "#991B1B" },
-};
-
-function onboardingStatus(member) {
-  if (member.onboarding_completed) return "complete";
-  if (member.onboarding_visited)   return "in_progress";
-  return "not_started";
-}
-
 function MemberRow({ member, onRemove, onEditMessage, onSetTeam, showConferenceStatus }) {
   const p = member.profiles || {};
-  const st = ONBOARDING_STATUS[onboardingStatus(member)];
   const hasMessage = !!member.personal_message;
-  const progress = checklistProgress(member);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12, padding: "0.75rem 1rem" }}>
       <Avatar url={p.photo_url} name={p.full_name} size={38} />
@@ -858,13 +832,8 @@ function MemberRow({ member, onRemove, onEditMessage, onSetTeam, showConferenceS
             </button>
           )}
         </div>
-        {showConferenceStatus && (
-          <div style={{ fontSize: "10px", color: TSEC, fontFamily: SANS, marginTop: 4 }}>
-            {p.last_seen_at ? "Logged in" : "Never logged in"} · {p.password_changed ? "Account set" : "Temp password"} · Checklist {progress.done}/{progress.total}
-          </div>
-        )}
       </div>
-      {showConferenceStatus && <span style={{ fontSize: "10px", fontWeight: 700, background: st.bg, color: st.color, borderRadius: 20, padding: "3px 8px", fontFamily: SANS, flexShrink: 0 }}>{st.label}</span>}
+      {showConferenceStatus && <ReadinessIndicator member={member} />}
       {onEditMessage && (
         <button onClick={onEditMessage} title={hasMessage ? "Edit personal message" : "Write personal message"} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", color: hasMessage ? ORANGE : BORDER, flexShrink: 0 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill={hasMessage ? ORANGE : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -886,6 +855,84 @@ function checklistProgress(member) {
     done: CHECKLIST_ITEMS.filter((item) => values[item.id]).length,
     total: CHECKLIST_ITEMS.length,
   };
+}
+
+function readinessState(member) {
+  const progress = checklistProgress(member);
+  if (!member.profiles?.last_seen_at) {
+    return { key: "no_login", label: "No login", progress };
+  }
+  if (!member.onboarding_visited) {
+    return { key: "not_started", label: "Not started", progress };
+  }
+  if (progress.done === progress.total) {
+    return { key: "ready", label: "Ready", progress };
+  }
+  return { key: "in_progress", label: "In progress", progress };
+}
+
+function ReadinessIndicator({ member }) {
+  const state = readinessState(member);
+
+  if (state.key === "ready") {
+    return (
+      <span style={{ fontSize: "10px", fontWeight: 800, background: "#D1FAE5", color: "#067647", borderRadius: 20, padding: "4px 9px", fontFamily: SANS, flexShrink: 0 }}>
+        Ready
+      </span>
+    );
+  }
+
+  if (state.key === "no_login") {
+    return (
+      <span style={{ fontSize: "10px", fontWeight: 800, background: "#F0F0F0", color: "#777", borderRadius: 20, padding: "4px 9px", fontFamily: SANS, flexShrink: 0 }}>
+        No login
+      </span>
+    );
+  }
+
+  if (state.key === "not_started") {
+    return (
+      <span style={{ fontSize: "10px", fontWeight: 800, background: "#FFF0EA", color: "#C2410C", borderRadius: 20, padding: "4px 9px", fontFamily: SANS, flexShrink: 0 }}>
+        Not started
+      </span>
+    );
+  }
+
+  return (
+    <div aria-label={`Checklist ${state.progress.done} of ${state.progress.total}`} style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+      {Array.from({ length: state.progress.total }, (_, index) => (
+        <span
+          key={index}
+          style={{
+            width: 9,
+            height: 9,
+            borderRadius: "50%",
+            background: index < state.progress.done ? "#F5B700" : "#FFF9DB",
+            border: "1px solid #D99F00",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ReadinessRow({ member, borderBottom }) {
+  const profile = member.profiles || {};
+  const roleLabel = member.event_role === "coordinator" ? "Coordinator" : "Leader";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0.7rem 0.875rem", borderBottom: borderBottom ? `1px solid ${BORDER}` : "none" }}>
+      <Avatar url={profile.photo_url} name={profile.full_name} size={34} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: "13px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {profile.full_name || "Unnamed leader"}
+        </div>
+        <div style={{ fontSize: "10px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
+          {roleLabel}{member.team_number ? ` · Team ${member.team_number}` : ""}
+        </div>
+      </div>
+      <ReadinessIndicator member={member} />
+    </div>
+  );
 }
 
 function SectionToggle({ label, detail, open, onClick, action }) {
