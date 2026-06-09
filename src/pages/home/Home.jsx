@@ -328,7 +328,7 @@ export default function Home({
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div style={{ marginBottom: "1.25rem" }}>
         <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 900, letterSpacing: "-0.02em", color: "#1B2A4A", lineHeight: 1, marginBottom: "0.875rem" }}>
-          412 <span style={{ color: "#FF4D00", fontSize: "28px" }}>Ministry</span>
+          412 <span style={{ color: "#FF4D00", fontSize: "22px" }}>MINISTRY</span>
         </div>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div>
