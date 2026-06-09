@@ -731,8 +731,17 @@ export default function Profile({ data, onSaved, onSignOut, onOpenAdmin, onBack 
 
         <button
           onClick={() => setShowContact(true)}
-          style={{ width: "100%", background: "none", border: "none", color: TSEC, padding: "10px", cursor: "pointer", fontSize: "13px", fontWeight: 600, fontFamily: SANS, marginBottom: "1rem" }}
+          style={{
+            width: "100%", background: "#FF4D00", border: "none", color: "#fff",
+            padding: "13px 16px", borderRadius: 10, cursor: "pointer",
+            fontSize: "14px", fontWeight: 800, fontFamily: SANS, marginBottom: "1rem",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          }}
         >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8" />
+            <path d="M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
           Contact 412 Ministry
         </button>
 

@@ -72,7 +72,12 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
     setSavingTag(key);
     const isAdding = !tags.includes(key);
     const next = isAdding ? [...tags, key] : tags.filter((t) => t !== key);
-    await supabase.from("profiles").update({ tags: next }).eq("id", profile.id);
+    const { error } = await supabase.from("profiles").update({ tags: next }).eq("id", profile.id);
+    if (error) {
+      setSavingTag(null);
+      onToast(`Could not ${isAdding ? "add" : "remove"} the ${key === "pastor" ? "Pastor" : "412 Board"} tag.`, "error");
+      return;
+    }
     setTags(next);
 
     // Auto-sync the corresponding system group conversation
@@ -156,14 +161,14 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
   }
 
   const ROLE_CHIPS = [
-    { key: "admin",     label: "Admin",     bg: "#1B2A4A", color: "#FF4D00" },
-    { key: "moderator", label: "Moderator", bg: "#EEF2FC", color: "#1A4FBF" },
-    { key: "member",    label: "User",      bg: "#F0F0F0", color: "#6B7280" },
+    { key: "admin",     label: "Admin",     bg: "#FF4D00", color: "#fff" },
+    { key: "moderator", label: "Moderator", bg: "#FF4D00", color: "#fff" },
+    { key: "member",    label: "User",      bg: "#FF4D00", color: "#fff" },
   ];
 
   const TAG_CHIPS = [
-    { key: "board_member", label: "412 Ministry", bg: "#1B2A4A", color: "#FF4D00" },
-    { key: "pastor",       label: "Pastors",      bg: "#D1FAE5", color: "#065F46" },
+    { key: "board_member", label: "412 Board", bg: "#FF4D00", color: "#fff" },
+    { key: "pastor",       label: "Pastor",    bg: "#FF4D00", color: "#fff" },
   ];
 
   return (

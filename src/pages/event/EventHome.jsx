@@ -54,8 +54,8 @@ function ViewDropdown({ view, onChange, enrolledEvents }) {
   );
 }
 
-function PastEvents({ history, activeEvent }) {
-  const past = (history || []).filter((h) => h.events && h.event_id !== activeEvent?.id);
+function PastEvents({ history }) {
+  const past = (history || []).filter((h) => h.events?.status === "archived");
 
   if (past.length === 0) {
     return (
@@ -117,8 +117,19 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
   }
   enrolledEvents.sort((a, b) => parseEventStart(a.startDate, a.dates) - parseEventStart(b.startDate, b.dates));
 
-  const initialEventView = enrolledEvents[0]?.key || "browse";
+  const savedEventView = localStorage.getItem("event_default_view");
+  const validViews = new Set(["browse", "past", ...enrolledEvents.map((event) => event.key)]);
+  const hasValidSavedView = validViews.has(savedEventView);
+  const initialEventView = hasValidSavedView
+    ? savedEventView
+    : enrolledEvents[0]?.key || "browse";
   const [view, setView] = useState(initialEventView);
+  const [pinnedView, setPinnedView] = useState(hasValidSavedView ? savedEventView : null);
+
+  function pinCurrentView() {
+    localStorage.setItem("event_default_view", view);
+    setPinnedView(view);
+  }
 
   // Resolve which activeEvent data to show for the selected view
   const viewEventId = view.startsWith("evt_") ? view.slice(4) : null;
@@ -160,8 +171,25 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
 
   return (
     <Shell withNav>
-      <div style={{ marginBottom: "1.25rem" }}>
-        <ViewDropdown view={view} onChange={setView} enrolledEvents={enrolledEvents} />
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "1.25rem" }}>
+        <div style={{ flex: 1 }}>
+          <ViewDropdown view={view} onChange={setView} enrolledEvents={enrolledEvents} />
+        </div>
+        <button
+          onClick={pinCurrentView}
+          title={view === pinnedView ? "This is your default event page" : "Open this page first next time"}
+          aria-label={view === pinnedView ? "Current default event page" : "Set as default event page"}
+          style={{
+            flexShrink: 0, width: 44, height: 44, borderRadius: 12,
+            border: view === pinnedView ? "none" : `1px solid ${BORDER}`,
+            background: view === pinnedView ? "#FF4D00" : "#fff",
+            display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+          }}
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill={view === pinnedView ? "#fff" : "none"} stroke={view === pinnedView ? "#fff" : TSEC} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+          </svg>
+        </button>
       </div>
 
       {view === "browse" && (
@@ -172,7 +200,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
         />
       )}
 
-      {view === "past" && <PastEvents history={history} activeEvent={activeEvent} />}
+      {view === "past" && <PastEvents history={history} />}
 
       {view.startsWith("evt_") && !viewEvent && (
         <div style={{ fontFamily: SANS, fontSize: "14px", color: TSEC, textAlign: "center", marginTop: "4rem" }}>
@@ -246,7 +274,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.625rem" }}>
             <div>
               <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.14em", color: "rgba(255,255,255,0.72)", textTransform: "uppercase", fontFamily: SANS, marginBottom: 3 }}>
-                Onboarding
+                Team Leader Onboarding
               </div>
               <div style={{ fontSize: "14px", fontWeight: 800, color: "#fff", fontFamily: SANS }}>
                 {onboardingComplete ? "Onboarding complete" : `Step ${Math.min(onboardingStep + 1, TOTAL_STEPS)} of ${TOTAL_STEPS}`}
@@ -263,7 +291,7 @@ export default function EventHome({ data, onOpenPage, onNavigate, onOpenAdmin })
             onClick={() => onOpenPage("onboarding")}
             style={{ width: "100%", background: "#fff", color: "#FF4D00", border: "none", borderRadius: 10, padding: "10px 0", fontSize: "13px", fontWeight: 800, cursor: "pointer", fontFamily: SANS }}
           >
-            {onboardingComplete ? "Review Onboarding →" : onboardingStep > 0 ? "Continue Onboarding →" : "Start Onboarding →"}
+            Start Onboarding →
           </button>
         </div>
       )}

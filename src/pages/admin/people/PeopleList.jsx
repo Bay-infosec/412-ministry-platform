@@ -15,9 +15,9 @@ const TAG_FILTERS = [
 ];
 
 const ROLE_BADGE = {
-  admin:     { bg: "#111", color: "#FF4D00" },
-  moderator: { bg: "#F0F0F0", color: "#111" },
-  member:    { bg: "#F0F0F0", color: "#888" },
+  admin:     { bg: "#FF4D00", color: "#fff" },
+  moderator: { bg: "#FF4D00", color: "#fff" },
+  member:    { bg: "#FF4D00", color: "#fff" },
 };
 
 export default function PeopleList({ data, onSelect }) {
@@ -46,9 +46,12 @@ export default function PeopleList({ data, onSelect }) {
     if (roleFilter !== "all" && p.platform_role !== roleFilter) return false;
     // Tag filters
     if (tagFilters.size > 0) {
-      const pTags = new Set(p.tags || []);
+      const pTags = new Set((p.tags || []).map((tag) => String(tag).trim().toLowerCase()));
+      const ministryRole = String(p.ministry_role || "").trim().toLowerCase();
       for (const t of tagFilters) {
-        if (!pTags.has(t)) return false;
+        const hasTag = pTags.has(t);
+        const hasPastorRole = t === "pastor" && ministryRole.includes("pastor");
+        if (!hasTag && !hasPastorRole) return false;
       }
     }
     return true;
@@ -159,7 +162,7 @@ export default function PeopleList({ data, onSelect }) {
                   </span>
                   {tags.map((tag) => (
                     <span key={tag} style={{ fontSize: "9px", fontWeight: 800, background: "#FF4D00", color: "#fff", borderRadius: 99, padding: "2px 7px", fontFamily: SANS, flexShrink: 0, letterSpacing: "0.04em" }}>
-                      {tag === "board_member" ? "Board" : tag}
+                      {String(tag).toLowerCase() === "board_member" ? "Board" : String(tag).toLowerCase() === "pastor" ? "Pastor" : tag}
                     </span>
                   ))}
                 </div>

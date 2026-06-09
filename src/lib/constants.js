@@ -32,17 +32,17 @@ export const SERIF  = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', syst
 
 // ── Profile tag definitions ────────────────────────────────────────────────
 export const PROFILE_TAGS = {
-  board_member: { label: "412 Board", bg: C.orange,   color: "#fff" },
-  pastor:       { label: "Pastor",    bg: "#111111",  color: "#fff" },
+  board_member: { label: "412 Board", bg: C.orange, color: "#fff" },
+  pastor:       { label: "Pastor",    bg: C.orange, color: "#fff" },
 };
 
 // Derived tags from platform_role / event_role — not stored in DB
 export const ROLE_TAGS = {
-  admin:       { label: "Admin",       bg: "#111111",  color: C.orange },
-  moderator:   { label: "Moderator",   bg: "#F0F0F0",  color: "#111111" },
-  member:      { label: "Member",      bg: "#F0F0F0",  color: C.muted },
-  coordinator: { label: "Coordinator", bg: "#F0F0F0",  color: "#111111" },
-  leader:      { label: "Team Leader", bg: C.orange,   color: "#fff" },
-  participant: { label: "Participant", bg: "#F0F0F0",  color: "#111111" },
-  volunteer:   { label: "Volunteer",   bg: "#111111",  color: "#fff" },
+  admin:       { label: "Admin",       bg: C.orange, color: "#fff" },
+  moderator:   { label: "Moderator",   bg: C.orange, color: "#fff" },
+  member:      { label: "Member",      bg: C.orange, color: "#fff" },
+  coordinator: { label: "Coordinator", bg: C.orange, color: "#fff" },
+  leader:      { label: "Team Leader", bg: C.orange, color: "#fff" },
+  participant: { label: "Participant", bg: C.orange, color: "#fff" },
+  volunteer:   { label: "Volunteer",   bg: C.orange, color: "#fff" },
 };

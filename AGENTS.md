@@ -93,8 +93,8 @@ Font: system-ui only (no Google Fonts). Remove `useFonts()` / any Google Fonts l
 ## Current State (as of 2026-06-08)
 
 ### Branch: `design-polish`
-Latest implementation commit: `1e3d712` (`Finish event flow and restore EmailJS`).
-Verification: 34/34 tests pass, production build passes, and the local login screen has no console errors or horizontal overflow.
+Latest implementation includes the event bookmark/onboarding, event-history, profile-tag, pastor-filter, and Contact 412 visibility fixes.
+Verification: 34/34 tests pass and the production build passes.
 
 ### What's Built ✅
 
@@ -113,7 +113,9 @@ Verification: 34/34 tests pass, production build passes, and the local login scr
 
 **Conference (EventHome)**
 - Event selector opens the user's soonest enrolled active event
+- Bookmark button lets a user choose the event view that opens first
 - Orange onboarding progress panel appears immediately below event information
+- Past Events only contains events whose status is actually `archived`
 - Browse tab = EventsBrowser (public events + join requests)
 - Past tab = archived events from user history
 
@@ -134,9 +136,10 @@ Verification: 34/34 tests pass, production build passes, and the local login scr
 
 **Profile**
 - Phone formatting, password validation, church Other option
-- Tag system (board_member, pastor in DB `tags[]` + role-derived tags)
+- Tag system (board_member, pastor in DB `tags[]` + role-derived tags), displayed consistently as orange/white chips
 - Profile setup after first login (photo upload, nickname)
 - Conference history, PWA install instructions card
+- Contact 412 Ministry is a prominent orange button
 
 **Infrastructure**
 - EmailJS: Welcome template for invitations; Announcement template for announcements and Contact 412 messages
@@ -147,6 +150,7 @@ Verification: 34/34 tests pass, production build passes, and the local login scr
 
 ### Known Issues
 - `delete-user` is committed locally but must be deployed after authenticating the Supabase CLI.
+- `CLAUDE.md` still documents the older Resend flow; `AGENTS.md` is the current EmailJS handoff.
 
 ---
 
@@ -155,6 +159,7 @@ Verification: 34/34 tests pass, production build passes, and the local login scr
 1. Deploy `delete-user`: `npx supabase login`, then `npx supabase functions deploy delete-user --project-ref hoxjardsthjuhbxivken`.
 2. **⚠️ Rotate Supabase API keys** — service_role key was in shared PDF.
 3. Manually verify Welcome and Announcement delivery from the deployed design preview.
+4. Confirm Enkhbayar's Pastor tag in Admin → Users; failed tag writes now show an error instead of appearing successful.
 
 ---
 
