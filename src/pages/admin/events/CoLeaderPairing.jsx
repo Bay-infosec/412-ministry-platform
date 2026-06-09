@@ -126,7 +126,7 @@ export default function CoLeaderPairing({ event, data, onRefresh, onToast }) {
         }}>
           <Avatar url={selectedLeader.profiles?.photo_url} name={selectedLeader.profiles?.full_name} size={32} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: "13px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
+            <div style={{ fontSize: "13px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
               {selectedLeader.profiles?.full_name} selected
             </div>
             <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>
@@ -169,7 +169,7 @@ export default function CoLeaderPairing({ event, data, onRefresh, onToast }) {
                 >
                   <Avatar url={l.profiles?.photo_url} name={l.profiles?.full_name} size={42} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
+                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
                       {l.profiles?.full_name}
                     </div>
                     <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
@@ -242,7 +242,7 @@ export default function CoLeaderPairing({ event, data, onRefresh, onToast }) {
       {modal === "pair" && pendingA && pendingB && (
         <div style={overlay}>
           <div style={sheet}>
-            <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111", marginBottom: "1rem" }}>
+            <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#1B2A4A", marginBottom: "1rem" }}>
               Confirm Pairing
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1.25rem" }}>
@@ -256,7 +256,7 @@ export default function CoLeaderPairing({ event, data, onRefresh, onToast }) {
             <div style={{ display: "flex", gap: 8 }}>
               <button onClick={() => { setModal(null); setPendingA(null); setPendingB(null); setSelectedId(null); }} style={{
                 flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10,
-                padding: "12px", fontSize: "14px", fontWeight: 600, color: "#111111",
+                padding: "12px", fontSize: "14px", fontWeight: 600, color: "#1B2A4A",
                 cursor: "pointer", fontFamily: SANS,
               }}>Cancel</button>
               <button onClick={confirmPair} disabled={busy} style={{
@@ -293,7 +293,7 @@ function LeaderChip({ leader }) {
     <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1, minWidth: 0 }}>
       <Avatar url={p.photo_url} name={p.full_name} size={32} />
       <div style={{
-        fontSize: "13px", fontWeight: 600, color: "#111111", fontFamily: SANS,
+        fontSize: "13px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS,
         whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
       }}>
         {p.full_name?.split(" ")[0]}
@@ -307,7 +307,7 @@ function LeaderCard({ leader }) {
   return (
     <div style={{ flex: 1, textAlign: "center" }}>
       <Avatar url={p.photo_url} name={p.full_name} size={48} />
-      <div style={{ fontSize: "13px", fontWeight: 600, color: "#111111", fontFamily: SANS, marginTop: 4 }}>
+      <div style={{ fontSize: "13px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS, marginTop: 4 }}>
         {p.full_name?.split(" ")[0]}
       </div>
     </div>

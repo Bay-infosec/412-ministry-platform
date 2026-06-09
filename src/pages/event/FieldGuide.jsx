@@ -25,7 +25,7 @@ export default function FieldGuide({ data, onBack }) {
         <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.14em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
           Field Guide
         </div>
-        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
+        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
           Your leader reference.
         </div>
       </div>

@@ -92,7 +92,7 @@ export default function PrayerChain({ data, onBack }) {
         <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
           Prayer Chain
         </div>
-        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 600, color: "#111111", lineHeight: 1.2, marginBottom: "0.5rem" }}>
+        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 600, color: "#1B2A4A", lineHeight: 1.2, marginBottom: "0.5rem" }}>
           Pray for one another.
         </div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>
@@ -101,7 +101,7 @@ export default function PrayerChain({ data, onBack }) {
       </div>
 
       {/* Scripture */}
-      <div style={{ background: "#111111", borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
+      <div style={{ background: "#1B2A4A", borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
         <div style={{ fontFamily: SANS, fontSize: "15px", color: "#FFE066", lineHeight: 1.7, fontStyle: "italic", marginBottom: "0.5rem" }}>
           "The prayer of a righteous person is powerful and effective."
         </div>
@@ -123,7 +123,7 @@ export default function PrayerChain({ data, onBack }) {
               const isToday = du === 0;
               return (
                 <div key={idx} style={{
-                  flex: 1, background: isToday ? "#FF4D00" : "#111111", borderRadius: 14,
+                  flex: 1, background: isToday ? "#FF4D00" : "#1B2A4A", borderRadius: 14,
                   padding: "1rem", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                 }}>
                   <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: isToday ? "#fff" : "#FF4D00", textTransform: "uppercase", fontFamily: SANS }}>
@@ -157,7 +157,7 @@ export default function PrayerChain({ data, onBack }) {
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <div>
-            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: todayEntry?.teamNum === "all" ? "#1A4FBF" : "#111111" }}>
+            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: todayEntry?.teamNum === "all" ? "#1A4FBF" : "#1B2A4A" }}>
               August 3
               {todayEntry?.teamNum === "all" && <span style={{ marginLeft: 8, fontSize: "10px", background: "#1A4FBF", color: "#fff", borderRadius: 10, padding: "2px 8px", fontFamily: SANS, fontWeight: 700 }}>TODAY</span>}
             </div>
@@ -166,7 +166,7 @@ export default function PrayerChain({ data, onBack }) {
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111" }}>
+            <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#1B2A4A" }}>
               {daysUntil(CHAIN_ALL) > 0 ? daysUntil(CHAIN_ALL) : "—"}
             </div>
             {daysUntil(CHAIN_ALL) > 0 && <div style={{ fontSize: "10px", color: TSEC, fontFamily: SANS }}>days</div>}
@@ -185,7 +185,7 @@ export default function PrayerChain({ data, onBack }) {
             display: "flex", justifyContent: "space-between", alignItems: "center",
           }}
         >
-          <span style={{ fontSize: "13px", fontWeight: 700, color: "#111111" }}>Full Prayer Schedule</span>
+          <span style={{ fontSize: "13px", fontWeight: 700, color: "#1B2A4A" }}>Full Prayer Schedule</span>
           <ChevronIcon open={scheduleOpen} />
         </button>
         {scheduleOpen && (
@@ -207,7 +207,7 @@ export default function PrayerChain({ data, onBack }) {
                   borderRadius: 12, padding: "0.625rem 0.75rem",
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-                    <div style={{ fontSize: "12px", fontWeight: 700, color: isMine ? "#FF4D00" : "#111111", fontFamily: SANS }}>
+                    <div style={{ fontSize: "12px", fontWeight: 700, color: isMine ? "#FF4D00" : "#1B2A4A", fontFamily: SANS }}>
                       Team {teamNum}
                     </div>
                     {isTodayTeam && (
@@ -216,7 +216,7 @@ export default function PrayerChain({ data, onBack }) {
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: "11px", color: isMine ? "#111111" : TSEC, fontFamily: SANS, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: "11px", color: isMine ? "#1B2A4A" : TSEC, fontFamily: SANS, lineHeight: 1.5 }}>
                     {fmtShort(d1)} · {fmtShort(d2)}
                   </div>
                 </div>
@@ -228,7 +228,7 @@ export default function PrayerChain({ data, onBack }) {
               borderRadius: 12, padding: "0.625rem 0.75rem",
               display: "flex", alignItems: "center", justifyContent: "space-between",
             }}>
-              <div style={{ fontSize: "12px", fontWeight: 700, color: todayEntry?.teamNum === "all" ? "#1A4FBF" : "#111111", fontFamily: SANS }}>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: todayEntry?.teamNum === "all" ? "#1A4FBF" : "#1B2A4A", fontFamily: SANS }}>
                 All Teams Together
               </div>
               <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>{fmtShort(CHAIN_ALL)}</div>
@@ -248,7 +248,7 @@ export default function PrayerChain({ data, onBack }) {
             display: "flex", justifyContent: "space-between", alignItems: "center",
           }}
         >
-          <span style={{ fontSize: "13px", fontWeight: 700, color: "#111111" }}>What to pray for</span>
+          <span style={{ fontSize: "13px", fontWeight: 700, color: "#1B2A4A" }}>What to pray for</span>
           <ChevronIcon open={topicsOpen} />
         </button>
         {topicsOpen && (
@@ -268,7 +268,7 @@ export default function PrayerChain({ data, onBack }) {
                 }}>
                   {i + 1}
                 </div>
-                <div style={{ fontSize: "13px", color: "#111111", fontFamily: SANS, lineHeight: 1.6 }}>
+                <div style={{ fontSize: "13px", color: "#1B2A4A", fontFamily: SANS, lineHeight: 1.6 }}>
                   {topic}
                 </div>
               </div>
@@ -278,9 +278,9 @@ export default function PrayerChain({ data, onBack }) {
       </div>
 
       {/* Reminder */}
-      <div style={{ background: "#FFF5EC", border: "1.5px solid #FFD5C0", borderRadius: 12, padding: "0.875rem 1.25rem", marginBottom: "1.5rem" }}>
-        <div style={{ fontSize: "12px", fontWeight: 700, color: "#FF4D00", fontFamily: SANS, marginBottom: 4 }}>A reminder</div>
-        <div style={{ fontSize: "13px", color: "#111111", fontFamily: SANS, lineHeight: 1.6 }}>
+      <div style={{ background: "#FF4D00", borderRadius: 12, padding: "0.875rem 1.25rem", marginBottom: "1.5rem" }}>
+        <div style={{ fontSize: "12px", fontWeight: 800, color: "#fff", fontFamily: SANS, marginBottom: 4 }}>A reminder</div>
+        <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.84)", fontFamily: SANS, lineHeight: 1.6 }}>
           Assigned days are focused days, not limits. Pray for every team, every day. The chain only works when everyone stays in it.
         </div>
       </div>

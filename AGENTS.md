@@ -1,6 +1,6 @@
-# 412 Ministry Platform — CLAUDE.md
+# 412 Ministry Platform — AGENTS.md
 
-Shared brain for both Claude Code accounts. Read this fully before starting any session. Update **Current State** and **Next Up** after each session, then commit and push.
+Shared brain for both Codex accounts. Read this fully before starting any session. Update **Current State** and **Next Up** after each session, then commit and push.
 
 ---
 
@@ -12,7 +12,7 @@ npm install
 npm run dev
 ```
 
-`.env` is at project root (gitignored). Contains Supabase URL/key + Resend credentials.
+`.env` is at project root (gitignored). Contains Supabase and EmailJS client configuration.
 
 ---
 
@@ -33,7 +33,7 @@ Mobile-first PWA for 412 Ministry — a Mongolian-American Christian youth/leade
 
 **Vision:** Permanent platform where events come and go, but people stay forever.
 
-**Stack:** React 18 + Vite · Supabase (auth + DB + storage + realtime) · Vercel (hosting) · Resend (email via edge fn) · No UI library (inline styles only) · No router (state-based navigation)
+**Stack:** React 18 + Vite · Supabase (auth + DB + storage + realtime) · Vercel (hosting) · EmailJS (Welcome + Announcement templates) · No UI library (inline styles only) · No router (state-based navigation)
 
 **Active event:** Set Apart 2026 — August 5–9, Rhodes Grove Camp, PA. ~24 team leaders.
 
@@ -50,8 +50,7 @@ Mobile-first PWA for 412 Ministry — a Mongolian-American Christian youth/leade
 | Field Guide | `https://drive.google.com/file/d/1VVARCRm2Rl9NkH7i0wzDot5KwJbN-dF7/preview` |
 
 **⚠️ Security — action required:**
-- Rotate Supabase API keys — service_role key was exposed in a shared Claude.pdf. Do this in Supabase Dashboard → Settings → API.
-- Set Resend secrets in Supabase Dashboard → Settings → Edge Functions → Secrets: `RESEND_API_KEY`, `RESEND_FROM_EMAIL` (use `onboarding@resend.dev` until domain verified), `PLATFORM_URL` (`https://412-ministry-platform.vercel.app`). Code side is fully deployed — only secrets are missing.
+- Rotate Supabase API keys — service_role key was exposed in a shared Codex.pdf. Do this in Supabase Dashboard → Settings → API.
 
 ---
 
@@ -94,25 +93,33 @@ Font: system-ui only (no Google Fonts). Remove `useFonts()` / any Google Fonts l
 ## Current State (as of 2026-06-08)
 
 ### Branch: `design-polish`
-Two files have uncommitted changes: `src/components/ui/Badge.jsx`, `src/lib/constants.js`.
+Latest implementation includes direct Home-to-event navigation, a complete forgot-password recovery screen, rounded rendered logos, a larger Home brand wordmark, and the updated Prayer Chain reminder.
+Verification: 34/34 tests pass and the production build passes.
+Manual browser verification was unavailable in the 2026-06-08 session because the in-app browser connection was not available.
 
 ### What's Built ✅
 
 **Auth & shell**
 - Login (Enter key submits), ChangePassword (password validation enforced)
+- Forgot Password sends a Supabase Auth recovery email; the recovery link now opens a dedicated new-password screen before returning to the app
 - App.jsx: state-based navigation, app-wide presence channel, chat unread badge
 - Shell, BottomNav (4 tabs: Home · Conference · Updates · Profile), BackBtn
-- PWA manifest + full iOS/Android meta tags, favicon set
+- PWA manifest + full iOS/Android meta tags, favicon set; rendered logo instances use rounded clipping
 
 **Home**
-- Dismissible onboarding banner, dark event hero card, countdown, daily verse
-- Quick access tiles (2-col grid), stat cards
+- Dismissible announcement, daily verse, horizontal event/task/coordinator sections
+- Enrolled active events are ordered by soonest start date
+- Event cards open the exact selected event profile, including the 412 Board Meeting
+- The 412 Ministry wordmark gives “Ministry” stronger visual emphasis
+- Tools contains only The Four and Field Guide, using matching white cards
 - Chat button in header (red unread dot / green online dot)
-- Upcoming tiles tap through: Prayer Day → prayer_chain, Zoom Training → event tab
+- Contact 412 Ministry moved to Profile
 
 **Conference (EventHome)**
-- Segmented switcher: My Event / Browse / Past
-- Onboarding progress banner (step N of 6, orange bar, Continue/Checklist buttons)
+- Event selector opens the user's soonest enrolled active event
+- Bookmark button lets a user choose the event view that opens first
+- Orange onboarding progress panel appears immediately below event information
+- Past Events only contains events whose status is actually `archived`
 - Browse tab = EventsBrowser (public events + join requests)
 - Past tab = archived events from user history
 
@@ -120,11 +127,13 @@ Two files have uncommitted changes: `src/components/ui/Badge.jsx`, `src/lib/cons
 - OnboardingFlow: 6 steps, saves to `event_checklist`, Save & exit, team reveal mechanic
 - MyTeam, CoordinatorView (filters self out, "Not started" badge)
 - PrayerChain: pulls from DB, 2-col grid per team, 12-team schedule Jul 10–Aug 2
+- Prayer Chain reminder uses the solid orange current palette
 - TheFour, FieldGuide (real Drive URL + offline download), MyChecklist
 - Chat: Supabase Realtime, grouped messages, emoji, presence strip, DMs, group threads
 
 **Admin panel (full)**
-- AdminShell → PeopleList → PersonDetail (tag chips, event-scoped card) → InviteFlow
+- AdminShell → Users → PersonDetail (tag chips, event-scoped card) → InviteFlow
+- Admin account removal UI uses a protected `delete-user` edge function
 - EventList → EventDetail (team setup, coordinator picker) → CoLeaderPairing
 - AnnouncementList → AnnouncementEditor (draft → pending_approval → published + email toggle)
 - ChurchList, TrainingMaterials
@@ -132,26 +141,31 @@ Two files have uncommitted changes: `src/components/ui/Badge.jsx`, `src/lib/cons
 
 **Profile**
 - Phone formatting, password validation, church Other option
-- Tag system (board_member, pastor in DB `tags[]` + role-derived tags)
+- Tag system (board_member, pastor in DB `tags[]` + role-derived tags), displayed consistently as orange/white chips
 - Profile setup after first login (photo upload, nickname)
 - Conference history, PWA install instructions card
+- Contact 412 Ministry is a prominent orange button
 
 **Infrastructure**
-- Resend: `send-email` edge fn deployed, `create-user` updated, `src/lib/email.js` wired in
+- EmailJS: Welcome template for invitations; Announcement template for announcements and Contact 412 messages
+- Supabase Auth handles forgot-password/reset emails independently of EmailJS
 - RLS: all recursion bugs fixed via SECURITY DEFINER helper fns (`is_platform_admin()`, `get_my_event_ids()`, `get_my_assigned_event_ids()`, `get_my_conversation_ids()`)
 - 15 DB indexes added
 - Social preview (og tags + preview.jpg), favicon auto-cropped to content
 
 ### Known Issues
-None active. All previously known bugs are resolved.
+- `delete-user` is committed locally but must be deployed after authenticating the Supabase CLI.
+- `CLAUDE.md` still documents the older Resend flow; `AGENTS.md` is the current EmailJS handoff.
 
 ---
 
 ## Next Up
 
-1. **⚠️ Set Resend secrets** (user action, not code) — Supabase Dashboard → Settings → Edge Functions → Secrets. See Credentials section above.
-2. **⚠️ Rotate Supabase API keys** (user action) — service_role key was in shared PDF.
-3. **Bold Light design overhaul** — full spec below. This is the main pending code work. Do it in one session, not piecemeal.
+1. Deploy `delete-user`: `npx supabase login`, then `npx supabase functions deploy delete-user --project-ref hoxjardsthjuhbxivken`.
+2. **⚠️ Rotate Supabase API keys** — service_role key was in shared PDF.
+3. Manually verify Welcome and Announcement delivery from the deployed design preview.
+4. Manually verify Home → 412 Board Meeting and the emailed forgot-password recovery link on the deployed preview.
+5. Confirm Enkhbayar's Pastor tag in Admin → Users; failed tag writes now show an error instead of appearing successful.
 
 ---
 

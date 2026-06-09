@@ -39,7 +39,7 @@ export default function BottomNav({
         style={{
           width: "100%",
           maxWidth: 460,
-          background: "#fff",
+          background: "#FAFAFA",
           borderTop: "1px solid #E5E5E5",
           display: "flex",
           padding: "0.4rem 0 0",
@@ -70,7 +70,7 @@ export default function BottomNav({
                   alt="Profile"
                   style={{
                     width: 30, height: 30, borderRadius: "50%", objectFit: "cover",
-                    border: `2.5px solid ${active === "profile" ? "#FF4D00" : "transparent"}`,
+                    border: `2.5px solid ${active === "profile" ? "#FF4D00" : "#CCCCCC"}`,
                     boxSizing: "border-box",
                   }}
                 />
@@ -99,7 +99,7 @@ export default function BottomNav({
                   width: 8,
                   height: 8,
                   borderRadius: "50%",
-                  background: "#E53E3E",
+                  background: "#FF4D00",
                 }}
               />
             )}

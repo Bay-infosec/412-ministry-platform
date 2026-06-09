@@ -31,7 +31,7 @@ export default function DailyVerse() {
 
   if (loading) {
     return (
-      <div style={{ background: "#FFF5F0", border: "1px solid #FFD5C0", borderRadius: 16, marginBottom: "1rem", minHeight: 80 }} />
+      <div style={{ background: "#FFFFFF", border: "1px solid #E5E5E5", borderRadius: 16, marginBottom: "1rem", minHeight: 80 }} />
     );
   }
 
@@ -40,8 +40,8 @@ export default function DailyVerse() {
   return (
     <div
       style={{
-        background: "#FFF5F0",
-        border: "1px solid #FFD5C0",
+        background: "#FFFFFF",
+        border: "1px solid #E5E5E5",
         borderRadius: 16,
         padding: "1.25rem 1.5rem",
         marginBottom: "1rem",
@@ -65,7 +65,7 @@ export default function DailyVerse() {
           fontFamily: SANS,
           fontSize: "14px",
           fontStyle: "italic",
-          color: "#111111",
+          color: "#1B2A4A",
           lineHeight: 1.75,
           marginBottom: "0.625rem",
         }}

@@ -9,6 +9,7 @@ export default function Shell({ children, withNav }) {
         fontFamily: SANS,
         display: "flex",
         justifyContent: "center",
+        overflowX: "hidden",
       }}
     >
       <div

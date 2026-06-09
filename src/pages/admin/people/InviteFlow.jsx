@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
 import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
+import { sendInviteEmail } from "../../../lib/email.js";
 
 const inputStyle = {
   width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10,
-  padding: "10px 12px", fontSize: "15px", fontFamily: SANS, color: "#111111",
+  padding: "10px 12px", fontSize: "15px", fontFamily: SANS, color: "#1B2A4A",
   outline: "none", boxSizing: "border-box", background: "#fff",
 };
 
@@ -36,22 +37,45 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
       },
     });
 
-    setLoading(false);
-
     if (error || !res?.success) {
+      setLoading(false);
       const msg = res?.error || "Could not create account. Email may already be in use.";
       onToast(msg, "error");
       return;
     }
 
-    setDone({ name: fullName.trim(), emailSent: res.email_sent });
+    const normalizedEmail = email.trim().toLowerCase();
+    const { data: createdProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", normalizedEmail)
+      .maybeSingle();
+
+    let emailSent = false;
+    let tempPassword = null;
+    if (createdProfile?.id) {
+      const { data: resetResult } = await supabase.functions.invoke("reset-password", {
+        body: { user_id: createdProfile.id },
+      });
+      tempPassword = resetResult?.temp_password || null;
+      if (tempPassword) {
+        emailSent = await sendInviteEmail({
+          toEmail: normalizedEmail,
+          toName: fullName.trim(),
+          tempPassword,
+        });
+      }
+    }
+
+    setLoading(false);
+    setDone({ name: fullName.trim(), emailSent, tempPassword });
   }
 
   if (done) {
     return (
       <div style={{ textAlign: "center", paddingTop: "2rem" }}>
         <div style={{ fontSize: "48px", marginBottom: "1rem" }}>✓</div>
-        <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 600, color: "#111111", marginBottom: "0.75rem" }}>
+        <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 600, color: "#1B2A4A", marginBottom: "0.75rem" }}>
           {done.name} invited!
         </div>
         {done.emailSent ? (
@@ -60,11 +84,12 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
           </div>
         ) : (
           <div style={{
-            background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 12,
+            background: "#111111", border: "none", borderRadius: 12,
             padding: "1rem", marginTop: "0.5rem",
-            fontSize: "14px", color: "#92400E", fontFamily: SANS, lineHeight: 1.65,
+            fontSize: "14px", color: "#FFFFFF", fontFamily: SANS, lineHeight: 1.65,
           }}>
-            Account created but the invite email failed to send. You will need to share the login credentials manually. Check the Resend configuration (RESEND_API_KEY / RESEND_FROM_EMAIL secrets).
+            Account created, but EmailJS did not confirm delivery.
+            {done.tempPassword ? ` Share this temporary password manually: ${done.tempPassword}` : " Reset the password from the user profile and share it manually."}
           </div>
         )}
       </div>
@@ -74,7 +99,7 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
   return (
     <form onSubmit={submit}>
       <div style={{ marginBottom: "1.5rem" }}>
-        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111", marginBottom: 4 }}>
+        <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#1B2A4A", marginBottom: 4 }}>
           Invite a new leader
         </div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, lineHeight: 1.6 }}>

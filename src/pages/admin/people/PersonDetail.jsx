@@ -5,7 +5,7 @@ import { Avatar, Modal, SectionLabel, ProfileTags } from "../../../components/ui
 
 const inputStyle = {
   width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10,
-  padding: "10px 12px", fontSize: "15px", fontFamily: SANS, color: "#111111",
+  padding: "10px 12px", fontSize: "15px", fontFamily: SANS, color: "#1B2A4A",
   outline: "none", boxSizing: "border-box", background: "#fff",
 };
 
@@ -38,6 +38,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
   const [modal, setModal] = useState(null);
   const [busy, setBusy] = useState(false);
   const [tempPw, setTempPw] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
 
   // Platform role (inline chip)
   const [currentRole, setCurrentRole] = useState(profile.platform_role);
@@ -71,7 +72,12 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
     setSavingTag(key);
     const isAdding = !tags.includes(key);
     const next = isAdding ? [...tags, key] : tags.filter((t) => t !== key);
-    await supabase.from("profiles").update({ tags: next }).eq("id", profile.id);
+    const { error } = await supabase.from("profiles").update({ tags: next }).eq("id", profile.id);
+    if (error) {
+      setSavingTag(null);
+      onToast(`Could not ${isAdding ? "add" : "remove"} the ${key === "pastor" ? "Pastor" : "412 Board"} tag.`, "error");
+      return;
+    }
     setTags(next);
 
     // Auto-sync the corresponding system group conversation
@@ -103,6 +109,23 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
     setModal(null);
     if (error || !res?.success) { onToast("Password reset failed.", "error"); return; }
     setTempPw(res.temp_password);
+  }
+
+  async function deleteAccount() {
+    if (deleteConfirm !== "DELETE") return;
+    setBusy(true);
+    const { data: result, error } = await supabase.functions.invoke("delete-user", {
+      body: { user_id: profile.id },
+    });
+    setBusy(false);
+    if (error || !result?.success) {
+      onToast(result?.error || "Could not remove account.", "error");
+      return;
+    }
+    setModal(null);
+    onToast(`${profile.full_name}'s account was permanently removed.`);
+    await onRefresh();
+    onDone();
   }
 
   async function addToEvent() {
@@ -138,14 +161,14 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
   }
 
   const ROLE_CHIPS = [
-    { key: "admin",     label: "Admin",     bg: "#111111", color: "#FF4D00" },
-    { key: "moderator", label: "Moderator", bg: "#EEF2FC", color: "#1A4FBF" },
-    { key: "member",    label: "User",      bg: "#F0F0F0", color: "#999999" },
+    { key: "admin",     label: "Admin",     bg: "#FF4D00", color: "#fff" },
+    { key: "moderator", label: "Moderator", bg: "#FF4D00", color: "#fff" },
+    { key: "member",    label: "User",      bg: "#FF4D00", color: "#fff" },
   ];
 
   const TAG_CHIPS = [
-    { key: "board_member", label: "412 Ministry", bg: "#111111", color: "#FF4D00" },
-    { key: "pastor",       label: "Pastors",      bg: "#D1FAE5", color: "#065F46" },
+    { key: "board_member", label: "412 Board", bg: "#FF4D00", color: "#fff" },
+    { key: "pastor",       label: "Pastor",    bg: "#FF4D00", color: "#fff" },
   ];
 
   return (
@@ -158,7 +181,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
       }}>
         <Avatar url={profile.photo_url} name={profile.full_name} size={58} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#111111", lineHeight: 1.2 }}>
+          <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#1B2A4A", lineHeight: 1.2 }}>
             {profile.full_name}
           </div>
           {profile.nickname && (
@@ -184,7 +207,7 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
           <div style={{ fontSize: "11px", fontWeight: 700, color: "#C2410C", letterSpacing: "0.1em", fontFamily: SANS, textTransform: "uppercase", marginBottom: 8 }}>
             Temporary Password — Share with {profile.full_name} manually
           </div>
-          <div style={{ fontFamily: "monospace", fontSize: "24px", fontWeight: 700, color: "#111111", letterSpacing: "0.06em", padding: "0.75rem 1rem", background: "#fff", borderRadius: 10, border: `1px solid ${BORDER}`, marginBottom: 8 }}>
+          <div style={{ fontFamily: "monospace", fontSize: "24px", fontWeight: 700, color: "#1B2A4A", letterSpacing: "0.06em", padding: "0.75rem 1rem", background: "#fff", borderRadius: 10, border: `1px solid ${BORDER}`, marginBottom: 8 }}>
             {tempPw}
           </div>
           <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 10 }}>
@@ -259,13 +282,14 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
           <ActionRow label={`Add to ${activeEvent.name}`} sub="Enroll in active event" onClick={() => setModal("add")} />
         )}
         <ActionRow label="Reset password" sub="Generate new temp password" danger onClick={() => setModal("reset")} />
+        <ActionRow label="Remove account" sub="Permanently delete this test or duplicate account" danger onClick={() => { setDeleteConfirm(""); setModal("delete"); }} />
       </div>
 
       {/* Add to event modal */}
       {modal === "add" && activeEvent && (
         <div style={overlay}>
           <div style={sheet}>
-            <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#111111", marginBottom: "0.75rem" }}>Add to Event</div>
+            <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#1B2A4A", marginBottom: "0.75rem" }}>Add to Event</div>
             <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, lineHeight: 1.6, marginBottom: "1rem" }}>
               Enroll {profile.full_name} in {activeEvent.name}.
             </div>
@@ -301,6 +325,30 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
           busy={busy}
         />
       )}
+
+      {modal === "delete" && (
+        <div style={overlay}>
+          <div style={sheet}>
+            <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 700, color: "#111", marginBottom: "0.75rem" }}>Remove Account</div>
+            <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, lineHeight: 1.6, marginBottom: "1rem" }}>
+              This permanently deletes {profile.full_name}'s login and profile. Use it only for accidental, test, or duplicate accounts.
+            </div>
+            <FieldLabel>TYPE DELETE TO CONFIRM</FieldLabel>
+            <input
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder="DELETE"
+              style={{ ...inputStyle, marginBottom: "1.25rem" }}
+            />
+            <ModalButtons
+              onCancel={() => setModal(null)}
+              onConfirm={deleteAccount}
+              confirmLabel={busy ? "Removing…" : "Remove Account"}
+              disabled={busy || deleteConfirm !== "DELETE"}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -313,7 +361,7 @@ function InfoRows({ rows }) {
       {visible.map(([label, val], i) => (
         <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.875rem 1.25rem", borderBottom: i < visible.length - 1 ? `1px solid ${BORDER}` : "none" }}>
           <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{label}</span>
-          <span style={{ fontSize: "14px", color: "#111111", fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>{val}</span>
+          <span style={{ fontSize: "14px", color: "#1B2A4A", fontFamily: SANS, textAlign: "right", maxWidth: "65%" }}>{val}</span>
         </div>
       ))}
     </div>
@@ -323,7 +371,7 @@ function InfoRows({ rows }) {
 function ActionRow({ label, sub, onClick, danger }) {
   return (
     <button onClick={onClick} style={{ width: "100%", background: "#fff", border: `1px solid ${danger ? "#FECACA" : BORDER}`, borderRadius: 14, padding: "0.875rem 1.25rem", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 3 }}>
-      <span style={{ fontSize: "14px", fontWeight: 600, color: danger ? "#DC2626" : "#111111", fontFamily: SANS }}>{label}</span>
+      <span style={{ fontSize: "14px", fontWeight: 600, color: danger ? "#DC2626" : "#1B2A4A", fontFamily: SANS }}>{label}</span>
       <span style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{sub}</span>
     </button>
   );
@@ -336,7 +384,7 @@ function FieldLabel({ children }) {
 function ModalButtons({ onCancel, onConfirm, confirmLabel, disabled }) {
   return (
     <div style={{ display: "flex", gap: 8 }}>
-      <button onClick={onCancel} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "12px", fontSize: "15px", fontWeight: 600, color: "#111111", cursor: "pointer", fontFamily: SANS }}>Cancel</button>
+      <button onClick={onCancel} style={{ flex: 1, background: "none", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "12px", fontSize: "15px", fontWeight: 600, color: "#1B2A4A", cursor: "pointer", fontFamily: SANS }}>Cancel</button>
       <button onClick={onConfirm} disabled={disabled} style={{ flex: 1, background: disabled ? "#CCCCCC" : "#FF4D00", border: "none", borderRadius: 10, padding: "12px", fontSize: "15px", fontWeight: 600, color: "#fff", cursor: disabled ? "default" : "pointer", fontFamily: SANS }}>
         {confirmLabel}
       </button>

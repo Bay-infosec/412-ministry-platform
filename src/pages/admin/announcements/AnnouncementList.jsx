@@ -20,14 +20,26 @@ function AudienceChip({ audience }) {
   if (!audience || audience.length === 0) return <span style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>Everyone</span>;
   return (
     <span style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>
-      {audience.map((r) => {
-        if (r.type === "all") return "Everyone";
-        if (r.type === "ministry") return r.value;
-        if (r.type === "team") return `Team ${r.value}`;
-        if (r.type === "role") return r.value;
-        if (r.type === "person") return "Specific person";
-        return r.type;
-      }).join(", ")}
+      {(() => {
+        const personEntries = audience.filter((r) => r.type === "person");
+        if (personEntries.length > 0) {
+          const others = audience.filter((r) => r.type !== "person");
+          const parts = others.map((r) => {
+            if (r.type === "all") return "Everyone";
+            if (r.type === "team") return `Team ${r.value}`;
+            if (r.type === "role") return r.value;
+            return r.type;
+          });
+          parts.push(`${personEntries.length} person${personEntries.length !== 1 ? "s" : ""}`);
+          return parts.join(", ");
+        }
+        return audience.map((r) => {
+          if (r.type === "all") return "Everyone";
+          if (r.type === "team") return `Team ${r.value}`;
+          if (r.type === "role") return r.value;
+          return r.type;
+        }).join(", ");
+      })()}
     </span>
   );
 }
@@ -80,7 +92,7 @@ export default function AnnouncementList({ data, onNew, onEdit, onToast, isAdmin
           return (
             <Card key={ann.id} style={{ marginBottom: "0.75rem", padding: "1rem 1.25rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
-                <div style={{ fontFamily: SANS, fontSize: "14px", fontWeight: 600, color: "#111111", flex: 1 }}>{ann.title}</div>
+                <div style={{ fontFamily: SANS, fontSize: "14px", fontWeight: 600, color: "#1B2A4A", flex: 1 }}>{ann.title}</div>
                 <span style={{ fontSize: "10px", fontWeight: 700, background: sc.bg, color: sc.color, borderRadius: 20, padding: "2px 8px", fontFamily: SANS, flexShrink: 0 }}>
                   {STATUS_LABELS[ann.status]}
                 </span>
@@ -94,7 +106,7 @@ export default function AnnouncementList({ data, onNew, onEdit, onToast, isAdmin
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button
                   onClick={() => onEdit(ann)}
-                  style={{ fontSize: "12px", fontWeight: 600, color: "#111111", background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: SANS }}
+                  style={{ fontSize: "12px", fontWeight: 600, color: "#1B2A4A", background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: SANS }}
                 >
                   Edit
                 </button>
@@ -120,7 +132,7 @@ export default function AnnouncementList({ data, onNew, onEdit, onToast, isAdmin
                   <button
                     onClick={() => unpublish(ann)}
                     disabled={busy === ann.id + "_unpublish"}
-                    style={{ fontSize: "12px", fontWeight: 600, color: TSEC, background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: SANS }}
+                    style={{ fontSize: "12px", fontWeight: 600, color: "#6B7280", background: "#F3F4F6", border: "none", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: SANS }}
                   >
                     {busy === ann.id + "_unpublish" ? "…" : "Unpublish"}
                   </button>

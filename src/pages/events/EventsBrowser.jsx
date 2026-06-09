@@ -17,13 +17,14 @@ export const TYPE_LABELS = {
 const STATUS_STYLE = {
   active: { label: "Active", bg: "#DCFCE7", color: "#166534" },
   upcoming: { label: "Upcoming", bg: "#EEF2FC", color: "#1A4FBF" },
-  archived: { label: "Past", bg: "#F0EDE8", color: "#8A8498" },
-  inactive: { label: "Inactive", bg: "#F0EDE8", color: "#8A8498" },
+  archived: { label: "Past", bg: "#F3F4F6", color: "#6B7280" },
+  inactive: { label: "Inactive", bg: "#F3F4F6", color: "#6B7280" },
 };
 
 export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
-  const { publicEvents = [], profile, eventMember, activeEvent } = data;
+  const { publicEvents = [], profile, eventMember, activeEvent, history = [], allEvents = [], isAdmin } = data;
   const myId = profile.id;
+  const pendingCount = isAdmin ? (allEvents || []).filter((e) => e.status === "inactive").length : 0;
 
   const [requesting, setRequesting] = useState(null);
   const [requestedIds, setRequestedIds] = useState(new Set());
@@ -55,7 +56,10 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
     setRequesting(null);
   }
 
-  const myEventIds = new Set([activeEvent?.id].filter(Boolean));
+  const myEventIds = new Set([
+    activeEvent?.id,
+    ...history.map((h) => h.event_id),
+  ].filter(Boolean));
 
   return (
     <>
@@ -63,7 +67,7 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
       {toast && (
         <div style={{
           position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)",
-          background: toast.type === "error" ? "#DC2626" : "#111111",
+          background: toast.type === "error" ? "#DC2626" : "#1B2A4A",
           color: "#fff", borderRadius: 10, padding: "10px 20px",
           fontSize: "13px", fontFamily: SANS, fontWeight: 600, zIndex: 9999,
           boxShadow: "0 4px 20px rgba(0,0,0,0.15)", whiteSpace: "nowrap",
@@ -76,17 +80,28 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
         <div style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "0.16em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: "0.25rem" }}>
           Ministry Events
         </div>
-        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#111111", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
+        <div style={{ fontFamily: SANS, fontSize: "24px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
           Events & Opportunities
         </div>
         <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginTop: "0.375rem" }}>
-          Public events open for anyone to join.
+          Your events and public opportunities.
         </div>
       </div>
 
+      {pendingCount > 0 && (
+        <div style={{ background: "#1B2A4A", borderRadius: 12, padding: "0.75rem 1rem", marginBottom: "1rem", display: "flex", alignItems: "center", gap: 10 }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontFamily: SANS }}>
+            <span style={{ fontWeight: 700, color: "#FF4D00" }}>{pendingCount} event{pendingCount !== 1 ? "s" : ""} pending</span> — visible only in admin panel
+          </div>
+        </div>
+      )}
+
       {publicEvents.length === 0 ? (
         <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
-          <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#111111", marginBottom: 8, letterSpacing: "-0.02em" }}>Nothing upcoming yet</div>
+          <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 900, color: "#1B2A4A", marginBottom: 8, letterSpacing: "-0.02em" }}>Nothing upcoming yet</div>
           <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS }}>Check back soon for new events and opportunities.</div>
         </div>
       ) : (
@@ -95,7 +110,6 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
             const isMember = myEventIds.has(ev.id);
             const hasRequested = requestedIds.has(ev.id);
             const isExpanded = expandedId === ev.id;
-            const statusStyle = STATUS_STYLE[ev.status] || STATUS_STYLE.upcoming;
             const typeLabel = TYPE_LABELS[ev.type] || "Event";
 
             return (
@@ -114,19 +128,13 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
                       <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.12em", color: "#FF4D00", textTransform: "uppercase" }}>
                         {typeLabel}
                       </span>
-                      <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: statusStyle.bg, color: statusStyle.color }}>
-                        {statusStyle.label}
-                      </span>
                       {isMember && (
-                        <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: "11px", fontWeight: 700, color: "#166534" }}>
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
+                        <span style={{ fontSize: "10px", fontWeight: 700, background: "#1B2A4A", color: "#fff", borderRadius: 6, padding: "2px 8px" }}>
                           Enrolled
                         </span>
                       )}
                     </div>
-                    <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 900, color: "#111111", lineHeight: 1.2, marginBottom: "0.25rem", letterSpacing: "-0.02em" }}>
+                    <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1.2, marginBottom: "0.25rem", letterSpacing: "-0.02em" }}>
                       {ev.name}
                     </div>
                     {ev.dates && <div style={{ fontSize: "12px", color: TSEC }}>{ev.dates}</div>}
@@ -155,7 +163,7 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
                     {ev.fee && (
                       <div style={{ fontSize: "13px", fontFamily: SANS, marginBottom: "0.5rem" }}>
                         <span style={{ color: TSEC }}>Registration fee: </span>
-                        <span style={{ fontWeight: 700, color: "#111111" }}>{ev.fee}</span>
+                        <span style={{ fontWeight: 700, color: "#1B2A4A" }}>{ev.fee}</span>
                       </div>
                     )}
 
@@ -172,7 +180,7 @@ export default function EventsBrowser({ data, onRefresh, onViewEnrolled }) {
                               style={{
                                 width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8,
                                 padding: "0.5rem 0.75rem", fontFamily: SANS, fontSize: "13px",
-                                color: "#111111", background: "#FAFAFA", resize: "none", outline: "none",
+                                color: "#1B2A4A", background: "#FAFAFA", resize: "none", outline: "none",
                                 marginBottom: "0.625rem", boxSizing: "border-box",
                               }}
                             />

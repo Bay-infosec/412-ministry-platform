@@ -47,7 +47,7 @@ export function matchesAudience(audience, ctx) {
       case "all": return true;
       case "ministry": return ctx.ministry === rule.value;
       case "team": return String(ctx.team_number) === String(rule.value);
-      case "role": return ctx.event_role === rule.value;
+      case "role": return ctx.event_role === rule.value || ctx.platform_role === rule.value;
       case "person": return ctx.id === rule.value;
       default: return false;
     }

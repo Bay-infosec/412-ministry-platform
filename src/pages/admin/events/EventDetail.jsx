@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
+import { TSEC, BORDER, ORANGE, SANS } from "../../../lib/constants.js";
 import { Avatar, Modal } from "../../../components/ui/index.js";
 
 export default function EventDetail({ event, data, onRefresh, onToast, onBack }) {
@@ -260,8 +260,8 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
   return (
     <div>
       {/* Hero */}
-      <div style={{ background: "#111111", borderRadius: 16, padding: "1.25rem", marginBottom: "1.25rem" }}>
-        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: "#EFAB25", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
+      <div style={{ background: "#1B2A4A", borderRadius: 16, padding: "1.25rem", marginBottom: "1.25rem" }}>
+        <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", color: ORANGE, textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
           {event.status}
         </div>
         <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 600, color: "#fff", lineHeight: 1.2, marginBottom: 8 }}>
@@ -341,7 +341,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
             return (
               <div key={teamNum} style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1rem 1.25rem", marginBottom: "0.625rem" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
-                  <div style={{ fontFamily: SANS, fontSize: "14px", fontWeight: 800, color: "#111111" }}>Team {teamNum}</div>
+                  <div style={{ fontFamily: SANS, fontSize: "14px", fontWeight: 800, color: "#1B2A4A" }}>Team {teamNum}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{ fontSize: "11px", color: coordProfile ? TSEC : "#DC2626", fontFamily: SANS }}>
                       {coordProfile ? coordProfile.full_name.split(" ")[0] : "No coord"}
@@ -381,7 +381,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: "0.5rem" }}>
                   {teamLeaders.map((ldr) => (
                     <div key={ldr.id} style={{ display: "flex", alignItems: "center", gap: 4, background: "#F5F5F5", borderRadius: 20, padding: "4px 10px" }}>
-                      <span style={{ fontSize: "12px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>
+                      <span style={{ fontSize: "12px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>
                         {ldr.profiles?.full_name?.split(" ")[0] || "—"}
                       </span>
                       <button
@@ -462,7 +462,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       {modal === "add" && (
         <div style={overlayStyle}>
           <div style={{ ...sheetStyle, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
-            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#111111", marginBottom: "0.75rem" }}>Add Member</div>
+            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#1B2A4A", marginBottom: "0.75rem" }}>Add Member</div>
             <div style={{ display: "flex", gap: 6, marginBottom: "0.75rem" }}>
               {["leader", "coordinator"].map((r) => (
                 <button key={r} onClick={() => setAddRole(r)} style={{ flex: 1, padding: "8px", borderRadius: 8, border: `1.5px solid ${addRole === r ? "#FF4D00" : BORDER}`, background: addRole === r ? "#FFF5EC" : "#fff", color: addRole === r ? "#FF4D00" : TSEC, fontSize: "13px", fontWeight: 600, fontFamily: SANS, cursor: "pointer", textTransform: "capitalize" }}>
@@ -470,7 +470,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                 </button>
               ))}
             </div>
-            <input value={addQuery} onChange={(e) => setAddQuery(e.target.value)} placeholder="Search by name or email…" style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111", outline: "none", boxSizing: "border-box", marginBottom: "0.75rem" }} />
+            <input value={addQuery} onChange={(e) => setAddQuery(e.target.value)} placeholder="Search by name or email…" style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: "#1B2A4A", outline: "none", boxSizing: "border-box", marginBottom: "0.75rem" }} />
             <div style={{ flex: 1, overflowY: "auto", marginBottom: "0.75rem" }}>
               {notEnrolled.length === 0 ? (
                 <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, textAlign: "center", padding: "1rem 0" }}>{addQuery ? "No matches." : "Everyone is already enrolled."}</div>
@@ -478,7 +478,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                 <button key={p.id} onClick={() => addMember(p)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", background: "none", border: "none", borderRadius: 10, padding: "0.625rem 0", cursor: "pointer", textAlign: "left", borderBottom: `1px solid ${BORDER}` }}>
                   <Avatar url={p.photo_url} name={p.full_name} size={36} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{p.full_name}</div>
+                    <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{p.full_name}</div>
                     <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{p.email}</div>
                   </div>
                   <span style={{ fontSize: "12px", color: "#FF4D00", fontWeight: 600, fontFamily: SANS }}>Add</span>
@@ -494,9 +494,9 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       {addLeaderModal && (
         <div style={overlayStyle}>
           <div style={{ ...sheetStyle, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
-            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#111111", marginBottom: 4 }}>Add Leader</div>
+            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#1B2A4A", marginBottom: 4 }}>Add Leader</div>
             <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginBottom: "1rem" }}>Team {addLeaderModal.teamNumber}</div>
-            <input value={addLeaderQuery} onChange={(e) => setAddLeaderQuery(e.target.value)} placeholder="Search by name or email…" autoFocus style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111", outline: "none", boxSizing: "border-box", marginBottom: "0.75rem" }} />
+            <input value={addLeaderQuery} onChange={(e) => setAddLeaderQuery(e.target.value)} placeholder="Search by name or email…" autoFocus style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "10px 12px", fontSize: "14px", fontFamily: SANS, color: "#1B2A4A", outline: "none", boxSizing: "border-box", marginBottom: "0.75rem" }} />
             <div style={{ flex: 1, overflowY: "auto", marginBottom: "0.75rem" }}>
               {leaderCandidates.length === 0 ? (
                 <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, textAlign: "center", padding: "1rem 0" }}>No matches.</div>
@@ -504,7 +504,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                 <button key={p.id} onClick={() => addLeaderToTeam(p)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", background: "none", border: "none", borderRadius: 10, padding: "0.625rem 0", cursor: "pointer", textAlign: "left", borderBottom: `1px solid ${BORDER}` }}>
                   <Avatar url={p.photo_url} name={p.full_name} size={36} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{p.full_name}</div>
+                    <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{p.full_name}</div>
                     <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>{p.email}</div>
                   </div>
                   <span style={{ fontSize: "12px", color: "#FF4D00", fontWeight: 600, fontFamily: SANS }}>Add</span>
@@ -520,7 +520,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       {coordModal && (
         <div style={overlayStyle}>
           <div style={{ ...sheetStyle, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
-            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#111111", marginBottom: 4 }}>Assign Coordinator</div>
+            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#1B2A4A", marginBottom: 4 }}>Assign Coordinator</div>
             <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginBottom: "1rem" }}>Team {coordModal.teamNumber}</div>
             <div style={{ flex: 1, overflowY: "auto", marginBottom: "0.75rem" }}>
               {coordinatorsList.length === 0 ? (
@@ -529,7 +529,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                 <button key={c.id} disabled={assigningCoord} onClick={() => assignCoordinator(coordModal.teamNumber, c.profile_id)} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", background: "none", border: "none", borderRadius: 10, padding: "0.75rem 0.25rem", cursor: "pointer", textAlign: "left", borderBottom: `1px solid ${BORDER}`, opacity: assigningCoord ? 0.5 : 1 }}>
                   <Avatar url={c.profiles?.photo_url} name={c.profiles?.full_name} size={40} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{c.profiles?.full_name}</div>
+                    <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{c.profiles?.full_name}</div>
                     <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS }}>Team {c.team_number} · {c.ministry}</div>
                   </div>
                   <span style={{ fontSize: "12px", color: "#FF4D00", fontWeight: 600, fontFamily: SANS }}>{assigningCoord ? "…" : "Assign"}</span>
@@ -545,14 +545,14 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       {editingMessage && (
         <div style={overlayStyle}>
           <div style={{ ...sheetStyle, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
-            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#111111", marginBottom: 4 }}>Personal Message</div>
+            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 600, color: "#1B2A4A", marginBottom: 4 }}>Personal Message</div>
             <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginBottom: "1rem" }}>For {editingMessage.profiles?.full_name} — shown on their onboarding step 2.</div>
-            <textarea value={messageText} onChange={(e) => setMessageText(e.target.value)} placeholder="Write a personal note…" rows={7} style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "12px 14px", fontSize: "14px", fontFamily: SANS, color: "#111111", resize: "vertical", outline: "none", boxSizing: "border-box", lineHeight: 1.6, marginBottom: "0.75rem" }} />
+            <textarea value={messageText} onChange={(e) => setMessageText(e.target.value)} placeholder="Write a personal note…" rows={7} style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "12px 14px", fontSize: "14px", fontFamily: SANS, color: "#1B2A4A", resize: "vertical", outline: "none", boxSizing: "border-box", lineHeight: 1.6, marginBottom: "0.75rem" }} />
             {messageText.trim() && (
-              <div style={{ background: "#111111", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "0.75rem", position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", top: 8, left: 14, fontFamily: SANS, fontSize: "60px", color: "#EFAB25", opacity: 0.12, lineHeight: 1, userSelect: "none" }}>"</div>
+              <div style={{ background: "#1B2A4A", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "0.75rem", position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: 8, left: 14, fontFamily: SANS, fontSize: "60px", color: ORANGE, opacity: 0.12, lineHeight: 1, userSelect: "none" }}>"</div>
                 <div style={{ fontFamily: SANS, fontSize: "14px", color: "#fff", lineHeight: 1.75, whiteSpace: "pre-wrap", position: "relative" }}>{messageText.trim()}</div>
-                <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#EFAB25", fontFamily: SANS, marginTop: "0.75rem" }}>Preview</div>
+                <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: ORANGE, fontFamily: SANS, marginTop: "0.75rem" }}>Preview</div>
               </div>
             )}
             <div style={{ display: "flex", gap: 8 }}>
@@ -592,7 +592,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       {editModal && (
         <div style={overlayStyle}>
           <div style={{ ...sheetStyle, maxHeight: "88vh", display: "flex", flexDirection: "column", maxWidth: 420 }}>
-            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 700, color: "#111111", marginBottom: "1rem" }}>Edit Event</div>
+            <div style={{ fontFamily: SANS, fontSize: "20px", fontWeight: 700, color: "#1B2A4A", marginBottom: "1rem" }}>Edit Event</div>
             <div style={{ flex: 1, overflowY: "auto" }}>
 
               {/* Event Details */}
@@ -610,20 +610,20 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
               ].map(({ key, label }) => (
                 <div key={key} style={{ marginBottom: "0.75rem" }}>
                   <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.07em", fontFamily: SANS, marginBottom: 4 }}>{label}</div>
-                  <input type="text" value={editFields[key] ?? ""} onChange={(e) => setEditFields((f) => ({ ...f, [key]: e.target.value }))} style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" value={editFields[key] ?? ""} onChange={(e) => setEditFields((f) => ({ ...f, [key]: e.target.value }))} style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "14px", fontFamily: SANS, color: "#1B2A4A", outline: "none", boxSizing: "border-box" }} />
                 </div>
               ))}
               <div style={{ marginBottom: "0.75rem" }}>
                 <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.07em", fontFamily: SANS, marginBottom: 4 }}>Verse Text</div>
-                <textarea value={editFields.verse_text ?? ""} onChange={(e) => setEditFields((f) => ({ ...f, verse_text: e.target.value }))} rows={3} style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+                <textarea value={editFields.verse_text ?? ""} onChange={(e) => setEditFields((f) => ({ ...f, verse_text: e.target.value }))} rows={3} style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "14px", fontFamily: SANS, color: "#1B2A4A", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
               </div>
               <div style={{ marginBottom: "0.75rem" }}>
                 <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.07em", fontFamily: SANS, marginBottom: 4 }}>Description</div>
-                <textarea value={editFields.description ?? ""} onChange={(e) => setEditFields((f) => ({ ...f, description: e.target.value }))} rows={3} style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+                <textarea value={editFields.description ?? ""} onChange={(e) => setEditFields((f) => ({ ...f, description: e.target.value }))} rows={3} style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "14px", fontFamily: SANS, color: "#1B2A4A", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
               </div>
               <div style={{ marginBottom: "1.25rem" }}>
                 <div style={{ fontSize: "11px", fontWeight: 700, color: TSEC, letterSpacing: "0.07em", fontFamily: SANS, marginBottom: 4 }}>Type</div>
-                <select value={editFields.type ?? "conference"} onChange={(e) => setEditFields((f) => ({ ...f, type: e.target.value }))} style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "14px", fontFamily: SANS, color: "#111111", outline: "none", background: "#fff", boxSizing: "border-box" }}>
+                <select value={editFields.type ?? "conference"} onChange={(e) => setEditFields((f) => ({ ...f, type: e.target.value }))} style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "14px", fontFamily: SANS, color: "#1B2A4A", outline: "none", background: "#fff", boxSizing: "border-box" }}>
                   {[["conference","Conference"],["annual_conference","Annual Conference"],["youth_conference","Youth Conference"],["openmic","Open Mic"],["mission","Mission Trip"],["zoom_meeting","Zoom Meeting"],["board_meeting","Board Meeting"],["other","Other"]].map(([v,l]) => (
                     <option key={v} value={v}>{l}</option>
                   ))}
@@ -650,7 +650,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                         }}
                         style={stepperBtn}
                       >−</button>
-                      <span style={{ fontSize: "26px", fontWeight: 900, color: "#111111", fontFamily: SANS, minWidth: 32, textAlign: "center" }}>{editCoordCount}</span>
+                      <span style={{ fontSize: "26px", fontWeight: 900, color: "#1B2A4A", fontFamily: SANS, minWidth: 32, textAlign: "center" }}>{editCoordCount}</span>
                       <button
                         onClick={() => {
                           setEditCoordCount((n) => n + 1);
@@ -677,7 +677,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                             {pickedProfile && !isOpen ? (
                               <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#FFF5EC", borderRadius: 8, padding: "8px 12px", border: "1.5px solid #FF4D00" }}>
                                 <Avatar url={pickedProfile.photo_url} name={pickedProfile.full_name} size={26} />
-                                <span style={{ flex: 1, fontSize: "13px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{pickedProfile.full_name}</span>
+                                <span style={{ flex: 1, fontSize: "13px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{pickedProfile.full_name}</span>
                                 <button onClick={() => { setActiveCoordSlot(i); setEditCoordSearch(""); }} style={{ background: "none", border: "none", fontSize: "11px", color: "#FF4D00", fontWeight: 600, cursor: "pointer", fontFamily: SANS }}>Change</button>
                                 <button onClick={() => setEditCoordPicks((p) => p.map((x, j) => j === i ? null : x))} style={{ background: "none", border: "none", fontSize: "15px", color: TSEC, cursor: "pointer", padding: "0 2px" }}>×</button>
                               </div>
@@ -688,7 +688,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                                   onChange={(e) => setEditCoordSearch(e.target.value)}
                                   onFocus={() => { setActiveCoordSlot(i); setEditCoordSearch(""); }}
                                   placeholder="Search to pick coordinator…"
-                                  style={{ width: "100%", border: `1px solid ${isOpen ? "#FF4D00" : BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "13px", fontFamily: SANS, color: "#111111", outline: "none", boxSizing: "border-box" }}
+                                  style={{ width: "100%", border: `1px solid ${isOpen ? "#FF4D00" : BORDER}`, borderRadius: 8, padding: "9px 12px", fontSize: "13px", fontFamily: SANS, color: "#1B2A4A", outline: "none", boxSizing: "border-box" }}
                                 />
                                 {isOpen && (
                                   <div style={{ border: `1px solid ${BORDER}`, borderRadius: 8, overflow: "hidden", marginTop: 4, maxHeight: 160, overflowY: "auto" }}>
@@ -706,7 +706,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
                                       >
                                         <Avatar url={p.photo_url} name={p.full_name} size={26} />
                                         <div style={{ flex: 1 }}>
-                                          <div style={{ fontSize: "13px", fontWeight: 600, color: "#111111", fontFamily: SANS }}>{p.full_name}</div>
+                                          <div style={{ fontSize: "13px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS }}>{p.full_name}</div>
                                           <div style={{ fontSize: "11px", color: TSEC, fontFamily: SANS }}>{p.email}</div>
                                         </div>
                                       </button>
@@ -758,7 +758,7 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
               <button onClick={saveEditModal} disabled={editBusy} style={{ flex: 1, background: editBusy ? "#CCCCCC" : "#FF4D00", color: "#fff", border: "none", borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600, fontFamily: SANS, cursor: editBusy ? "default" : "pointer" }}>
                 {editBusy ? "Saving…" : "Save"}
               </button>
-              <button onClick={() => setEditModal(false)} style={{ flex: 1, background: "#fff", color: "#111111", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600, fontFamily: SANS, cursor: "pointer" }}>
+              <button onClick={() => setEditModal(false)} style={{ flex: 1, background: "#fff", color: "#1B2A4A", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600, fontFamily: SANS, cursor: "pointer" }}>
                 Cancel
               </button>
             </div>
@@ -770,14 +770,14 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
       {teamModal && (
         <div style={overlayStyle}>
           <div style={{ ...sheetStyle, display: "flex", flexDirection: "column" }}>
-            <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 700, color: "#111111", marginBottom: 4 }}>Assign Team</div>
+            <div style={{ fontFamily: SANS, fontSize: "18px", fontWeight: 700, color: "#1B2A4A", marginBottom: 4 }}>Assign Team</div>
             <div style={{ fontSize: "13px", color: TSEC, fontFamily: SANS, marginBottom: "1rem" }}>{teamModal.profiles?.full_name}</div>
-            <input type="number" value={teamInput} onChange={(e) => setTeamInput(e.target.value)} placeholder="Team number" min="1" style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "12px", fontSize: "22px", fontFamily: SANS, color: "#111111", outline: "none", boxSizing: "border-box", marginBottom: "1rem", textAlign: "center", fontWeight: 700 }} />
+            <input type="number" value={teamInput} onChange={(e) => setTeamInput(e.target.value)} placeholder="Team number" min="1" style={{ width: "100%", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "12px", fontSize: "22px", fontFamily: SANS, color: "#1B2A4A", outline: "none", boxSizing: "border-box", marginBottom: "1rem", textAlign: "center", fontWeight: 700 }} />
             <div style={{ display: "flex", gap: 8 }}>
               <button onClick={saveTeamNumber} disabled={savingTeam} style={{ flex: 1, background: savingTeam ? "#CCCCCC" : "#FF4D00", color: "#fff", border: "none", borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600, fontFamily: SANS, cursor: savingTeam ? "default" : "pointer" }}>
                 {savingTeam ? "Saving…" : "Assign"}
               </button>
-              <button onClick={() => setTeamModal(null)} style={{ flex: 1, background: "#fff", color: "#111111", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600, fontFamily: SANS, cursor: "pointer" }}>Cancel</button>
+              <button onClick={() => setTeamModal(null)} style={{ flex: 1, background: "#fff", color: "#1B2A4A", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "11px", fontSize: "14px", fontWeight: 600, fontFamily: SANS, cursor: "pointer" }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -826,7 +826,7 @@ function MemberRow({ member, onRemove, onEditMessage, onSetTeam }) {
     <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12, padding: "0.75rem 1rem" }}>
       <Avatar url={p.photo_url} name={p.full_name} size={38} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: "14px", fontWeight: 600, color: "#111111", fontFamily: SANS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.full_name}</div>
+        <div style={{ fontSize: "14px", fontWeight: 600, color: "#1B2A4A", fontFamily: SANS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.full_name}</div>
         <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginTop: 1, display: "flex", alignItems: "center", gap: 6 }}>
           <span>{member.event_role}{member.ministry ? ` · ${member.ministry}` : ""}</span>
           <button onClick={onSetTeam} style={{ background: "#F0F0F0", border: "none", borderRadius: 4, padding: "1px 6px", fontSize: "11px", fontWeight: 700, color: "#555", cursor: "pointer", fontFamily: SANS }}>
@@ -835,8 +835,8 @@ function MemberRow({ member, onRemove, onEditMessage, onSetTeam }) {
         </div>
       </div>
       <span style={{ fontSize: "10px", fontWeight: 700, background: st.bg, color: st.color, borderRadius: 20, padding: "3px 8px", fontFamily: SANS, flexShrink: 0 }}>{st.label}</span>
-      <button onClick={onEditMessage} title={hasMessage ? "Edit personal message" : "Write personal message"} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", color: hasMessage ? "#EFAB25" : BORDER, flexShrink: 0 }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill={hasMessage ? "#EFAB25" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <button onClick={onEditMessage} title={hasMessage ? "Edit personal message" : "Write personal message"} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", color: hasMessage ? ORANGE : BORDER, flexShrink: 0 }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill={hasMessage ? ORANGE : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
       </button>

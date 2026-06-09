@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "./lib/supabase.js";
 import { matchesAudience } from "./lib/utils.js";
-import { Login, ChangePassword } from "./pages/auth/index.js";
+import { Login, ChangePassword, ResetPassword } from "./pages/auth/index.js";
 import { Home } from "./pages/home/index.js";
 import { Updates } from "./pages/updates/index.js";
 import { Profile } from "./pages/profile/index.js";
@@ -26,7 +26,7 @@ function LoadingScreen() {
       <img
         src="/logo.png"
         alt="412 Ministry"
-        style={{ width: 120, height: 120, borderRadius: 28, objectFit: "cover", display: "block" }}
+        style={{ width: 120, height: 120, borderRadius: 34, clipPath: "inset(0 round 34px)", objectFit: "cover", display: "block" }}
       />
       {/* Bouncing dots */}
       <div style={{ display: "flex", gap: 10, alignItems: "flex-end", height: 24 }}>
@@ -97,6 +97,7 @@ export default function App() {
   const [profileReturnTo, setProfileReturnTo] = useState(null);
   const [viewingProfileId, setViewingProfileId] = useState(null);
   const [eventReturnTab, setEventReturnTab] = useState(null);
+  const [selectedEventId, setSelectedEventId] = useState(null);
   const [adminInitProps, setAdminInitProps] = useState(null);
   const [dmTarget, setDmTarget] = useState(null);
 
@@ -142,18 +143,52 @@ export default function App() {
         return;
       }
 
+      // Update last seen
+      supabase.from("profiles").update({ last_seen_at: new Date().toISOString() }).eq("id", user.id).then(() => {});
+
       // Load churches
       const { data: churches } = await supabase
         .from("churches")
         .select("*")
         .order("name");
 
-      // Load active event
-      const { data: activeEvent } = await supabase
+      // Load active event — prefer conference type if multiple are active
+      const { data: activeEventsArr } = await supabase
         .from("events")
         .select("*")
         .eq("status", "active")
-        .single();
+        .order("created_at", { ascending: false });
+      const getEventStart = (event) => {
+        if (event.start_date) {
+          const parsed = new Date(`${event.start_date}T00:00:00`);
+          if (!Number.isNaN(parsed.getTime())) return parsed.getTime();
+        }
+        const range = event.dates?.match(/([A-Za-z]+ \d+)[–-]\d+,?\s*(\d{4})/);
+        const single = event.dates?.match(/([A-Za-z]+ \d+,\s*\d{4})/);
+        const parsed = range ? new Date(`${range[1]}, ${range[2]}`) : single ? new Date(single[1]) : null;
+        return parsed && !Number.isNaN(parsed.getTime()) ? parsed.getTime() : Number.MAX_SAFE_INTEGER;
+      };
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const sortedActiveEvents = [...(activeEventsArr || [])].sort((a, b) => {
+        const aStart = getEventStart(a);
+        const bStart = getEventStart(b);
+        const aOrder = aStart < now.getTime() ? Number.MAX_SAFE_INTEGER - 1 : aStart;
+        const bOrder = bStart < now.getTime() ? Number.MAX_SAFE_INTEGER - 1 : bStart;
+        return aOrder - bOrder;
+      });
+      const activeEventIds = sortedActiveEvents.map((event) => event.id);
+      const { data: activeMemberships } = activeEventIds.length > 0
+        ? await supabase
+            .from("event_members")
+            .select("event_id")
+            .eq("profile_id", user.id)
+            .in("event_id", activeEventIds)
+        : { data: [] };
+      const enrolledActiveIds = new Set((activeMemberships || []).map((membership) => membership.event_id));
+      const activeEvent = sortedActiveEvents.find((event) => enrolledActiveIds.has(event.id))
+        || sortedActiveEvents[0]
+        || null;
 
       // Load event membership
       let eventMember = null;
@@ -184,7 +219,7 @@ export default function App() {
           if (eventMember.co_leader_id) {
             const { data: cl2 } = await supabase
               .from("profiles")
-              .select("full_name, phone, email, photo_url, ministry_role, churches(name)")
+              .select("id, full_name, phone, email, photo_url, ministry_role, churches(name)")
               .eq("id", eventMember.co_leader_id)
               .single();
             coLeader = cl2 || null;
@@ -255,7 +290,7 @@ export default function App() {
       // Load event history
       const { data: histRows } = await supabase
         .from("event_members")
-        .select("*, events(name, status, dates, type)")
+        .select("*, events(name, status, dates, type, location, description, start_date)")
         .eq("profile_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -272,12 +307,18 @@ export default function App() {
       const isAdmin = profile.platform_role === "admin";
       const isModerator = profile.platform_role === "moderator" || isAdmin;
 
-      // Public events — visible to all logged-in users for the events browser
-      const { data: publicEventsRaw } = await supabase
+      // Events browser: public events + any event the user is already enrolled in
+      const enrolledEventIds = history.map((h) => h.event_id).filter(Boolean);
+      let eventsQuery = supabase
         .from("events")
         .select("id, name, type, description, dates, location, fee, registration_url, visible_to_public, allow_join_requests, status, start_date, end_date")
-        .eq("visible_to_public", true)
-        .order("start_date", { ascending: true });
+        .neq("status", "archived");
+      if (enrolledEventIds.length > 0) {
+        eventsQuery = eventsQuery.or(`visible_to_public.eq.true,id.in.(${enrolledEventIds.join(",")})`);
+      } else {
+        eventsQuery = eventsQuery.eq("visible_to_public", true);
+      }
+      const { data: publicEventsRaw } = await eventsQuery.order("start_date", { ascending: true });
       const publicEvents = publicEventsRaw || [];
 
       let allProfiles = null;
@@ -495,13 +536,24 @@ export default function App() {
   };
 
   useEffect(() => {
+    const recoveryRequested = new URLSearchParams(window.location.search).get("reset") === "1";
     const timer = setTimeout(
       () => setPhase((p) => (p === "loading" ? "login" : p)),
       8000
     );
-    loadData().finally(() => clearTimeout(timer));
+    if (recoveryRequested) {
+      supabase.auth.getSession().then(({ data: sessionData }) => {
+        if (sessionData.session) {
+          clearTimeout(timer);
+          setPhase("resetpw");
+        }
+      });
+    } else {
+      loadData().finally(() => clearTimeout(timer));
+    }
 
     const handleVisibility = () => {
+      if (recoveryRequested) return;
       if (document.visibilityState !== "visible") return;
       const now = Date.now();
       if (now - lastRefreshRef.current < 30000) return;
@@ -510,7 +562,13 @@ export default function App() {
     };
     document.addEventListener("visibilitychange", handleVisibility);
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" && session) {
+        clearTimeout(timer);
+        setData(null);
+        setPhase("resetpw");
+        return;
+      }
       if (!session) {
         setData(null);
         setPhase("login");
@@ -527,11 +585,23 @@ export default function App() {
   if (phase === "loading") return <LoadingScreen />;
   if (phase === "login") return <Login onLoggedIn={loadData} />;
   if (phase === "changepw") return <ChangePassword onDone={loadData} />;
+  if (phase === "resetpw") return (
+    <ResetPassword
+      onDone={() => {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        loadData();
+      }}
+    />
+  );
   if (phase === "error") return <ErrorScreen message={errMsg} onReset={hardReset} />;
 
   if (phase === "app" && data) {
     const hasEvent = true;
-    const navigate = (t) => { setTab(t); setPage(null); };
+    const navigate = (t) => {
+      setSelectedEventId(null);
+      setTab(t);
+      setPage(null);
+    };
 
     const eventBack = () => {
       if (eventReturnTab) {
@@ -553,16 +623,24 @@ export default function App() {
             onOpenOnboarding={() => { setEventReturnTab("home"); setTab("event"); setPage("onboarding"); }}
             onOpenMyTeam={() => { setEventReturnTab("home"); setTab("event"); setPage("myteam"); }}
             onOpenUpdates={() => navigate("updates")}
+            onOpenEvent={(eventId) => {
+              setSelectedEventId(eventId);
+              setEventReturnTab("home");
+              setTab("event");
+              setPage(null);
+            }}
             onOpenEventPage={(p) => { setEventReturnTab("home"); setTab("event"); setPage(p); }}
             chatUnread={chatUnread}
             onlineUsers={onlineUsers}
             readIds={readIds}
             onMarkRead={markRead}
+            onViewProfile={setViewingProfileId}
           />
         )}
         {tab === "event" && !page && (
           <EventHome
             data={data}
+            initialEventId={selectedEventId}
             onOpenPage={(p) => { setEventReturnTab(null); setPage(p); }}
             onNavigate={navigate}
             onOpenAdmin={(event) => {
@@ -592,7 +670,7 @@ export default function App() {
             data={data}
             readIds={readIds}
             onMarkRead={markRead}
-            onOpenAdmin={data.isModerator ? () => setPage("admin") : null}
+            onOpenAdmin={data.isModerator ? () => { setAdminInitProps({ screen: "announcements" }); setPage("admin"); } : null}
           />
         )}
         {tab === "profile" && (
