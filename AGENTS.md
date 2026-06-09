@@ -100,6 +100,7 @@ Verification: 34/34 tests pass and the production build passes.
 Production verification: `/preview.png` returns HTTP 200 and the deployed page exposes the new Open Graph/Twitter metadata and navy theme color.
 The deployed bundle `index-U55XT8En.js` contains the leader-role gates and `get_platform_directory()` Messenger search.
 EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test-only displayed password was `TestOnly!412`.
+EmailJS Welcome and Announcement templates were redesigned on 2026-06-09 to match the current navy/orange/white app. Dashboard versions are saved; source HTML is in `docs/email-templates/`.
 
 ### What's Built ✅
 
@@ -160,6 +161,8 @@ EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test
 
 **Infrastructure**
 - EmailJS: Welcome template for invitations; Announcement template for announcements and Contact 412 messages
+- EmailJS source of truth: `docs/email-templates/welcome.html` and `docs/email-templates/announcement.html`
+- Both dashboard templates use email-safe table layouts, current branding, and the variables already sent by `src/lib/email.js`
 - `create-user` edge function version 8 creates accounts without Resend and repairs incomplete Auth/profile records instead of returning a false duplicate error
 - Incomplete existing invites (`password_changed = false`) can be safely reissued with a new temporary password and EmailJS welcome message
 - Supabase Auth handles forgot-password/reset emails independently of EmailJS
@@ -378,7 +381,7 @@ Same component patterns as above. Dark headers use `#111111` not `#162038`. Focu
 - All actions show a Toast stating exactly what happened
 
 ### Password flow
-- Admin creates account → temp password emailed via Resend (never shown on screen)
+- Admin creates account → temp password emailed through the EmailJS Welcome template
 - First login → forced to change immediately
 - Admin reset → new temp password shown ONCE on screen → admin copies + sends manually
 
@@ -418,9 +421,9 @@ All recursion-safe via SECURITY DEFINER helper functions:
 | dm_messages | sender + receiver + group participants |
 
 ### Edge functions (Supabase)
-- `create-user` — creates auth user, generates temp password, sends invite via Resend
+- `create-user` — creates or repairs the auth user and generates a temporary password; the client sends the Welcome email through EmailJS after success
 - `reset-password` — generates new temp password
-- `send-email` — calls Resend API. Needs `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `PLATFORM_URL` secrets set.
+- `delete-user` — protected admin-only account deletion; deployment is still pending Supabase CLI authentication
 
 ### Key gotchas
 - FK joins: always use explicit key (`profiles!event_members_profile_id_fkey`) to avoid PostgREST ambiguity errors
