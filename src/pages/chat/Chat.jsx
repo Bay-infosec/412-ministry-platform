@@ -181,10 +181,12 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
       : { data: [] };
     const profileMap = Object.fromEntries((dmProfiles || []).map((p) => [p.id, p]));
 
-    const dms = (dmRows || []).map((c) => {
-      const otherId = c.participant_a === myId ? c.participant_b : c.participant_a;
-      return { type: "dm", id: c.id, last_message_at: c.last_message_at, other: profileMap[otherId], lastMsg: lastMsg[c.id], unread: unreadCount[c.id] || 0 };
-    });
+    const dms = (dmRows || [])
+      .filter((c) => lastMsg[c.id])
+      .map((c) => {
+        const otherId = c.participant_a === myId ? c.participant_b : c.participant_a;
+        return { type: "dm", id: c.id, last_message_at: c.last_message_at, other: profileMap[otherId], lastMsg: lastMsg[c.id], unread: unreadCount[c.id] || 0 };
+      });
 
     const groups = groupRows.map((c) => ({
       type: "group", id: c.id, last_message_at: c.last_message_at,
@@ -244,7 +246,7 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
     : null;
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#FAFAFA", display: "flex", flexDirection: "column", zIndex: 200, maxWidth: 460, margin: "0 auto" }}>
+    <div style={{ position: "fixed", inset: 0, width: "100%", background: "#FAFAFA", display: "flex", flexDirection: "column", zIndex: 200, maxWidth: 460, margin: "0 auto", boxShadow: "0 0 0 100vmax #FAFAFA" }}>
 
       {/* Header */}
       <div style={{ background: "#fff", borderBottom: `1px solid ${BORDER}`, padding: "0.75rem 1.25rem", paddingTop: "max(0.75rem, env(safe-area-inset-top))", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -305,10 +307,16 @@ function HomeView({ myId, profile, activeEvent, onlineUsers, onClose, onOpenProf
                   <button
                     key={u.user_id}
                     title={dotTitle}
-                    onClick={() => u.isSelf
-                      ? onOpenThread({ type: "dm", other: { id: u.user_id, full_name: u.name, photo_url: u.photo_url, isSelf: true } })
-                      : onViewProfile?.(u.user_id)
-                    }
+                    onClick={() => onOpenThread({
+                      type: "dm",
+                      other: {
+                        id: u.user_id,
+                        full_name: u.name,
+                        nickname: u.nickname,
+                        photo_url: u.photo_url,
+                        isSelf: !!u.isSelf,
+                      },
+                    })}
                     style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flexShrink: 0, padding: 0 }}
                   >
                     <div style={{ position: "relative" }}>
@@ -432,6 +440,28 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
   const title = isGroup ? conv.group_name : isSelf ? "My Notes" : (conv.other?.nickname || conv.other?.full_name);
   const channelRef = useRef(null);
 
+  function subscribeToConversation(cid) {
+    if (channelRef.current) supabase.removeChannel(channelRef.current);
+    channelRef.current = supabase
+      .channel(`conv-${cid}-${Date.now()}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "dm_messages", filter: `conversation_id=eq.${cid}` }, async (payload) => {
+        const msg = payload.new;
+        // Skip own messages — they're added optimistically in send()
+        if (msg.profile_id === myId) return;
+        if (isGroup) {
+          const { data: p } = await supabase.from("profiles").select("id, full_name, photo_url").eq("id", msg.profile_id).single();
+          if (p) setSenderMap((prev) => ({ ...prev, [p.id]: p }));
+        } else {
+          markRead(cid);
+        }
+        setMessages((prev) => {
+          if (prev?.some((m) => m.id === msg.id)) return prev;
+          return [...(prev || []), msg];
+        });
+      })
+      .subscribe();
+  }
+
   useEffect(() => {
     setShowMembers(false);
     setGroupMembers(null);
@@ -450,41 +480,18 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
           .or(`and(participant_a.eq.${myId},participant_b.eq.${conv.other.id}),and(participant_a.eq.${conv.other.id},participant_b.eq.${myId})`)
           .maybeSingle();
         cid = existing?.id;
-        if (!cid) {
-          const { data: created } = await supabase
-            .from("conversations")
-            .insert({ participant_a: myId, participant_b: conv.other.id, is_group: false })
-            .select("id").single();
-          cid = created?.id;
-        }
       }
 
-      if (!cid || !active) return;
+      if (!active) return;
+      if (!cid) {
+        setMessages([]);
+        return;
+      }
       setConvId(cid);
       await loadMessages(cid);
       if (!active) return;
       if (!isGroup) await markRead(cid);
-
-      if (channelRef.current) supabase.removeChannel(channelRef.current);
-      channelRef.current = supabase
-        .channel(`conv-${cid}-${Date.now()}`)
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "dm_messages", filter: `conversation_id=eq.${cid}` }, async (payload) => {
-          if (!active) return;
-          const msg = payload.new;
-          // Skip own messages — they're added optimistically in send()
-          if (msg.profile_id === myId) return;
-          if (isGroup) {
-            const { data: p } = await supabase.from("profiles").select("id, full_name, photo_url").eq("id", msg.profile_id).single();
-            if (p) setSenderMap((prev) => ({ ...prev, [p.id]: p }));
-          } else {
-            markRead(cid);
-          }
-          setMessages((prev) => {
-            if (prev?.some((m) => m.id === msg.id)) return prev;
-            return [...(prev || []), msg];
-          });
-        })
-        .subscribe();
+      if (active) subscribeToConversation(cid);
     }
 
     run();
@@ -537,17 +544,51 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
 
   async function send() {
     const body = input.trim();
-    if (!body || !convId || sending) return;
+    if (!body || sending) return;
     setSending(true);
     setInput("");
 
+    let targetConversationId = convId;
+    let createdConversation = false;
+    if (!targetConversationId && !isGroup) {
+      const { data: existing } = await supabase
+        .from("conversations")
+        .select("id")
+        .or(`and(participant_a.eq.${myId},participant_b.eq.${conv.other.id}),and(participant_a.eq.${conv.other.id},participant_b.eq.${myId})`)
+        .maybeSingle();
+      targetConversationId = existing?.id;
+
+      if (!targetConversationId) {
+        const { data: created, error: createError } = await supabase
+          .from("conversations")
+          .insert({ participant_a: myId, participant_b: conv.other.id, is_group: false })
+          .select("id")
+          .single();
+        if (createError || !created?.id) {
+          setInput(body);
+          setSending(false);
+          return;
+        }
+        targetConversationId = created.id;
+        createdConversation = true;
+      }
+      setConvId(targetConversationId);
+      if (createdConversation) subscribeToConversation(targetConversationId);
+    }
+
+    if (!targetConversationId) {
+      setInput(body);
+      setSending(false);
+      return;
+    }
+
     // Show immediately in the UI
     const tempId = `temp-${Date.now()}`;
-    const tempMsg = { id: tempId, body, profile_id: myId, conversation_id: convId, receiver_id: isGroup ? null : conv.other?.id, created_at: new Date().toISOString(), read_at: null };
+    const tempMsg = { id: tempId, body, profile_id: myId, conversation_id: targetConversationId, receiver_id: isGroup ? null : conv.other?.id, created_at: new Date().toISOString(), read_at: null };
     setMessages((prev) => [...(prev || []), tempMsg]);
 
     const { data: inserted } = await supabase.from("dm_messages").insert({
-      conversation_id: convId,
+      conversation_id: targetConversationId,
       profile_id: myId,
       receiver_id: isGroup ? null : conv.other?.id,
       body,
@@ -556,7 +597,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
     // Replace temp with real record
     if (inserted) setMessages((prev) => prev?.map((m) => m.id === tempId ? inserted : m) ?? []);
 
-    await supabase.from("conversations").update({ last_message_at: new Date().toISOString() }).eq("id", convId);
+    await supabase.from("conversations").update({ last_message_at: new Date().toISOString() }).eq("id", targetConversationId);
 
     // Push notification to recipient(s)
     if (!isGroup && conv.other?.id && !isSelf) {
@@ -581,7 +622,7 @@ function ThreadView({ myId, conv, onBack, onlineUsers, onViewProfile }) {
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#FAFAFA", display: "flex", flexDirection: "column", zIndex: 200, maxWidth: 460, margin: "0 auto" }}>
+    <div style={{ position: "fixed", inset: 0, width: "100%", background: "#FAFAFA", display: "flex", flexDirection: "column", zIndex: 200, maxWidth: 460, margin: "0 auto", boxShadow: "0 0 0 100vmax #FAFAFA" }}>
 
       {/* Header */}
       <div style={{ background: "#fff", borderBottom: `1px solid ${BORDER}`, padding: "0.75rem 1.25rem", paddingTop: "max(0.75rem, env(safe-area-inset-top))", display: "flex", alignItems: "center", gap: 12 }}>
@@ -762,7 +803,7 @@ function NewChatView({ myId, activeEvent, canCreateGroup, onlineUsers, onSelectP
   const sorted = [...filtered].sort((a, b) => (onlineIds.has(b.id) ? 1 : 0) - (onlineIds.has(a.id) ? 1 : 0));
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#fff", display: "flex", flexDirection: "column", zIndex: 200, maxWidth: 460, margin: "0 auto" }}>
+    <div style={{ position: "fixed", inset: 0, width: "100%", background: "#fff", display: "flex", flexDirection: "column", zIndex: 200, maxWidth: 460, margin: "0 auto", boxShadow: "0 0 0 100vmax #fff" }}>
       <div style={{ borderBottom: `1px solid ${BORDER}`, padding: "0.75rem 1.25rem", paddingTop: "max(0.75rem, env(safe-area-inset-top))", display: "flex", alignItems: "center", gap: 12 }}>
         <button onClick={onBack} style={iconBtn()}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -857,7 +898,7 @@ function GroupCreateView({ myId, activeEvent, onlineUsers, onCreated, onBack }) 
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#fff", display: "flex", flexDirection: "column", zIndex: 200, maxWidth: 460, margin: "0 auto" }}>
+    <div style={{ position: "fixed", inset: 0, width: "100%", background: "#fff", display: "flex", flexDirection: "column", zIndex: 200, maxWidth: 460, margin: "0 auto", boxShadow: "0 0 0 100vmax #fff" }}>
       <div style={{ borderBottom: `1px solid ${BORDER}`, padding: "0.75rem 1.25rem", paddingTop: "max(0.75rem, env(safe-area-inset-top))", display: "flex", alignItems: "center", gap: 12 }}>
         <button onClick={onBack} style={iconBtn()}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

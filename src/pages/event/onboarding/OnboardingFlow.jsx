@@ -77,7 +77,7 @@ function WelcomePage({ profile, activeEvent, onNext }) {
           }}>
             {activeEvent?.name || "Set Apart 2026"}
           </div>
-          <img src="/logo.png" alt="412 Ministry" style={{ width: 34, height: 34, borderRadius: 10, clipPath: "inset(0 round 10px)", objectFit: "cover" }} />
+          <img src="/logo.png" alt="412 MINISTRY" style={{ width: 34, height: 34, borderRadius: 10, clipPath: "inset(0 round 10px)", objectFit: "cover" }} />
         </div>
 
         <div style={{ textAlign: "center" }}>
@@ -158,7 +158,7 @@ function PersonalMessagePage({ eventMember, onNext }) {
               fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em",
               textTransform: "uppercase", color: "#FF4D00", fontFamily: SANS,
             }}>
-              412 Ministry Leadership
+              412 MINISTRY Leadership
             </div>
           </div>
         </div>

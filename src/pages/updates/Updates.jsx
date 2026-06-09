@@ -31,7 +31,7 @@ export default function Updates({ data, readIds, onMarkRead, onOpenAdmin }) {
     <Shell withNav>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.5rem" }}>
         <div>
-          <SectionLabel>412 Ministry</SectionLabel>
+          <SectionLabel>412 MINISTRY</SectionLabel>
           <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 900, color: "#1B2A4A", letterSpacing: "-0.02em" }}>
             Updates
           </div>

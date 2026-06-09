@@ -7,7 +7,9 @@ const ANNOUNCEMENT_TEMPLATE = import.meta.env.VITE_EMAILJS_ANNOUNCE_TEMPLATE || 
 const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "FP0ZiFckHYBqYpN6s";
 
 async function sendTemplate(templateId, templateParams) {
-  if (!SERVICE_ID || !templateId || !PUBLIC_KEY) return false;
+  if (!SERVICE_ID || !templateId || !PUBLIC_KEY) {
+    return { ok: false, error: "EmailJS configuration is incomplete." };
+  }
 
   try {
     const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
@@ -20,9 +22,11 @@ async function sendTemplate(templateId, templateParams) {
         template_params: templateParams,
       }),
     });
-    return response.ok;
-  } catch {
-    return false;
+    if (response.ok) return { ok: true, error: "" };
+    const detail = await response.text();
+    return { ok: false, error: detail || `EmailJS returned ${response.status}.` };
+  } catch (error) {
+    return { ok: false, error: error?.message || "Could not connect to EmailJS." };
   }
 }
 
@@ -36,8 +40,13 @@ function htmlToText(html) {
 export function sendInviteEmail({ toEmail, toName, tempPassword }) {
   return sendTemplate(WELCOME_TEMPLATE, {
     to_email: toEmail,
+    email: toEmail,
+    recipient_email: toEmail,
     to_name: toName,
+    name: toName,
     temp_password: tempPassword,
+    password: tempPassword,
+    subject: "Welcome to 412 MINISTRY",
     platform_url: window.location.origin,
   });
 }
@@ -55,11 +64,11 @@ export function sendEmail(to, subject, html, toName = "") {
     announcement_body: body,
     subject,
     message: body,
-    event_name: "412 Ministry",
+    event_name: "412 MINISTRY",
     event_dates: "",
     event_location: "",
     platform_url: window.location.origin,
-  });
+  }).then((result) => result.ok);
 }
 
 // Sends announcement email to all event members matching the audience rule.

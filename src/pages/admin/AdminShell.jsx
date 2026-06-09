@@ -270,7 +270,7 @@ function AdminHome({ data, onNav, isAdmin }) {
     <div>
       <div style={{ marginBottom: "1.75rem" }}>
         <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.16em", color: "#FF4D00", textTransform: "uppercase", fontFamily: SANS, marginBottom: 4 }}>
-          412 Ministry
+          412 MINISTRY
         </div>
         <div style={{ fontFamily: SANS, fontSize: "28px", fontWeight: 900, color: "#1B2A4A", lineHeight: 1.2, letterSpacing: "-0.03em" }}>
           {isAdmin ? "Admin Panel" : "Staff Panel"}

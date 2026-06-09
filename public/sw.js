@@ -4,10 +4,10 @@ self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
 self.addEventListener("push", (event) => {
   if (!event.data) return;
   let data;
-  try { data = event.data.json(); } catch { data = { title: "412 Ministry", body: event.data.text() }; }
+  try { data = event.data.json(); } catch { data = { title: "412 MINISTRY", body: event.data.text() }; }
 
   event.waitUntil(
-    self.registration.showNotification(data.title || "412 Ministry", {
+    self.registration.showNotification(data.title || "412 MINISTRY", {
       body: data.body || "",
       icon: "/logo.png",
       badge: "/logo.png",

@@ -40,9 +40,15 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
   const [tempPw, setTempPw] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState("");
 
-  // Platform role (inline chip)
+  // Platform role (select first, save explicitly)
   const [currentRole, setCurrentRole] = useState(profile.platform_role);
-  const [savingRole, setSavingRole] = useState(null);
+  const [selectedRole, setSelectedRole] = useState(profile.platform_role);
+  const [savingRole, setSavingRole] = useState(false);
+
+  useEffect(() => {
+    setCurrentRole(profile.platform_role);
+    setSelectedRole(profile.platform_role);
+  }, [profile.id, profile.platform_role]);
 
   // Profile tags
   const [tags, setTags] = useState(profile.tags || []);
@@ -54,17 +60,17 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
   const [addMinistry, setAddMinistry] = useState("");
   const [addingToEvent, setAddingToEvent] = useState(false);
 
-  async function changeRoleInline(role) {
-    if (role === currentRole) return;
-    setSavingRole(role);
+  async function saveRole() {
+    if (selectedRole === currentRole || savingRole) return;
+    setSavingRole(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ platform_role: role })
+      .update({ platform_role: selectedRole })
       .eq("id", profile.id);
-    setSavingRole(null);
+    setSavingRole(false);
     if (error) { onToast("Could not update role.", "error"); return; }
-    setCurrentRole(role);
-    onToast(`Role changed to ${role} for ${profile.full_name}.`);
+    setCurrentRole(selectedRole);
+    onToast(`Role changed to ${selectedRole} for ${profile.full_name}.`);
     onRefresh();
   }
 
@@ -223,32 +229,44 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
       <SectionLabel>Role & Tags</SectionLabel>
       <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: "1.1rem 1.25rem", marginBottom: "1rem" }}>
         <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: "1rem", lineHeight: 1.5 }}>
-          Platform role is mutually exclusive — tap to switch. Tags can be combined freely.
+          Select one platform role, then save the change. Tags can be combined freely.
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {ROLE_CHIPS.map(({ key, label, bg, color }) => {
-            const active = currentRole === key;
-            const isSaving = savingRole === key;
+            const active = selectedRole === key;
             return (
               <button
                 key={key}
-                onClick={() => changeRoleInline(key)}
-                disabled={isSaving || active}
+                onClick={() => setSelectedRole(key)}
+                disabled={savingRole}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   padding: "8px 14px", borderRadius: 99,
-                  cursor: (isSaving || active) ? "default" : "pointer",
+                  cursor: savingRole ? "default" : "pointer",
                   border: active ? "none" : `1.5px dashed ${BORDER}`,
                   background: active ? bg : "#fff",
                   color: active ? color : TSEC,
                   fontSize: "13px", fontWeight: 700, fontFamily: SANS, letterSpacing: "0.02em",
-                  opacity: isSaving ? 0.5 : 1, transition: "opacity 0.15s ease",
+                  opacity: savingRole ? 0.5 : 1, transition: "opacity 0.15s ease",
                 }}
               >
-                {isSaving ? "…" : active ? "✓ " : ""}{label}
+                {active ? "✓ " : ""}{label}
               </button>
             );
           })}
+          <button
+            onClick={saveRole}
+            disabled={savingRole || selectedRole === currentRole}
+            style={{
+              padding: "8px 16px", borderRadius: 99, border: "none",
+              background: selectedRole === currentRole ? "#E5E5E5" : "#111",
+              color: selectedRole === currentRole ? TSEC : "#fff",
+              fontSize: "13px", fontWeight: 800, fontFamily: SANS,
+              cursor: savingRole || selectedRole === currentRole ? "default" : "pointer",
+            }}
+          >
+            {savingRole ? "Saving…" : "Save role"}
+          </button>
           {TAG_CHIPS.map(({ key, label, bg, color }) => {
             const active = tags.includes(key);
             const isSaving = savingTag === key;

@@ -93,7 +93,8 @@ Font: system-ui only (no Google Fonts). Remove `useFonts()` / any Google Fonts l
 ## Current State (as of 2026-06-08)
 
 ### Branch: `design-polish`
-Latest implementation includes direct Home-to-event navigation, a complete forgot-password recovery screen, rounded rendered logos, a larger Home brand wordmark, and the updated Prayer Chain reminder.
+The user merged `design-polish` into `main` on 2026-06-08, then continued work on `design-polish`.
+Latest implementation updates first-login setup styling, makes Messenger fully opaque and Active Now actionable, hides empty conversations until the first message is sent, repairs incomplete duplicate accounts during invitation, and replaces the social preview/favicon metadata.
 Verification: 34/34 tests pass and the production build passes.
 Manual browser verification was unavailable in the 2026-06-08 session because the in-app browser connection was not available.
 
@@ -102,6 +103,7 @@ Manual browser verification was unavailable in the 2026-06-08 session because th
 **Auth & shell**
 - Login (Enter key submits), ChangePassword (password validation enforced)
 - Forgot Password sends a Supabase Auth recovery email; the recovery link now opens a dedicated new-password screen before returning to the app
+- First-login password/profile/welcome screens use navy and white instead of the legacy full-orange background
 - App.jsx: state-based navigation, app-wide presence channel, chat unread badge
 - Shell, BottomNav (4 tabs: Home · Conference · Updates · Profile), BackBtn
 - PWA manifest + full iOS/Android meta tags, favicon set; rendered logo instances use rounded clipping
@@ -130,9 +132,12 @@ Manual browser verification was unavailable in the 2026-06-08 session because th
 - Prayer Chain reminder uses the solid orange current palette
 - TheFour, FieldGuide (real Drive URL + offline download), MyChecklist
 - Chat: Supabase Realtime, grouped messages, emoji, presence strip, DMs, group threads
+- Messenger masks the underlying app at every viewport width; tapping Active Now starts a DM directly
+- Opening a new DM does not create chat history; the conversation is persisted only when the first message is sent
 
 **Admin panel (full)**
 - AdminShell → Users → PersonDetail (tag chips, event-scoped card) → InviteFlow
+- Platform role chips are draft selections; `Save role` performs the database update
 - Admin account removal UI uses a protected `delete-user` edge function
 - EventList → EventDetail (team setup, coordinator picker) → CoLeaderPairing
 - AnnouncementList → AnnouncementEditor (draft → pending_approval → published + email toggle)
@@ -148,10 +153,13 @@ Manual browser verification was unavailable in the 2026-06-08 session because th
 
 **Infrastructure**
 - EmailJS: Welcome template for invitations; Announcement template for announcements and Contact 412 messages
+- `create-user` edge function version 8 creates accounts without Resend and repairs incomplete Auth/profile records instead of returning a false duplicate error
+- Incomplete existing invites (`password_changed = false`) can be safely reissued with a new temporary password and EmailJS welcome message
 - Supabase Auth handles forgot-password/reset emails independently of EmailJS
 - RLS: all recursion bugs fixed via SECURITY DEFINER helper fns (`is_platform_admin()`, `get_my_event_ids()`, `get_my_assigned_event_ids()`, `get_my_conversation_ids()`)
+- Admins can read/delete system-group participant rows without joining each group; migration `20260609043000_admin_manage_conversation_participants.sql`
 - 15 DB indexes added
-- Social preview (og tags + preview.jpg), favicon auto-cropped to content
+- Social preview uses `public/preview.png` with the ministry community description; browser favicon uses rounded `favicon.svg`
 
 ### Known Issues
 - `delete-user` is committed locally but must be deployed after authenticating the Supabase CLI.
@@ -165,7 +173,7 @@ Manual browser verification was unavailable in the 2026-06-08 session because th
 2. **⚠️ Rotate Supabase API keys** — service_role key was in shared PDF.
 3. Manually verify Welcome and Announcement delivery from the deployed design preview.
 4. Manually verify Home → 412 Board Meeting and the emailed forgot-password recovery link on the deployed preview.
-5. Confirm Enkhbayar's Pastor tag in Admin → Users; failed tag writes now show an error instead of appearing successful.
+5. Enkhbayar Ulambayar is confirmed in Supabase with `pastor` and `board_member` tags and is already a participant in the Pastors system group.
 
 ---
 
