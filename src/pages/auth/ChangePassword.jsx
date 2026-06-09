@@ -6,12 +6,12 @@ import { Avatar } from "../../components/ui/index.js";
 
 const CROP_SIZE = 240;
 
-// ── Shared orange-page wrapper ─────────────────────────────────────────────────
+// ── Shared account-setup wrapper ───────────────────────────────────────────────
 
-function OrangePage({ children, style = {} }) {
+function SetupPage({ children, style = {} }) {
   return (
     <div style={{
-      position: "fixed", inset: 0, background: "#FF4D00", overflowY: "auto",
+      position: "fixed", inset: 0, background: "#1B2A4A", overflowY: "auto",
       display: "flex", flexDirection: "column", alignItems: "center",
       padding: "max(2rem, env(safe-area-inset-top)) 1.5rem max(2rem, env(safe-area-inset-bottom))",
       fontFamily: SANS, ...style,
@@ -150,7 +150,7 @@ function PasswordStep({ onPasswordSaved }) {
   };
 
   return (
-    <OrangePage style={{ justifyContent: "center" }}>
+    <SetupPage style={{ justifyContent: "center" }}>
       <LogoImg size={90} style={{ marginBottom: "1.75rem" }} />
 
       <div style={{ textAlign: "center", marginBottom: "2.25rem" }}>
@@ -175,7 +175,7 @@ function PasswordStep({ onPasswordSaved }) {
           {busy ? "Saving…" : "Save and continue →"}
         </button>
       </div>
-    </OrangePage>
+    </SetupPage>
   );
 }
 
@@ -227,9 +227,9 @@ function ProfileSetupStep({ userId, onDone }) {
 
   if (!profile) {
     return (
-      <OrangePage style={{ justifyContent: "center" }}>
+      <SetupPage style={{ justifyContent: "center" }}>
         <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "14px" }}>Loading…</div>
-      </OrangePage>
+      </SetupPage>
     );
   }
 
@@ -243,8 +243,8 @@ function ProfileSetupStep({ userId, onDone }) {
         />
       )}
 
-      {/* Orange header */}
-      <div style={{ background: "#FF4D00", padding: "max(2rem, env(safe-area-inset-top)) 1.5rem 2rem", textAlign: "center" }}>
+      {/* Navy header */}
+      <div style={{ background: "#1B2A4A", padding: "max(2rem, env(safe-area-inset-top)) 1.5rem 2rem", textAlign: "center" }}>
         <div style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "0.14em", color: "rgba(255,255,255,0.7)", textTransform: "uppercase", marginBottom: "0.75rem" }}>Step 2 of 2</div>
         <div style={{ fontSize: "30px", fontWeight: 900, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.03em" }}>Your profile.</div>
         <div style={{ fontSize: "14px", color: "rgba(255,255,255,0.65)", marginTop: "0.5rem" }}>Add a photo and nickname — both optional.</div>
@@ -327,7 +327,7 @@ function ProfileSetupStep({ userId, onDone }) {
 
 function WelcomeScreen({ onEnter }) {
   return (
-    <OrangePage style={{ justifyContent: "center", textAlign: "center" }}>
+    <SetupPage style={{ justifyContent: "center", textAlign: "center" }}>
       <LogoImg size={120} style={{ marginBottom: "2rem" }} />
       <div style={{ fontSize: "13px", fontWeight: 800, letterSpacing: "0.16em", color: "rgba(255,255,255,0.65)", textTransform: "uppercase", marginBottom: "0.75rem" }}>
         Welcome to
@@ -344,7 +344,7 @@ function WelcomeScreen({ onEnter }) {
       <button onClick={onEnter} style={{ ...whiteBtn, maxWidth: 340 }}>
         Let's go →
       </button>
-    </OrangePage>
+    </SetupPage>
   );
 }
 

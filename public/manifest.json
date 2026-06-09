@@ -1,12 +1,12 @@
 {
   "name": "412 MINISTRY",
   "short_name": "412",
-  "description": "412 MINISTRY Platform — events, teams, and community",
+  "description": "A community of believers growing in faith, building meaningful relationships, serving Christ together, and sharing God's love with the Mongolian community in North America.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F7F4EF",
-  "theme_color": "#162038",
+  "background_color": "#FAFAFA",
+  "theme_color": "#1B2A4A",
   "icons": [
     {
       "src": "/logo.png",

@@ -90,15 +90,14 @@ Font: system-ui only (no Google Fonts). Remove `useFonts()` / any Google Fonts l
 
 ---
 
-## Current State (as of 2026-06-08)
+## Current State (as of 2026-06-09)
 
 ### Branch: `design-polish`
 The user merged `design-polish` into `main` on 2026-06-08, then continued work on `design-polish`.
-Latest production merge: `e35cfe6` on `main` (2026-06-09). GitHub push succeeded and should trigger the Vercel production deployment.
+Latest production merge: `e35cfe6` on `main` (2026-06-09). The next release finalizes the navy first-login flow and the new social preview.
 Latest implementation updates first-login setup styling, makes Messenger fully opaque and Active Now actionable, hides empty conversations until the first message is sent, repairs incomplete duplicate accounts during invitation, and replaces the social preview/favicon metadata.
 Verification: 34/34 tests pass and the production build passes.
 EmailJS Welcome template test returned `OK` for `bay.tsekvv@gmail.com`; the test-only displayed password was `TestOnly!412`.
-Manual browser verification was unavailable in the 2026-06-08 session because the in-app browser connection was not available.
 
 ### What's Built ✅
 
