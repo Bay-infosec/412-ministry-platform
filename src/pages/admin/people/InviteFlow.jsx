@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../../lib/supabase.js";
-import { TSEC, BORDER, SANS, SERIF } from "../../../lib/constants.js";
+import { TSEC, BORDER, SANS } from "../../../lib/constants.js";
 import { sendInviteEmail } from "../../../lib/email.js";
 
 const inputStyle = {
@@ -25,11 +25,50 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
     e.preventDefault();
     if (!fullName.trim() || !email.trim()) return;
     setLoading(true);
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("id, full_name, password_changed")
+      .eq("email", normalizedEmail)
+      .maybeSingle();
+
+    if (existingProfile?.id) {
+      if (existingProfile.password_changed) {
+        setLoading(false);
+        onToast("This person already has an active account.", "error");
+        return;
+      }
+
+      const { data: resetResult, error: resetError } = await supabase.functions.invoke("reset-password", {
+        body: { user_id: existingProfile.id },
+      });
+      const tempPassword = resetResult?.temp_password || null;
+      if (resetError || !tempPassword) {
+        setLoading(false);
+        onToast("The account exists, but a new temporary password could not be created.", "error");
+        return;
+      }
+      const emailResult = await sendInviteEmail({
+        toEmail: normalizedEmail,
+        toName: existingProfile.full_name || fullName.trim(),
+        tempPassword,
+      });
+      setLoading(false);
+      setDone({
+        name: existingProfile.full_name || fullName.trim(),
+        emailSent: emailResult.ok,
+        emailError: emailResult.error,
+        tempPassword,
+        recovered: true,
+      });
+      return;
+    }
 
     const { data: res, error } = await supabase.functions.invoke("create-user", {
       body: {
         full_name: fullName.trim(),
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         phone: phone.trim() || undefined,
         church_id: churchId || undefined,
         ministry_role: ministryRole.trim() || undefined,
@@ -39,36 +78,28 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
 
     if (error || !res?.success) {
       setLoading(false);
-      const msg = res?.error || "Could not create account. Email may already be in use.";
+      const msg = res?.error || error?.message || "Could not create account.";
       onToast(msg, "error");
       return;
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const { data: createdProfile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", normalizedEmail)
-      .maybeSingle();
-
-    let emailSent = false;
-    let tempPassword = null;
-    if (createdProfile?.id) {
-      const { data: resetResult } = await supabase.functions.invoke("reset-password", {
-        body: { user_id: createdProfile.id },
-      });
-      tempPassword = resetResult?.temp_password || null;
-      if (tempPassword) {
-        emailSent = await sendInviteEmail({
+    const tempPassword = res.temp_password || null;
+    const emailResult = tempPassword
+      ? await sendInviteEmail({
           toEmail: normalizedEmail,
           toName: fullName.trim(),
           tempPassword,
-        });
-      }
-    }
+        })
+      : { ok: false, error: "The account was created without a temporary password response." };
 
     setLoading(false);
-    setDone({ name: fullName.trim(), emailSent, tempPassword });
+    setDone({
+      name: fullName.trim(),
+      emailSent: emailResult.ok,
+      emailError: emailResult.error,
+      tempPassword,
+      recovered: !!res.recovered,
+    });
   }
 
   if (done) {
@@ -76,7 +107,7 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
       <div style={{ textAlign: "center", paddingTop: "2rem" }}>
         <div style={{ fontSize: "48px", marginBottom: "1rem" }}>✓</div>
         <div style={{ fontFamily: SANS, fontSize: "26px", fontWeight: 600, color: "#1B2A4A", marginBottom: "0.75rem" }}>
-          {done.name} invited!
+          {done.recovered ? `${done.name}'s invite was resent!` : `${done.name} invited!`}
         </div>
         {done.emailSent ? (
           <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, lineHeight: 1.65 }}>
@@ -88,7 +119,8 @@ export default function InviteFlow({ data, onSuccess, onToast }) {
             padding: "1rem", marginTop: "0.5rem",
             fontSize: "14px", color: "#FFFFFF", fontFamily: SANS, lineHeight: 1.65,
           }}>
-            Account created, but EmailJS did not confirm delivery.
+            {done.recovered ? "The account is ready, but EmailJS did not confirm the resent invite." : "Account created, but EmailJS did not confirm delivery."}
+            {done.emailError ? ` EmailJS response: ${done.emailError}` : ""}
             {done.tempPassword ? ` Share this temporary password manually: ${done.tempPassword}` : " Reset the password from the user profile and share it manually."}
           </div>
         )}
