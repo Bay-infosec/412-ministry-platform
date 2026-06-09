@@ -152,6 +152,7 @@ Manual browser verification was unavailable in the 2026-06-08 session because th
 - EmailJS: Welcome template for invitations; Announcement template for announcements and Contact 412 messages
 - Supabase Auth handles forgot-password/reset emails independently of EmailJS
 - RLS: all recursion bugs fixed via SECURITY DEFINER helper fns (`is_platform_admin()`, `get_my_event_ids()`, `get_my_assigned_event_ids()`, `get_my_conversation_ids()`)
+- Admins can read/delete system-group participant rows without joining each group; migration `20260609043000_admin_manage_conversation_participants.sql`
 - 15 DB indexes added
 - Social preview (og tags + preview.jpg), favicon auto-cropped to content
 

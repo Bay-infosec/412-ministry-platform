@@ -94,21 +94,33 @@ export default function SystemGroups({ data, onToast }) {
 
   async function loadMemberList(convId, key) {
     setLoadingMembers(key);
-    const { data: parts } = await supabase
+    const { data: parts, error: partsError } = await supabase
       .from("conversation_participants")
       .select("profile_id")
       .eq("conversation_id", convId);
+    if (partsError) {
+      setMemberLists((prev) => ({ ...prev, [key]: [] }));
+      setLoadingMembers(null);
+      onToast("Could not load group members.", "error");
+      return;
+    }
     const ids = (parts || []).map((p) => p.profile_id);
     if (!ids.length) {
       setMemberLists((prev) => ({ ...prev, [key]: [] }));
       setLoadingMembers(null);
       return;
     }
-    const { data: profiles } = await supabase
+    const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
       .select("id, full_name, photo_url")
       .in("id", ids)
       .order("full_name");
+    if (profilesError) {
+      setMemberLists((prev) => ({ ...prev, [key]: [] }));
+      setLoadingMembers(null);
+      onToast("Could not load member profiles.", "error");
+      return;
+    }
     setMemberLists((prev) => ({ ...prev, [key]: profiles || [] }));
     setLoadingMembers(null);
   }
