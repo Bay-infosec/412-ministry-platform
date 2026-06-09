@@ -139,11 +139,11 @@ function EventCard({ ev, onClick }) {
     <button
       onClick={onClick}
       style={{
-        minWidth: 185, maxWidth: 185,
+        minWidth: "min(82vw, 340px)", maxWidth: "min(82vw, 340px)",
         background: "#1B2A4A",
         border: "none",
-        borderRadius: 16, padding: "13px 14px",
-        display: "flex", flexDirection: "column", gap: 6,
+        borderRadius: 18, padding: "18px 20px",
+        display: "flex", flexDirection: "column", gap: 9,
         cursor: "pointer", textAlign: "left", flexShrink: 0,
         boxShadow: "0 2px 10px rgba(27,42,74,0.2)",
       }}
@@ -153,21 +153,21 @@ function EventCard({ ev, onClick }) {
           {TYPE_LABELS[ev.type] || "Event"}
         </span>
       </div>
-      <div style={{ fontSize: "15px", fontWeight: 900, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.02em" }}>
+      <div style={{ fontSize: "21px", fontWeight: 900, color: "#fff", lineHeight: 1.15, letterSpacing: "-0.03em" }}>
         {ev.name}
       </div>
       {ev.dates && (
-        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4 }}>
+        <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.65)", lineHeight: 1.4 }}>
           {ev.dates}
         </div>
       )}
       {ev.location && (
-        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)" }}>
+        <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>
           {ev.location}
         </div>
       )}
       {days !== null && days >= 0 && (
-        <div style={{ marginTop: 2, fontSize: "11px", fontWeight: 700, color: "#FF4D00" }}>
+        <div style={{ marginTop: 5, fontSize: "12px", fontWeight: 800, color: "#FF4D00" }}>
           {days === 0 ? "Today!" : days === 1 ? "Tomorrow" : `In ${days} days`}
         </div>
       )}

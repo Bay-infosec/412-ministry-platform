@@ -32,7 +32,6 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
   const [savingTeam, setSavingTeam] = useState(false);
   const [teamSetupOpen, setTeamSetupOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
-  const [readinessOpen, setReadinessOpen] = useState(true);
 
   // Edit modal — coordinator slots + team chips
   const [editCoordCount, setEditCoordCount] = useState(0);
@@ -308,40 +307,6 @@ export default function EventDetail({ event, data, onRefresh, onToast, onBack })
           )}
         </div>
       </div>
-
-      {/* Onboarding progress */}
-      {isConference && !loading && members.length > 0 && (() => {
-        const leaders = members
-          .filter((m) => ["leader", "coordinator"].includes(m.event_role))
-          .sort((a, b) => {
-            const teamDiff = (a.team_number ?? 999) - (b.team_number ?? 999);
-            if (teamDiff !== 0) return teamDiff;
-            return (a.profiles?.full_name || "").localeCompare(b.profiles?.full_name || "");
-          });
-        const ready = leaders.filter((m) => readinessState(m).key === "ready").length;
-        return (
-          <div style={{ marginBottom: "1.25rem" }}>
-            <SectionToggle
-              label="Team Leader Readiness"
-              detail={`${ready} ready · ${leaders.length} total`}
-              open={readinessOpen}
-              onClick={() => setReadinessOpen((open) => !open)}
-            />
-            {readinessOpen && (
-              <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderTop: "none", borderRadius: "0 0 14px 14px", overflow: "hidden" }}>
-                {leaders.map((member, index) => (
-                  <ReadinessRow
-                    key={member.id}
-                    member={member}
-                    compact={false}
-                    borderBottom={index < leaders.length - 1}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })()}
 
       {/* Team Setup */}
       {isConference && event.team_count > 0 && (
@@ -921,25 +886,6 @@ function ReadinessIndicator({ member }) {
           }}
         />
       ))}
-    </div>
-  );
-}
-
-function ReadinessRow({ member, borderBottom }) {
-  const profile = member.profiles || {};
-  const roleLabel = member.event_role === "coordinator" ? "Coordinator" : "Leader";
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0.7rem 0.875rem", borderBottom: borderBottom ? `1px solid ${BORDER}` : "none" }}>
-      <Avatar url={profile.photo_url} name={profile.full_name} size={34} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: "13px", fontWeight: 700, color: "#1B2A4A", fontFamily: SANS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {profile.full_name || "Unnamed leader"}
-        </div>
-        <div style={{ fontSize: "10px", color: TSEC, fontFamily: SANS, marginTop: 2 }}>
-          {roleLabel}{member.team_number ? ` · Team ${member.team_number}` : ""}
-        </div>
-      </div>
-      <ReadinessIndicator member={member} />
     </div>
   );
 }

@@ -4,6 +4,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const EMAILJS_SERVICE_ID = Deno.env.get("EMAILJS_SERVICE_ID") || "service_7njy4no";
 const EMAILJS_TEMPLATE_ID = Deno.env.get("EMAILJS_ANNOUNCE_TEMPLATE") || "template_ecf57nm";
+const EMAILJS_WELCOME_TEMPLATE = Deno.env.get("EMAILJS_INVITE_TEMPLATE") || "template_6d9u7bp";
 const EMAILJS_PUBLIC_KEY = Deno.env.get("EMAILJS_PUBLIC_KEY") || "FP0ZiFckHYBqYpN6s";
 const PLATFORM_URL = Deno.env.get("PLATFORM_URL") || "https://412-ministry-platform.vercel.app";
 
@@ -32,6 +33,18 @@ type Membership = {
 
 type ScheduledAnnouncement = {
   id: string;
+};
+
+type InviteCampaign = {
+  id: string;
+  event_id: string;
+  temporary_password: string;
+};
+
+type AuthUser = {
+  id: string;
+  email?: string | null;
+  last_sign_in_at?: string | null;
 };
 
 function matchesAudience(
@@ -64,7 +77,11 @@ async function sendEmail(profile: Profile, title: string, body: string) {
 
   const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Origin: PLATFORM_URL,
+      Referer: `${PLATFORM_URL}/`,
+    },
     body: JSON.stringify({
       service_id: EMAILJS_SERVICE_ID,
       template_id: EMAILJS_TEMPLATE_ID,
@@ -87,6 +104,45 @@ async function sendEmail(profile: Profile, title: string, body: string) {
   });
 
   return response.ok;
+}
+
+async function sendWelcomeEmail(email: string, fullName: string, tempPassword: string) {
+  const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Origin: PLATFORM_URL,
+      Referer: `${PLATFORM_URL}/`,
+    },
+    body: JSON.stringify({
+      service_id: EMAILJS_SERVICE_ID,
+      template_id: EMAILJS_WELCOME_TEMPLATE,
+      user_id: EMAILJS_PUBLIC_KEY,
+      template_params: {
+        to_email: email,
+        email,
+        recipient_email: email,
+        to_name: fullName,
+        name: fullName,
+        temp_password: tempPassword,
+        password: tempPassword,
+        subject: "Welcome to 412 MINISTRY",
+        platform_url: PLATFORM_URL,
+      },
+    }),
+  });
+  return response.ok;
+}
+
+async function listAuthUsers() {
+  const users: AuthUser[] = [];
+  for (let page = 1; page <= 10; page += 1) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 100 });
+    if (error) throw error;
+    users.push(...data.users);
+    if (data.users.length < 100) break;
+  }
+  return users;
 }
 
 async function sendPush(profileIds: string[], title: string, body: string) {
@@ -162,6 +218,80 @@ async function processAnnouncement(announcement: ScheduledAnnouncement) {
   return true;
 }
 
+async function processInviteCampaign(campaign: InviteCampaign) {
+  const now = new Date().toISOString();
+  const { data: claimed, error: claimError } = await admin
+    .from("scheduled_invite_campaigns")
+    .update({ status: "processing", started_at: now, error: null })
+    .eq("id", campaign.id)
+    .eq("status", "queued")
+    .lte("run_at", now)
+    .select("id, event_id, temporary_password")
+    .maybeSingle();
+
+  if (claimError || !claimed) return null;
+  if (!claimed.temporary_password) {
+    await admin
+      .from("scheduled_invite_campaigns")
+      .update({ status: "failed", completed_at: now, error: "Temporary password is not configured." })
+      .eq("id", claimed.id);
+    return null;
+  }
+
+  try {
+    const { data: members, error: memberError } = await admin
+      .from("event_members")
+      .select("profile_id, event_role, profiles!event_members_profile_id_fkey(full_name, email)")
+      .eq("event_id", claimed.event_id)
+      .in("event_role", ["leader", "coordinator"]);
+    if (memberError) throw memberError;
+
+    const authUsers = await listAuthUsers();
+    const authById = new Map(authUsers.map((user) => [user.id, user]));
+    const results = { eligible: 0, sent: 0, skipped_signed_in: 0, failed: 0 };
+
+    for (const member of members || []) {
+      const authUser = authById.get(member.profile_id);
+      if (!authUser || authUser.last_sign_in_at) {
+        results.skipped_signed_in += 1;
+        continue;
+      }
+
+      const profile = Array.isArray(member.profiles) ? member.profiles[0] : member.profiles;
+      const email = profile?.email || authUser.email;
+      const fullName = profile?.full_name || "";
+      if (!email) {
+        results.failed += 1;
+        continue;
+      }
+
+      results.eligible += 1;
+      if (await sendWelcomeEmail(email, fullName, claimed.temporary_password)) results.sent += 1;
+      else results.failed += 1;
+    }
+
+    await admin
+      .from("scheduled_invite_campaigns")
+      .update({
+        status: results.failed > 0 ? "completed_with_errors" : "completed",
+        completed_at: new Date().toISOString(),
+        results,
+      })
+      .eq("id", claimed.id);
+    return results;
+  } catch (error) {
+    await admin
+      .from("scheduled_invite_campaigns")
+      .update({
+        status: "failed",
+        completed_at: new Date().toISOString(),
+        error: error instanceof Error ? error.message : "Invite campaign failed.",
+      })
+      .eq("id", claimed.id);
+    return null;
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
@@ -205,7 +335,19 @@ Deno.serve(async (req: Request) => {
     if (activated) activatedEvents += 1;
   }
 
-  return new Response(JSON.stringify({ publishedAnnouncements, activatedEvents }), {
+  const { data: dueCampaigns } = await admin
+    .from("scheduled_invite_campaigns")
+    .select("id, event_id, temporary_password")
+    .eq("status", "queued")
+    .lte("run_at", now)
+    .limit(5);
+
+  let processedInviteCampaigns = 0;
+  for (const campaign of dueCampaigns || []) {
+    if (await processInviteCampaign(campaign as InviteCampaign)) processedInviteCampaigns += 1;
+  }
+
+  return new Response(JSON.stringify({ publishedAnnouncements, activatedEvents, processedInviteCampaigns }), {
     headers: { "Content-Type": "application/json" },
   });
 });
