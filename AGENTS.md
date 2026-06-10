@@ -205,7 +205,7 @@ Set Apart readiness was refined on 2026-06-09: leaders and coordinators are both
 ## Next Up
 
 1. **⚠️ Rotate Supabase API keys** — service_role key was in shared PDF.
-2. After deployment, open Admin → Set Apart 2026 → Members and confirm a 2/4 checklist record displays two yellow dots rather than `Not started`.
+2. After deployment, open Admin → Set Apart 2026 → Members and confirm a 2/4 checklist record displays two orange dots rather than `Not started`.
 3. Encourage leaders to install the PWA and enable notifications; only subscribed devices can receive push.
 4. On the admin iPhone, open the installed PWA → Profile → Settings. Re-enable Notifications if this device is not subscribed, then use `Send Test Notification`; also verify iPhone Settings → Notifications and Focus settings.
 5. Verify the scheduled Zoom announcement published in-app and inspect its `push_sent_at` / `delivery_error`.

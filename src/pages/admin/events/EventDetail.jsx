@@ -856,8 +856,8 @@ function ReadinessIndicator({ member }) {
             width: 9,
             height: 9,
             borderRadius: "50%",
-            background: index < state.progress.done ? "#F5B700" : "#FFF9DB",
-            border: "1px solid #D99F00",
+            background: index < state.progress.done ? "#FF4D00" : "#F0F0F0",
+            border: `1px solid ${index < state.progress.done ? "#FF4D00" : BORDER}`,
           }}
         />
       ))}
