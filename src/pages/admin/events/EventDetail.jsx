@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase.js";
 import { TSEC, BORDER, ORANGE, SANS } from "../../../lib/constants.js";
 import { Avatar, Modal } from "../../../components/ui/index.js";
-import { CHECKLIST_ITEMS } from "../../../lib/checklist.js";
+import { getMemberReadiness } from "../../../lib/readiness.js";
 
 export default function EventDetail({ event, data, onRefresh, onToast, onBack }) {
   const { allProfiles } = data;
@@ -820,33 +820,8 @@ function MemberRow({ member, onRemove, onEditMessage, onSetTeam, showConferenceS
   );
 }
 
-function checklistProgress(member) {
-  const items = Array.isArray(member.event_checklist)
-    ? member.event_checklist[0]?.items
-    : member.event_checklist?.items;
-  const values = items || {};
-  return {
-    done: CHECKLIST_ITEMS.filter((item) => values[item.id]).length,
-    total: CHECKLIST_ITEMS.length,
-  };
-}
-
-function readinessState(member) {
-  const progress = checklistProgress(member);
-  if (!member.profiles?.last_seen_at) {
-    return { key: "no_login", label: "No login", progress };
-  }
-  if (!member.onboarding_visited) {
-    return { key: "not_started", label: "Not started", progress };
-  }
-  if (progress.done === progress.total) {
-    return { key: "ready", label: "Ready", progress };
-  }
-  return { key: "in_progress", label: "In progress", progress };
-}
-
 function ReadinessIndicator({ member }) {
-  const state = readinessState(member);
+  const state = getMemberReadiness(member);
 
   if (state.key === "ready") {
     return (

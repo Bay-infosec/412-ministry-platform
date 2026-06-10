@@ -90,15 +90,16 @@ Font: system-ui only (no Google Fonts). Remove `useFonts()` / any Google Fonts l
 
 ---
 
-## Current State (as of 2026-06-09)
+## Current State (as of 2026-06-10)
 
 ### Branch: `design-polish`
 The user merged `design-polish` into `main` on 2026-06-08, then continued work on `design-polish`.
 Latest production merge: `6e9989b` on `main` (2026-06-09). Member role gates and platform-wide Messenger search are live.
 Latest implementation gates conference leader content by event role and adds a privacy-limited, platform-wide Messenger directory for every authenticated member.
 Verification: 34/34 tests pass and the production build passes.
+Onboarding readiness was corrected on 2026-06-10: the admin Members list now derives progress from actual checklist items and other saved onboarding activity instead of relying exclusively on the historically unreliable `onboarding_visited` flag. Save & exit and completion now persist that flag explicitly. Five inconsistent Set Apart records were repaired, including two records with 2/4 checklist items complete. Verification: 41/41 tests and the production build pass; authenticated visual verification is still required after deployment.
 Scheduling completed on 2026-06-09: admins can schedule announcements (with optional EmailJS email and push delivery) and schedule inactive events to become active. Supabase cron runs `process-scheduled-content` every minute; the deployed `process-scheduled` Edge Function is JWT-protected and verified with repeated HTTP 200 cron executions.
-One-time Set Apart leader welcome campaign is queued for 2026-06-10 at 7:00 AM Pacific. At execution time it rechecks Supabase Auth and individually emails only leaders/coordinators with no `last_sign_in_at`; signed-in accounts are skipped. Campaign credentials are stored only in the RLS-protected database record, not Git.
+The one-time Set Apart leader welcome campaign was released on 2026-06-09: 19 emails sent, 5 signed-in accounts skipped, and 0 failures. Campaign credentials remain stored only in the RLS-protected database record, not Git.
 Set Apart Zoom training announcement is queued for 2026-06-10 at 12:00 PM Pacific for all leaders/coordinators. Email delivery is disabled; it will publish in-app and attempt push delivery.
 Production verification: `/preview.png` returns HTTP 200 and the deployed page exposes the new Open Graph/Twitter metadata and navy theme color.
 The deployed bundle `index-U55XT8En.js` contains the leader-role gates and `get_platform_directory()` Messenger search.
@@ -204,10 +205,10 @@ Set Apart readiness was refined on 2026-06-09: leaders and coordinators are both
 ## Next Up
 
 1. **⚠️ Rotate Supabase API keys** — service_role key was in shared PDF.
-2. After 7:00 AM Pacific on 2026-06-10, inspect `scheduled_invite_campaigns.results` and confirm the Set Apart leader campaign's sent/skipped/failed counts.
+2. After deployment, open Admin → Set Apart 2026 → Members and confirm a 2/4 checklist record displays two yellow dots rather than `Not started`.
 3. Encourage leaders to install the PWA and enable notifications; only subscribed devices can receive push.
 4. On the admin iPhone, open the installed PWA → Profile → Settings. Re-enable Notifications if this device is not subscribed, then use `Send Test Notification`; also verify iPhone Settings → Notifications and Focus settings.
-5. After noon Pacific on 2026-06-10, verify the Zoom announcement published in-app and inspect its `push_sent_at` / `delivery_error`.
+5. Verify the scheduled Zoom announcement published in-app and inspect its `push_sent_at` / `delivery_error`.
 
 ---
 

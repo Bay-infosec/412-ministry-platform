@@ -668,14 +668,24 @@ export default function OnboardingFlow({ data, onDone, onExit }) {
 
   useEffect(() => {
     if (eventMember?.id && !eventMember.onboarding_visited) {
-      supabase.from("event_members").update({ onboarding_visited: true }).eq("id", eventMember.id);
+      supabase
+        .from("event_members")
+        .update({ onboarding_visited: true })
+        .eq("id", eventMember.id)
+        .then(({ error }) => {
+          if (error) console.error("Could not mark onboarding as visited:", error);
+        });
     }
-  }, [eventMember?.id]);
+  }, [eventMember?.id, eventMember?.onboarding_visited]);
 
   async function handleExit() {
-    await supabase.from("event_members")
-      .update({ onboarding_step: step })
+    const { error } = await supabase.from("event_members")
+      .update({ onboarding_step: step, onboarding_visited: true })
       .eq("id", eventMember.id);
+    if (error) {
+      console.error("Could not save onboarding progress:", error);
+      return;
+    }
     onExit();
   }
 
@@ -683,16 +693,18 @@ export default function OnboardingFlow({ data, onDone, onExit }) {
 
   async function handleFinish(checklistData) {
     try {
-      await Promise.all([
+      const results = await Promise.all([
         supabase
           .from("event_members")
-          .update({ onboarding_completed: true })
+          .update({ onboarding_completed: true, onboarding_visited: true, onboarding_step: 5 })
           .eq("id", eventMember.id),
         supabase
           .from("event_checklist")
           .update({ items: checklistData })
           .eq("event_member_id", eventMember.id),
       ]);
+      const saveError = results.find((result) => result.error)?.error;
+      if (saveError) throw saveError;
       onDone();
     } catch (err) {
       console.error("Finish onboarding error:", err);
