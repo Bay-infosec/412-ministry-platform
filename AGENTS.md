@@ -90,13 +90,14 @@ Font: system-ui only (no Google Fonts). Remove `useFonts()` / any Google Fonts l
 
 ---
 
-## Current State (as of 2026-06-10)
+## Current State (as of 2026-06-11)
 
 ### Branch: `design-polish`
 The user merged `design-polish` into `main` on 2026-06-08, then continued work on `design-polish`.
 Latest production merge: `6e9989b` on `main` (2026-06-09). Member role gates and platform-wide Messenger search are live.
 Latest implementation gates conference leader content by event role and adds a privacy-limited, platform-wide Messenger directory for every authenticated member.
 Verification: 34/34 tests pass and the production build passes.
+GitHub triage on 2026-06-11 found no open pull requests or issues. The latest `design-polish` commit has a successful Vercel check, with no failing CI or review feedback requiring code changes.
 The separate Questions Skeptics Ask workshop application was completed on 2026-06-11 in `~/Projects/questions-skeptics-ask`. It includes the attendee poll/question/follow-up flow, live projector results, moderator controls, and group-scoped leader dashboards. Its isolated `workshop_*` schema and code-gated RPCs are deployed in the existing Supabase project; production is live at `https://questions-skeptics-ask.vercel.app`. The app has 2/2 tests passing, a clean production build and npm audit, and live mobile/HTTP verification. Local Git history is clean; GitHub repository creation remains blocked until a GitHub account or GitHub app connection is authenticated.
 Onboarding readiness was corrected on 2026-06-10: the admin Members list now derives progress from actual checklist items and other saved onboarding activity instead of relying exclusively on the historically unreliable `onboarding_visited` flag. Save & exit and completion now persist that flag explicitly. Five inconsistent Set Apart records were repaired, including two records with 2/4 checklist items complete. Verification: 41/41 tests and the production build pass; authenticated visual verification is still required after deployment.
 Scheduling completed on 2026-06-09: admins can schedule announcements (with optional EmailJS email and push delivery) and schedule inactive events to become active. Supabase cron runs `process-scheduled-content` every minute; the deployed `process-scheduled` Edge Function is JWT-protected and verified with repeated HTTP 200 cron executions.
@@ -211,6 +212,7 @@ Set Apart readiness was refined on 2026-06-09: leaders and coordinators are both
 4. Encourage leaders to install the PWA and enable notifications; only subscribed devices can receive push.
 5. On the admin iPhone, open the installed PWA → Profile → Settings. Re-enable Notifications if this device is not subscribed, then use `Send Test Notification`; also verify iPhone Settings → Notifications and Focus settings.
 6. Verify the scheduled Zoom announcement published in-app and inspect its `push_sent_at` / `delivery_error`.
+7. Start the next implementation task on `design-polish`; GitHub triage found no queued issue or pull-request follow-up.
 
 ---
 
