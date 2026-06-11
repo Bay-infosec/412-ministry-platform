@@ -99,6 +99,7 @@ Latest implementation gates conference leader content by event role and adds a p
 Verification: 34/34 tests pass and the production build passes.
 GitHub triage on 2026-06-11 found no open pull requests or issues. The latest `design-polish` commit has a successful Vercel check, with no failing CI or review feedback requiring code changes.
 The separate Questions Skeptics Ask workshop application was completed on 2026-06-11 in `~/Projects/questions-skeptics-ask`. It includes the attendee poll/question/follow-up flow, live projector results, moderator controls, and group-scoped leader dashboards. Its isolated `workshop_*` schema and code-gated RPCs are deployed in the existing Supabase project; production is live at `https://questions-skeptics-ask.vercel.app`. The app has 2/2 tests passing, a clean production build and npm audit, and live mobile/HTTP verification. Local Git history is clean; GitHub repository creation remains blocked until a GitHub account or GitHub app connection is authenticated.
+Admin password reset was repaired on 2026-06-11. The reset had been succeeding in Auth, but the one-time password rendered above the admin's current scroll position and appeared lost. It now opens in a dedicated result modal with copy support and real error messages. The tracked `reset-password` Edge Function v4 validates admins/targets, restores the forced-change flag, and records an audit entry. Verification: 41/41 tests and the production build pass; the deployed function rejects unauthenticated requests with HTTP 401. A destructive successful reset was not repeated during verification.
 Onboarding readiness was corrected on 2026-06-10: the admin Members list now derives progress from actual checklist items and other saved onboarding activity instead of relying exclusively on the historically unreliable `onboarding_visited` flag. Save & exit and completion now persist that flag explicitly. Five inconsistent Set Apart records were repaired, including two records with 2/4 checklist items complete. Verification: 41/41 tests and the production build pass; authenticated visual verification is still required after deployment.
 Scheduling completed on 2026-06-09: admins can schedule announcements (with optional EmailJS email and push delivery) and schedule inactive events to become active. Supabase cron runs `process-scheduled-content` every minute; the deployed `process-scheduled` Edge Function is JWT-protected and verified with repeated HTTP 200 cron executions.
 The one-time Set Apart leader welcome campaign was released on 2026-06-09: 19 emails sent, 5 signed-in accounts skipped, and 0 failures. Campaign credentials remain stored only in the RLS-protected database record, not Git.
@@ -208,11 +209,12 @@ Set Apart readiness was refined on 2026-06-09: leaders and coordinators are both
 
 1. **⚠️ Rotate Supabase API keys** — service_role key was in shared PDF.
 2. Connect an authenticated GitHub account/app, create the `questions-skeptics-ask` repository, and push `~/Projects/questions-skeptics-ask`.
-3. After deployment, open Admin → Set Apart 2026 → Members and confirm a 2/4 checklist record displays two orange dots rather than `Not started`.
-4. Encourage leaders to install the PWA and enable notifications; only subscribed devices can receive push.
-5. On the admin iPhone, open the installed PWA → Profile → Settings. Re-enable Notifications if this device is not subscribed, then use `Send Test Notification`; also verify iPhone Settings → Notifications and Focus settings.
-6. Verify the scheduled Zoom announcement published in-app and inspect its `push_sent_at` / `delivery_error`.
-7. Start the next implementation task on `design-polish`; GitHub triage found no queued issue or pull-request follow-up.
+3. After deployment, run one intentional admin password reset and confirm the result modal displays and copies the generated password before closing it.
+4. Open Admin → Set Apart 2026 → Members and confirm a 2/4 checklist record displays two orange dots rather than `Not started`.
+5. Encourage leaders to install the PWA and enable notifications; only subscribed devices can receive push.
+6. On the admin iPhone, open the installed PWA → Profile → Settings. Re-enable Notifications if this device is not subscribed, then use `Send Test Notification`; also verify iPhone Settings → Notifications and Focus settings.
+7. Verify the scheduled Zoom announcement published in-app and inspect its `push_sent_at` / `delivery_error`.
+8. Start the next implementation task on `design-polish`; GitHub triage found no queued issue or pull-request follow-up.
 
 ---
 

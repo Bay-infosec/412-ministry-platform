@@ -38,6 +38,8 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
   const [modal, setModal] = useState(null);
   const [busy, setBusy] = useState(false);
   const [tempPw, setTempPw] = useState(null);
+  const [passwordCopied, setPasswordCopied] = useState(false);
+  const [resetWarning, setResetWarning] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState("");
 
   // Platform role (select first, save explicitly)
@@ -108,13 +110,31 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
 
   async function resetPassword() {
     setBusy(true);
+    setTempPw(null);
+    setPasswordCopied(false);
+    setResetWarning(null);
     const { data: res, error } = await supabase.functions.invoke("reset-password", {
       body: { user_id: profile.id },
     });
     setBusy(false);
-    setModal(null);
-    if (error || !res?.success) { onToast("Password reset failed.", "error"); return; }
+    if (error || !res?.success || !res?.temp_password) {
+      setModal(null);
+      onToast(res?.error || error?.message || "Password reset failed.", "error");
+      return;
+    }
     setTempPw(res.temp_password);
+    setResetWarning(res.warning || null);
+    setModal("reset-result");
+  }
+
+  async function copyTemporaryPassword() {
+    try {
+      await navigator.clipboard.writeText(tempPw);
+      setPasswordCopied(true);
+      onToast("Temporary password copied.");
+    } catch {
+      onToast("Could not copy automatically. Press and hold the password to copy it.", "error");
+    }
   }
 
   async function deleteAccount() {
@@ -206,24 +226,6 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
         ["Church", church],
         ["Ministry Role", profile.ministry_role],
       ]} />
-
-      {/* Temp password */}
-      {tempPw && (
-        <div style={{ background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 14, padding: "1.25rem", marginBottom: "1rem" }}>
-          <div style={{ fontSize: "11px", fontWeight: 700, color: "#C2410C", letterSpacing: "0.1em", fontFamily: SANS, textTransform: "uppercase", marginBottom: 8 }}>
-            Temporary Password — Share with {profile.full_name} manually
-          </div>
-          <div style={{ fontFamily: "monospace", fontSize: "24px", fontWeight: 700, color: "#1B2A4A", letterSpacing: "0.06em", padding: "0.75rem 1rem", background: "#fff", borderRadius: 10, border: `1px solid ${BORDER}`, marginBottom: 8 }}>
-            {tempPw}
-          </div>
-          <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, marginBottom: 10 }}>
-            This disappears when you navigate away. Copy it now.
-          </div>
-          <button onClick={() => setTempPw(null)} style={{ background: "none", border: "none", color: TSEC, fontSize: "13px", cursor: "pointer", fontFamily: SANS, padding: 0 }}>
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Unified role & tags chip grid */}
       <SectionLabel>Role & Tags</SectionLabel>
@@ -342,6 +344,83 @@ export default function PersonDetail({ profile, data, onRefresh, onToast, onDone
           onConfirm={resetPassword}
           busy={busy}
         />
+      )}
+
+      {modal === "reset-result" && tempPw && (
+        <div style={overlay}>
+          <div style={sheet}>
+            <div style={{ fontFamily: SANS, fontSize: "22px", fontWeight: 800, color: "#111", marginBottom: "0.5rem" }}>
+              Password Reset
+            </div>
+            <div style={{ fontSize: "14px", color: TSEC, fontFamily: SANS, lineHeight: 1.6, marginBottom: "1rem" }}>
+              Share this temporary password with {profile.full_name}. They will be required to replace it after signing in.
+            </div>
+            <div
+              role="status"
+              aria-label="Temporary password"
+              style={{
+                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                fontSize: "22px",
+                fontWeight: 800,
+                color: "#111",
+                letterSpacing: "0.06em",
+                padding: "1rem",
+                background: "#F5F5F5",
+                borderRadius: 12,
+                border: `1px solid ${BORDER}`,
+                marginBottom: "0.75rem",
+                textAlign: "center",
+                userSelect: "all",
+                overflowWrap: "anywhere",
+              }}
+            >
+              {tempPw}
+            </div>
+            <div style={{ fontSize: "12px", color: TSEC, fontFamily: SANS, lineHeight: 1.5, marginBottom: "1rem" }}>
+              This password is shown only once. Copy it before closing this window.
+            </div>
+            {resetWarning && (
+              <div style={{ background: "#111", color: "#fff", borderRadius: 10, padding: "0.75rem", fontSize: "12px", lineHeight: 1.5, fontFamily: SANS, marginBottom: "1rem" }}>
+                {resetWarning}
+              </div>
+            )}
+            <button
+              onClick={copyTemporaryPassword}
+              style={{
+                width: "100%",
+                background: "#FF4D00",
+                color: "#fff",
+                border: "none",
+                borderRadius: 10,
+                padding: "12px",
+                fontSize: "14px",
+                fontWeight: 800,
+                fontFamily: SANS,
+                cursor: "pointer",
+                marginBottom: 8,
+              }}
+            >
+              {passwordCopied ? "Copied" : "Copy Password"}
+            </button>
+            <button
+              onClick={() => { setModal(null); setTempPw(null); setPasswordCopied(false); setResetWarning(null); }}
+              style={{
+                width: "100%",
+                background: "#fff",
+                color: "#111",
+                border: `1px solid ${BORDER}`,
+                borderRadius: 10,
+                padding: "11px",
+                fontSize: "14px",
+                fontWeight: 700,
+                fontFamily: SANS,
+                cursor: "pointer",
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
 
       {modal === "delete" && (
